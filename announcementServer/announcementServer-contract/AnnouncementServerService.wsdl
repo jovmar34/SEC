@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+  WSDL contract for AnnouncementServer
+
+  This WSDL defines the operations provided by the Web Service, and should not be modified.
+  For more information, see sections
+  wsdl:service, wsdl:portType, wsdl:types and wsdl:binding below
+-->
+<definitions 
+	xmlns="http://schemas.xmlsoap.org/wsdl/"
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+	xmlns:tns="http://ws.announcementserver.org/"
+	xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" 
+	xmlns:wsp="http://www.w3.org/ns/ws-policy" 
+	xmlns:wsp1_2="http://schemas.xmlsoap.org/ws/2004/09/policy" 
+	xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" 
+	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	name="AnnouncementServerService"
+	targetNamespace="http://ws.announcementserver.org/">
+
+  <!--  XML Schema Definition (XSD) of data types. -->
+  <types>
+  	<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://ws.announcementserver.org/" version="1.0">
+  	
+  	<xs:element name="register" type="tns:register" />
+  	<xs:element name="registerResponse" type="tns:registerResponse" />
+  	
+  	<xs:element name="post" type="tns:post" />
+  	<xs:element name="postResponse" type="tns:postResponse" />
+  	
+  	<xs:element name="postGeneral" type="tns:postGeneral" />
+  	<xs:element name="postGeneralResponse" type="tns:postGeneralResponse" />
+  	
+  	<xs:element name="read" type="tns:read" />
+  	<xs:element name="readResponse" type="tns:readResponse" />
+  	
+  	
+  	<!-- REGISTER -->
+  	<xs:complexType name="register">
+  		<xs:sequence>
+  			<xs:element minOccurs="0" name="publicKey" type="xs:string" />
+  		</xs:sequence>
+  	</xs:complexType>
+  	<xs:complexType name="registerResponse">
+  		<xs:sequence>
+  			<xs:element minOccurs="0" name="return" type="xs:string" />
+  		</xs:sequence>
+  	</xs:complexType>
+  	
+  	<!-- POST -->
+  	<xs:complexType name="post">
+  		<xs:sequence>
+  		  	<xs:element minOccurs="0" name="publicKey" type="xs:string" />
+  			<xs:element minOccurs="0" name="message" type="xs:string" />
+  			<xs:element minOccurs="0" name="announcement" type="xs:string" />
+  		</xs:sequence>
+  	</xs:complexType>
+  	<xs:complexType name="postResponse">
+  		<xs:sequence>
+  			<xs:element minOccurs="0" name="return" type="xs:string" />
+  		</xs:sequence>
+  	</xs:complexType>
+  	
+  	<!-- POST GENERAL -->
+  	<xs:complexType name="postGeneral">
+  		<xs:sequence>
+  		  	<xs:element minOccurs="0" name="publicKey" type="xs:string" />
+  			<xs:element minOccurs="0" name="message" type="xs:string" />
+  			<xs:element minOccurs="0" name="announcement" type="xs:string" />
+  		</xs:sequence>
+  	</xs:complexType>
+  	<xs:complexType name="postGeneralResponse">
+  		<xs:sequence>
+  			<xs:element minOccurs="0" name="return" type="xs:string" />
+  		</xs:sequence>
+  	</xs:complexType>
+  	
+  	<!-- READ -->
+  	<xs:complexType name="read">
+  		<xs:sequence>
+  			<xs:element minOccurs="0" name="publicKey" type="xs:string" />
+  			<xs:element minOccurs="0" name="number" type="xs:string" />
+  		</xs:sequence>
+  	</xs:complexType>
+  	<xs:complexType name="readResponse">
+  		<xs:sequence>
+  			<xs:element minOccurs="0" name="return" type="xs:string" />
+  		</xs:sequence>
+  	</xs:complexType>
+  	
+  	<!-- READ GENERAL -->
+  	<xs:complexType name="read">
+  		<xs:sequence>
+  			<xs:element minOccurs="0" name="number" type="xs:string" />
+  		</xs:sequence>
+  	</xs:complexType>
+  	<xs:complexType name="readResponse">
+  		<xs:sequence>
+  			<xs:element minOccurs="0" name="return" type="xs:string" />
+  		</xs:sequence>
+  	</xs:complexType>
+  	
+  	</xs:schema>
+  </types>
+  
+  <!--  Messages use elements defined in the schema. -->  
+  <message name="register">
+  	<part element="tns:register" name="parameters" />
+  </message>
+  <message name="registerResponse">
+  	<part element="tns:registerResponse" name="parameters" />
+  </message>
+  
+  <message name="post">
+  	<part element="tns:post" name="parameters" />
+  </message>
+  <message name="postResponse">
+  	<part element="tns:postResponse" name="parameters" />
+  </message>
+  
+  <message name="postGeneral">
+  	<part element="tns:postGeneral" name="parameters" />
+  </message>
+  <message name="postGeneralResponse">
+  	<part element="tns:postGeneralResponse" name="parameters" />
+  </message>
+  
+  <message name="read">
+  	<part element="tns:read" name="parameters" />
+  </message>
+  <message name="readResponse">
+  	<part element="tns:readResponse" name="parameters" />
+  </message>
+  
+  <message name="readGeneral">
+  	<part element="tns:readGeneral" name="parameters" />
+  </message>
+  <message name="readGeneralResponse">
+  	<part element="tns:readGeneralResponse" name="parameters" />
+  </message>
+  
+  
+  <!--  Port type (interface). -->
+  <!--  Each operation has input, output and fault messages. -->
+  <portType name="AnnouncementServerPortType">  	
+  	<operation name="register">
+  		<input message="tns:register" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/register" />
+  		<output message="tns:registerResponse" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/registerResponse" />
+  	</operation>
+  	
+  	<operation name="post">
+  		<input message="tns:post" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/post" />
+  		<output message="tns:postResponse" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/postResponse" />
+  	</operation>
+  	
+  	<operation name="postGeneral">
+  		<input message="tns:postGeneral" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/postGeneral" />
+  		<output message="tns:postGeneralResponse" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/postGeneralResponse" />
+  	</operation>
+  	
+  	<operation name="read">
+  		<input message="tns:read" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/read" />
+  		<output message="tns:readResponse" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/readResponse" />
+  	</operation>
+  	
+  	<operation name="readGeneral">
+  		<input message="tns:readGeneral" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/readGeneral" />
+  		<output message="tns:readGeneralResponse" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/readGeneralResponse" />
+  	</operation>
+  	
+  </portType>
+  
+  <!--  Binding defines the actual technologies to use. -->
+  <binding name="AnnouncementServerPortBinding" type="tns:AnnouncementServerPortType">
+  	<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+  	
+  	<operation name="register">
+  		<soap:operation soapAction="" />
+  		<input>
+  			<soap:body use="literal" />
+  		</input>
+  		<output>
+  			<soap:body use="literal" />
+  		</output>
+  	</operation>
+  	
+  	<operation name="post">
+  		<soap:operation soapAction="" />
+  		<input>
+  			<soap:body use="literal" />
+  		</input>
+  		<output>
+  			<soap:body use="literal" />
+  		</output>
+  	</operation>
+  	
+  	<operation name="postGeneral">
+  		<soap:operation soapAction="" />
+  		<input>
+  			<soap:body use="literal" />
+  		</input>
+  		<output>
+  			<soap:body use="literal" />
+  		</output>
+  	</operation>
+  	
+  	<operation name="read">
+  		<soap:operation soapAction="" />
+  		<input>
+  			<soap:body use="literal" />
+  		</input>
+  		<output>
+  			<soap:body use="literal" />
+  		</output>
+  	</operation>
+  	
+  	<operation name="readGeneral">
+  		<soap:operation soapAction="" />
+  		<input>
+  			<soap:body use="literal" />
+  		</input>
+  		<output>
+  			<soap:body use="literal" />
+  		</output>
+  	</operation>
+  
+  </binding>
+  
+  <!--  Service defines ports. -->
+  <!--  Each port is an abstract port type, made concrete by a binding. -->
+  <service name="AnnouncementServerService">
+  	<port binding="tns:AnnouncementServerPortBinding" name="AnnouncementServerPort">
+  		<soap:address location="http://localhost:8090/announcementserver" />
+  	</port>
+  </service>
+  
+</definitions>
