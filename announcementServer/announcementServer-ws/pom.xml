@@ -38,13 +38,6 @@
   		<artifactId>jaxws-rt</artifactId>
   		<version>${version.jaxws-rt}</version>
   	</dependency>
-  	
-  	<!-- UDDI Naming -->
-  	<dependency>
-  		<groupId>org.uddi.naming</groupId>
-  		<artifactId>uddi-naming</artifactId>
-  		<version>1.2.0</version>
-  	</dependency>
     
   </dependencies>
   

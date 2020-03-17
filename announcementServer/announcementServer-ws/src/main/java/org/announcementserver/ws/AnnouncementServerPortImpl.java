@@ -31,13 +31,28 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 	// Main operations -----------------------------------------------
 	
 	/* Register */
+	public  String register(String publicKey) {
+		return "not implemented yet";
+	}
 	
 	/* Post */
+	public String post(String publicKey, String message, String announcement) {
+		return "not implemented yet";
+	}
 	
 	/* Post General */
+	public String postGeneral(String publicKey, String message, String announcement) {
+		return "not implemented yet";
+	}
 	
 	/* Read */
+	public String read(String publicKey, String number) {
+		return "not implemented yet";
+	}
 	
 	/* Read General */
+	public String readGeneral(String number) {
+		return "not implemented yet";
+	}
 	
 }

@@ -2,7 +2,6 @@ package org.announcementserver.ws;
 
 import java.io.IOException;
 import javax.xml.ws.Endpoint;
-import org.uddi.naming.UDDINaming;
 
 /** The endpoint manager starts and registers the service. */
 public class AnnouncementServerEndpointManager {
@@ -25,7 +24,7 @@ public class AnnouncementServerEndpointManager {
 	private Endpoint endpoint = null;
 	
 	/** UDDI Naming instance for containing UDDI server */
-	private UDDINaming uddiNaming = null;
+	//private UDDINaming uddiNaming = null;
 	
 	/** Verbose output? */
 	private boolean verbose = true;
@@ -83,7 +82,7 @@ public class AnnouncementServerEndpointManager {
 			}
 			throw e;
 		}
-		publishToUDDI();
+		//publishToUDDI();
 	}
 	
 	/** Await for connections */
@@ -116,42 +115,42 @@ public class AnnouncementServerEndpointManager {
 			}
 		}
 		this.portImpl = null;
-		unpublishFromUDDI();
+		//unpublishFromUDDI();
 	}
 	
-	/** Publish to UDDI */
-	void publishToUDDI() throws Exception {
-		try {
-			if(uddiURL != null) {
-				if (verbose) {
-					System.out.printf("Publishing '%s' to UDDI at %s%n", wsName, uddiURL);
-				}
-			}
-			uddiNaming = new UDDINaming(uddiURL);
-			uddiNaming.rebind(wsName, wsURL);
-		} catch (Exception e) {
-			uddiNaming = null;
-			if (verbose) {
-				System.out.printf("Exception caught when binding to UDDI: %s%n", e);
-			}
-			throw e;
-		}
-	}
-	
-	/** Unpublish from UDDI */
-	void unpublishFromUDDI() {
-		try {
-			if (uddiNaming != null) {
-				uddiNaming.unbind(wsName);
-				if (verbose) {
-					System.out.printf("Unpublished '%s' from UDDI", wsName);
-				}
-				uddiNaming = null;
-			}
-		} catch (Exception e){
-			if (verbose) {
-				System.out.printf("Exception caught when unbinding: %s%n", e);
-			}
-		}
-	}
+//	/** Publish to UDDI */
+//	void publishToUDDI() throws Exception {
+//		try {
+//			if(uddiURL != null) {
+//				if (verbose) {
+//					System.out.printf("Publishing '%s' to UDDI at %s%n", wsName, uddiURL);
+//				}
+//			}
+//			uddiNaming = new UDDINaming(uddiURL);
+//			uddiNaming.rebind(wsName, wsURL);
+//		} catch (Exception e) {
+//			uddiNaming = null;
+//			if (verbose) {
+//				System.out.printf("Exception caught when binding to UDDI: %s%n", e);
+//			}
+//			throw e;
+//		}
+//	}
+//	
+//	/** Unpublish from UDDI */
+//	void unpublishFromUDDI() {
+//		try {
+//			if (uddiNaming != null) {
+//				uddiNaming.unbind(wsName);
+//				if (verbose) {
+//					System.out.printf("Unpublished '%s' from UDDI", wsName);
+//				}
+//				uddiNaming = null;
+//			}
+//		} catch (Exception e){
+//			if (verbose) {
+//				System.out.printf("Exception caught when unbinding: %s%n", e);
+//			}
+//		}
+//	}
 }

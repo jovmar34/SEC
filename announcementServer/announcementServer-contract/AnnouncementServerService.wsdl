@@ -35,6 +35,9 @@
   	<xs:element name="read" type="tns:read" />
   	<xs:element name="readResponse" type="tns:readResponse" />
   	
+  	<xs:element name="readGeneral" type="tns:readGeneral" />
+  	<xs:element name="readGeneralResponse" type="tns:readGeneralResponse" />
+  	
   	
   	<!-- REGISTER -->
   	<xs:complexType name="register">
@@ -90,12 +93,12 @@
   	</xs:complexType>
   	
   	<!-- READ GENERAL -->
-  	<xs:complexType name="read">
+  	<xs:complexType name="readGeneral">
   		<xs:sequence>
   			<xs:element minOccurs="0" name="number" type="xs:string" />
   		</xs:sequence>
   	</xs:complexType>
-  	<xs:complexType name="readResponse">
+  	<xs:complexType name="readGeneralResponse">
   		<xs:sequence>
   			<xs:element minOccurs="0" name="return" type="xs:string" />
   		</xs:sequence>
