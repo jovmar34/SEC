@@ -41,6 +41,7 @@
 		<artifactId>jaxws-rt</artifactId>
 		<version>${version.jaxws-rt}</version>
 	</dependency>
+  </dependencies>
   
   <build>
   	<resources>
@@ -151,5 +152,5 @@
 		</plugin>
 	</plugins>
   </build>
-  
+  	
 </project>

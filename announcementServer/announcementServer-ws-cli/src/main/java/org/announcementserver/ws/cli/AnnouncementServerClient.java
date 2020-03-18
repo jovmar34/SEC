@@ -1,10 +1,9 @@
 package org.announcementserver.ws.cli;
 
 import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
-
 import java.util.Map;
-
 import javax.xml.ws.BindingProvider;
+import org.announcementserver.ws.*;
 
 /** */
 public class AnnouncementServerClient {
@@ -69,23 +68,23 @@ public class AnnouncementServerClient {
 	// remote invocation methods ------------------------------------------------------------
 
 	public String register() {
-		return port.register();
+		return port.register("default");
 	}
 	
 	public String post() {
-		return port.post();
+		return port.post("default", "default", "default");
 	}
 	
 	public String postGeneral() {
-		return port.postGeneral();
+		return port.postGeneral("default", "default", "default");
 	}
 	
 	public String read() {
-		return port.read();
+		return port.read("default", "default");
 	}
 	
 	public String readGeneral() {
-		return port.readGeneral();
+		return port.readGeneral("default");
 	}
 	
 }
