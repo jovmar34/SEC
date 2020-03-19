@@ -28,5 +28,5 @@ Regarding the clients, execute:
     cd announcementServer-ws-cli
     mvn exec:java -Dexec.args="1"
     
-Where 1 is the ID of the client
+where 1 is the ID of the client
 
