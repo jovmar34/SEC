@@ -30,3 +30,13 @@ Regarding the clients, execute:
     
 where 1 is the ID of the client
 
+## Paswords for KeyStore
+
+User | Password
+-------- | --------
+client1 | 25HtkQDXEQRT
+client2 | 5n2y5xcvkU86
+client3 | SqPxGv9bKpqp
+client4 | BJfp4sKXyvfP
+client5 | ZgLB2kBg8a42
+server  | admin
