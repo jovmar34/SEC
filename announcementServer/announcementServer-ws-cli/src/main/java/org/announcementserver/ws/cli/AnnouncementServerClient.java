@@ -16,14 +16,8 @@ public class AnnouncementServerClient {
 	/** WS port */
 	AnnouncementServerPortType port = null;
 	
-	/** Web Service Name */
-	private String wsName = null;
-	
 	/** Web Service URL */
 	private String wsURL = null;
-	
-	/** UDDI Server URL */
-	private String uddiURL = null;
 	
 	/** Verbose output? */
 	private boolean verbose = false;
@@ -35,17 +29,9 @@ public class AnnouncementServerClient {
 	public void setVerbose(boolean verbose) { this.verbose = verbose; }
 	
 	public String getWsURL() { return wsURL; }
-	
-	/** Constructor 1 */
+
 	public AnnouncementServerClient(String wsURL) throws AnnouncementServerClientException {
 		this.wsURL = wsURL;
-		createStub();
-	}
-	
-	/** Constructor 2 */
-	public AnnouncementServerClient(String uddiURL, String wsName) throws AnnouncementServerClientException {
-		this.uddiURL = uddiURL;
-		this.wsName = wsName;
 		createStub();
 	}
 	

@@ -18,7 +18,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <mainclass>org.announcementserver.ws.AnnouncementServerApp</mainclass>
     <wsdl.dir>${basedir}/../announcementServer-contract/</wsdl.dir>
-    <ws.url>http://localhost:8091/announcementServer-ws/endpoint/</ws.url>
+    <ws.url>http://localhost:8090/announcementServer-ws/endpoint/</ws.url>
     <ws.name>announcementserver-ws</ws.name>
   </properties>
   
@@ -114,8 +114,6 @@
 				<killAfter>-1</killAfter>
 				<mainClass>${mainclass}</mainClass>
 				<arguments>
-						<argument>${uddi.url}</argument>
-						<argument>${ws.name}</argument>
 						<argument>${ws.url}</argument>
 				</arguments>
 			</configuration>

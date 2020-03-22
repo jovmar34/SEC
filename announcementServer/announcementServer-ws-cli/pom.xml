@@ -19,6 +19,11 @@
     <mainclass>org.announcementserver.ws.cli.AnnouncementServerClientApp</mainclass>
 	<wsdl.dir>${basedir}/../announcementServer-contract/</wsdl.dir>
 	<ws.name>announcement-ws</ws.name>
+	<!-- instance numbering -->
+	<ws.i>1</ws.i>
+	<ws.host>localhost</ws.host>
+	<ws.port>808${ws.i}</ws.port>
+	<ws.url>http://${ws.host}:${ws.port}/${ws.name}/endpoint/</ws.url>
   </properties>
   
   <dependencies>
@@ -124,8 +129,8 @@
 				<killAfter>-1</killAfter>
 				<mainClass>${mainclass}</mainClass>
 				<arguments>
-					<argument>${uddi.url}</argument>
-					<argument>${ws.name}</argument>
+					<argument>${ws.url}</argument>
+					<argument>${ws.i}</argument>
 				</arguments>
 			</configuration>
 		</plugin>

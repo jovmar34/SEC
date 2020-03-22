@@ -16,11 +16,14 @@ In order to build and run this project you will need:
 * Apache-Maven 3.x.x 
 * Java Development Kit 8
 
-## Compiling and running
+## Compiling
 In order to compile the whole project execute the following command on **/announcementServer/** to install all dependencies:
 
-    mvn clean install
+    mvn clean install -DskipTests
+    
+**Note:** use -DskipTests in order to skip all the integration tests 
 
+## Running
 In order to run the system..
     
 Regarding the server, execute:
@@ -31,7 +34,7 @@ Regarding the server, execute:
 Regarding the clients, execute:
 
     cd announcementServer-ws-cli
-    mvn exec:java -Dexec.args="1"
+    mvn exec:java -Dws.i=1
     
 where 1 is the ID of the client
 

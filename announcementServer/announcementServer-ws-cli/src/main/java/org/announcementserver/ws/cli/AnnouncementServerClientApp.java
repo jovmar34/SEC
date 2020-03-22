@@ -25,24 +25,16 @@ public class AnnouncementServerClientApp {
     		return;
     	}
     	
-    	String uddiURL = null;
-    	String wsName = null;
-    	String wsURL = null;
+    	String wsURL = args[0];
+    	String wsI = args[1];
     	
-    	if (args.length == 1) {
-    		wsURL = args[0];
-    	} else if (args.length >= 2) {
-    		uddiURL = args[0];
-    		wsName = args[1];
+    	if (Integer.valueOf(wsI)>=1 && Integer.valueOf(wsI)<=5) {
+    		System.out.printf("Creating client for server at %s%n", wsURL);
+        	client = new AnnouncementServerClient(wsURL);
+    	} else {
+    		System.err.println("UserId must be between 1 and 5.");
+    		return;
     	}
-    	
-		if (wsURL != null) {
-			System.out.printf("Creating client for server at %s%n", wsURL);
-			client = new AnnouncementServerClient(wsURL);
-		} else if (uddiURL != null) {
-			System.out.printf("Creating client using UDDI at %s for server with name %s%n", uddiURL, wsName);
-			client = new AnnouncementServerClient(uddiURL, wsName);
-		}
     	
         // Start of Interaction
     	mainMenu();
