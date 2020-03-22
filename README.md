@@ -1,5 +1,6 @@
 # SEC Project 2019/20 - HDS DPAS System 
 
+Highly Dependable Systems Project - Dependable Public Announcement Server
 Group 16 - Alameda
 
 Student Number | Name
@@ -10,13 +11,16 @@ Student Number | Name
 
 ## Requirements
 In order to build and run this project you will need:
-* Apache-maven (at least 3.6.0)
-* Java 1.8
+* GNU/Linux
+* Apache-Maven 3.X.X 
+* Java Development Kit 8
 
 ## Compiling and running
-In order to compile and run the whole project execute the following commands on **root folder** to install all dependencies:
+In order to compile the whole project execute the following command on **/announcementServer/** to install all dependencies:
 
     mvn clean install
+
+In order to run the system..
     
 Regarding the server, execute:
 
