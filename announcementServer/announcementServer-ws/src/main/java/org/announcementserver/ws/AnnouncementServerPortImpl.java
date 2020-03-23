@@ -32,27 +32,27 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 	
 	/* Register */
 	public  String register(String publicKey) {
-		return "not implemented yet";
+		return AnnouncementServer.getInstance().register(publicKey);
 	}
 	
 	/* Post */
 	public String post(String publicKey, String message, String announcement) {
-		return "not implemented yet";
+		return AnnouncementServer.getInstance().post(publicKey, message, announcement);
 	}
 	
 	/* Post General */
 	public String postGeneral(String publicKey, String message, String announcement) {
-		return "not implemented yet";
+		return AnnouncementServer.getInstance().postGeneral(publicKey, message, announcement);
 	}
 	
 	/* Read */
 	public String read(String publicKey, String number) {
-		return "not implemented yet";
+		return AnnouncementServer.getInstance().read(publicKey, number);
 	}
 	
 	/* Read General */
 	public String readGeneral(String number) {
-		return "not implemented yet";
+		return AnnouncementServer.getInstance().readGeneral(number);
 	}
 	
 }
