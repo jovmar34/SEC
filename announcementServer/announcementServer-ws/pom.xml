@@ -18,8 +18,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <mainclass>org.announcementserver.ws.AnnouncementServerApp</mainclass>
     <wsdl.dir>${basedir}/../announcementServer-contract/</wsdl.dir>
-    <ws.url>http://localhost:8090/announcementServer-ws/endpoint/</ws.url>
     <ws.name>announcementserver-ws</ws.name>
+    <ws.url>http://localhost:8090/${ws.name}/endpoint/</ws.url>
   </properties>
   
   <dependencies>

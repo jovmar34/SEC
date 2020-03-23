@@ -18,11 +18,9 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <mainclass>org.announcementserver.ws.cli.AnnouncementServerClientApp</mainclass>
 	<wsdl.dir>${basedir}/../announcementServer-contract/</wsdl.dir>
-	<ws.name>announcement-ws</ws.name>
-	<!-- instance numbering -->
-	<ws.i>1</ws.i>
+	<ws.name>announcementserver-ws</ws.name>
 	<ws.host>localhost</ws.host>
-	<ws.port>808${ws.i}</ws.port>
+	<ws.port>8090</ws.port>
 	<ws.url>http://${ws.host}:${ws.port}/${ws.name}/endpoint/</ws.url>
   </properties>
   
@@ -130,7 +128,6 @@
 				<mainClass>${mainclass}</mainClass>
 				<arguments>
 					<argument>${ws.url}</argument>
-					<argument>${ws.i}</argument>
 				</arguments>
 			</configuration>
 		</plugin>

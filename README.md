@@ -34,9 +34,8 @@ Regarding the server, execute:
 Regarding the clients, execute:
 
     cd announcementServer-ws-cli
-    mvn exec:java -Dws.i=1
+    mvn exec:java
     
-where 1 is the ID of the client
 
 ## Paswords for KeyStore
 

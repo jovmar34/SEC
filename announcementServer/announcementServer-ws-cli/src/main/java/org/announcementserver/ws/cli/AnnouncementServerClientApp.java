@@ -26,15 +26,9 @@ public class AnnouncementServerClientApp {
     	}
     	
     	String wsURL = args[0];
-    	String wsI = args[1];
-    	
-    	if (Integer.valueOf(wsI)>=1 && Integer.valueOf(wsI)<=5) {
-    		System.out.printf("Creating client for server at %s%n", wsURL);
-        	client = new AnnouncementServerClient(wsURL);
-    	} else {
-    		System.err.println("UserId must be between 1 and 5.");
-    		return;
-    	}
+
+    	System.out.printf("Creating client for server at %s%n", wsURL);
+        client = new AnnouncementServerClient(wsURL);
     	
         // Start of Interaction
     	mainMenu();
@@ -90,6 +84,8 @@ public class AnnouncementServerClientApp {
     /* Register Menu */
     public static void registerMenu() {
     	menu.displayRegisterMenu();
+    	String returned = client.register();
+    	System.out.println(returned);
     }
     
     /* Post Menu */
