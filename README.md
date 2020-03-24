@@ -39,11 +39,11 @@ Regarding the clients, execute:
 
 ## Paswords for KeyStore
 
-User | Password
--------- | --------
-client1 | 25HtkQDXEQRT
-client2 | 5n2y5xcvkU86
-client3 | SqPxGv9bKpqp
-client4 | BJfp4sKXyvfP
-client5 | ZgLB2kBg8a42
-server  | admin
+User | Password | Hash (SHA 256)
+-------- | -------- | --------
+client1 | 25HtkQDXEQRT | 9bd915291749076d56d4198b4ea35003249be5c88acebce51fcf559d52bde24e
+client2 | 5n2y5xcvkU86 | 4416f05dcc94e63edddd1e7459caefc6eb3137932ea64d446a08b2301aaefac6
+client3 | SqPxGv9bKpqp | 27d728e7c5ed0f593fce0b49518a9d470826cac65778c5b5d2e14e2302db7636
+client4 | BJfp4sKXyvfP | 9d19fc3108e5cb614001136a0cd49c2a470555796874d86f4d6ed71cafff24cb
+client5 | ZgLB2kBg8a42 | 14048393b84ea0c6af57d3878473204cbab3716d39ca3c795fa611919dc1650d
+server  | admin        | 8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
