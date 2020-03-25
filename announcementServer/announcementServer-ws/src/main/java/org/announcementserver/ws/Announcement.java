@@ -14,4 +14,11 @@ public class Announcement {
 		this.id = id;
 		this.references = refs;
 	}
+	
+	public void setContent(String cont) {
+		this.content=cont;
+	}
+	public void setReferences(ArrayList refs) {
+		this.references=refs;
+	}
 }
