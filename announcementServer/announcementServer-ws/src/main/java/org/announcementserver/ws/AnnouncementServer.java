@@ -23,7 +23,12 @@ public class AnnouncementServer {
 	/* Register */
 	public  String register(String publicKey) {
 		//create a personalBoard for this user
-		return "not implemented yet";
+		String res = "";
+		if (!personalBoards.containsKey(publicKey)) {
+			res += String.format("Welcome new user (pk: %s)! ", publicKey);
+			personalBoards.put(publicKey, new ArrayList<>());
+		}
+		return res + "ok";
 	}
 	
 	/* Post */
