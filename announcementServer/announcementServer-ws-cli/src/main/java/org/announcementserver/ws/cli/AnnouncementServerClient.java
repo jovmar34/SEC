@@ -53,8 +53,8 @@ public class AnnouncementServerClient {
 	
 	// remote invocation methods ------------------------------------------------------------
 
-	public String register() {
-		return port.register("default");
+	public String register(String publicKey) {
+		return port.register(publicKey);
 	}
 	
 	public String post() {
@@ -66,11 +66,11 @@ public class AnnouncementServerClient {
 	}
 	
 	public String read() {
-		return port.read("default", "default");
+		return port.read("default", Long.parseLong("1"));
 	}
 	
 	public String readGeneral() {
-		return port.readGeneral("default");
+		return port.readGeneral(Long.parseLong("1"));
 	}
 	
 }

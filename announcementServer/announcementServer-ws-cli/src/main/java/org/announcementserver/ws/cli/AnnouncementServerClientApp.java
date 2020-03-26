@@ -1,10 +1,18 @@
 package org.announcementserver.ws.cli;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 import java.util.Scanner;
 import org.announcementserver.utils.*;
-
 import com.google.common.hash.Hashing;
 
 /**
@@ -23,7 +31,7 @@ public class AnnouncementServerClientApp {
 	private static Menus menu = new Menus();
 	private static AnnouncementServerClient client = null;
 	
-    public static void main(String[] args ) throws AnnouncementServerClientException {
+    public static void main(String[] args ) throws AnnouncementServerClientException, NoSuchAlgorithmException, InvalidKeySpecException, IOException {
     	
     	// Check arguments.
     	if (args.length == 0) {
@@ -42,7 +50,7 @@ public class AnnouncementServerClientApp {
     }
     
     /* Main Menu */
-    private static void mainMenu() {
+    private static void mainMenu() throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {
     	
     	/* Authentication */
     	System.out.print("Provide your username: ");
@@ -125,9 +133,17 @@ public class AnnouncementServerClientApp {
     }
     
     /* Register Menu */
-    public static void registerMenu() {
-    	menu.displayRegisterMenu();
-    	String returned = client.register();
+    public static void registerMenu() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+    	
+    	/* Get public key */
+    	//System.out.println(Paths.get("client1pub.key").toAbsolutePath());
+    	byte[] keyBytes = Files.readAllBytes(Paths.get("src/main/resources/client1pub.key"));
+    	X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+    	//KeyFactory kf = KeyFactory.getInstance("RSA");
+    	//PublicKey pk = kf.generatePublic(spec);
+    	
+    	String publicKey = Base64.getEncoder().encodeToString(spec.getEncoded());
+    	String returned = client.register(publicKey);
     	System.out.println(returned);
     }
     
@@ -152,7 +168,6 @@ public class AnnouncementServerClientApp {
     }
     
     // --- Checkings -------------------------------------
-
 
 	@SuppressWarnings("resource")
 	private static int userIntInput() {

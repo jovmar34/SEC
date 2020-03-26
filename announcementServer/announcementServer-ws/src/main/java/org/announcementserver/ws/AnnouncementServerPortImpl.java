@@ -36,22 +36,22 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 	}
 	
 	/* Post */
-	public String post(String publicKey, String message, String announcement) {
-		return AnnouncementServer.getInstance().post(publicKey, message, announcement);
+	public String post(String publicKey, String message, String announcementList) {
+		return AnnouncementServer.getInstance().post(publicKey, message, announcementList);
 	}
 	
 	/* Post General */
-	public String postGeneral(String publicKey, String message, String announcement) {
-		return AnnouncementServer.getInstance().postGeneral(publicKey, message, announcement);
+	public String postGeneral(String publicKey, String message, String announcementList) {
+		return AnnouncementServer.getInstance().postGeneral(publicKey, message, announcementList);
 	}
 	
 	/* Read */
-	public String read(String publicKey, String number) {
+	public String read(String publicKey, Long number) {
 		return AnnouncementServer.getInstance().read(publicKey, number);
 	}
 	
 	/* Read General */
-	public String readGeneral(String number) {
+	public String readGeneral(Long number) {
 		return AnnouncementServer.getInstance().readGeneral(number);
 	}
 	
