@@ -32,7 +32,7 @@ public class AnnouncementServer {
 	}
 	
 	/* Post */
-	public String post(String publicKey, String message, ArrayList refs) {
+	public String post(String publicKey, String message, String refs) {
 		//create a Post to personalBoard with message and parse the announcements I want to reference
 		ArrayList<Announcement> board= personalBoards.get(publicKey);
 		Announcement post = new Announcement();
@@ -46,7 +46,7 @@ public class AnnouncementServer {
 	}
 	
 	/* Post General */
-	public String postGeneral(String publicKey, String message, String announcement) {
+	public String postGeneral(String publicKey, String message, String refs) {
 		//create a Post with message and parse announcements I want to reference 
 		
 		//create a Post to personalBoard with message and parse the announcements I want to reference
