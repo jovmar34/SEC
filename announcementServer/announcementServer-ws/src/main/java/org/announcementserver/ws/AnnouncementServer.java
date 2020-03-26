@@ -35,7 +35,7 @@ public class AnnouncementServer {
 	public String post(String publicKey, String message, ArrayList refs) {
 		//create a Post to personalBoard with message and parse the announcements I want to reference
 		ArrayList<Announcement> board= personalBoards.get(publicKey);
-		Annoucement post = new Announcement();
+		Announcement post = new Announcement();
 		post.setContent(message);
 		post.setReferences(refs);
 		board.add(post);
@@ -62,50 +62,50 @@ public class AnnouncementServer {
 	}
 	
 	/* Read */
-	public ArrayList read(String publicKey, String number) {
+	public String read(String publicKey, String number) {
 		//number and PublicKey enough to find a post in PersonalBoards
 		
 		ArrayList<Announcement> board = personalBoards.get(publicKey); //get the personal board
-		
-		if(number==0) {
+		int nposts = Integer.parseInt(number);
+		if(nposts==0) {
 			return board;
 		}
 		
 		else {
-			ArrayList<Announcement> posts = new ArrayList<Announcement>(number);       //save the posts you want to see
+			ArrayList<Announcement> posts = new ArrayList<Announcement>(nposts);       //save the posts you want to see
 			
-			int stop= board.size()-number;						
+			int stop= board.size()-nposts;						
 			
 			for(int i = board.size()-1; i>stop-1; i--) {
 				posts.add(board.get(i));
-			
+			}
 			return posts;
 			
-		}
+		
 		}
 		
 		}
 	
 	/* Read General */
-	public ArrayList readGeneral(String number) {
+	public String readGeneral(String number) {
 		//number and PublicKey enough to find a post in GeneralBoard
 		ArrayList<Announcement> board = generalBoard; //get the personal board
-		
-		if(number==0) {
+		int nposts = Integer.parseInt(number);
+		if(nposts==0) {
 			return board;
 		}
 		
 		else {
-			ArrayList<Announcement> posts = new ArrayList<Annoucement>(number);       //save the posts you want to see
+			ArrayList<Announcement> posts = new ArrayList<Announcement>(nposts);       //save the posts you want to see
 			
-			int stop= board.size()-number;						
+			int stop= board.size()-nposts;						
 			
 			for(int i = board.size()-1; i>stop-1; i--) {
 				posts.add(board.get(i));
-			
+			}
 			return posts;
 			
-		}
+		
 		}
 	}
 }

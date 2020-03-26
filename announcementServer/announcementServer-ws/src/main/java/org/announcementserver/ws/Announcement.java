@@ -6,9 +6,14 @@ public class Announcement {
 	private String author;
 	private String content;
 	private Integer id;
-	private ArrayList<Announcement> references; 
+	private String references; 
 	
-	public Announcement(String auth, String cont, Integer id, ArrayList refs) {
+	
+	public Announcement() {
+		
+	}
+	
+	public Announcement(String auth, String cont, Integer id, String refs) {
 		this.author = auth;
 		this.content = cont;
 		this.id = id;
@@ -18,7 +23,7 @@ public class Announcement {
 	public void setContent(String cont) {
 		this.content=cont;
 	}
-	public void setReferences(ArrayList refs) {
+	public void setReferences(String refs) {
 		this.references=refs;
 	}
 }
