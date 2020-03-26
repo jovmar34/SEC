@@ -27,6 +27,7 @@ public class AnnouncementServerClientApp {
 	public static final String client1sha = "9bd915291749076d56d4198b4ea35003249be5c88acebce51fcf559d52bde24e";
 	public static final String client2sha = "4416f05dcc94e63edddd1e7459caefc6eb3137932ea64d446a08b2301aaefac6";
 	public static final String client3sha = "27d728e7c5ed0f593fce0b49518a9d470826cac65778c5b5d2e14e2302db7636";
+	public static String username;
 	
 	private static Menus menu = new Menus();
 	private static AnnouncementServerClient client = null;
@@ -54,7 +55,7 @@ public class AnnouncementServerClientApp {
     	
     	/* Authentication */
     	System.out.print("Provide your username: ");
-    	String username = userStringInput();
+    	username = userStringInput();
     	System.out.print("Password: ");
     	String pass = userStringInput();
     	
@@ -136,13 +137,8 @@ public class AnnouncementServerClientApp {
     public static void registerMenu() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
     	
     	/* Get public key */
-    	//System.out.println(Paths.get("client1pub.key").toAbsolutePath());
-    	byte[] keyBytes = Files.readAllBytes(Paths.get("src/main/resources/client1pub.key"));
-    	X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
-    	//KeyFactory kf = KeyFactory.getInstance("RSA");
-    	//PublicKey pk = kf.generatePublic(spec);
-    	
-    	String publicKey = Base64.getEncoder().encodeToString(spec.getEncoded());
+    	String publicKey = CryptoTools.getPublicKeyAsString("src/main/resources/"+username+"pub.key");
+ 
     	String returned = client.register(publicKey);
     	System.out.println(returned);
     }
