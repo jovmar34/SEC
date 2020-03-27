@@ -6,7 +6,7 @@ public class Announcement {
 	private String author;
 	private String content;
 	private Integer id;
-	private String references; 
+	private ArrayList<String> references; 
 	
 	
 	public Announcement() {
@@ -23,6 +23,11 @@ public class Announcement {
 	public void setContent(String cont) {
 		this.content=cont;
 	}
+	
+	public void addReference(String ref) {
+		this.references.add(ref);
+	}
+	
 	public void setReferences(String refs) {
 		this.references=refs;
 	}

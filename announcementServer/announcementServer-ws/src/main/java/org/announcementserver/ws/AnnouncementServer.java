@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class AnnouncementServer {
-	private ArrayList<Announcement> generalBoard;
+	private HashMap<String, Announcement> generalBoard;
 	private HashMap<String, ArrayList<Announcement>> personalBoards;
 	private static AnnouncementServer instance = null; //Singleton, maybe unnecessary
 	
@@ -22,40 +22,100 @@ public class AnnouncementServer {
 	
 	/* Register */
 	public  String register(String publicKey) {
-		//create a personalBoard for this user
-		String res = "";
+		
+		// TODO: assign association on file (client - pk)
+		
 		if (!personalBoards.containsKey(publicKey)) {
-			res += String.format("Welcome new user (pk: %s)! ", publicKey);
 			personalBoards.put(publicKey, new ArrayList<>());
+			return String.format("Welcome new user (pk: %s)! ", publicKey);;
+		
+		} else {
+			return "PublicKey provided is already associated! ";
 		}
-		return res + "ok";
 	}
 	
 	/* Post */
-	public String post(String publicKey, String message, String refs) {
-		//create a Post to personalBoard with message and parse the announcements I want to reference
-		ArrayList<Announcement> board= personalBoards.get(publicKey);
+	public String post(String publicKey, String message, List<String> announcementList) {
+		
+		String result = "";
+		
+		/* Verify existence of publicKey */
+		if (!personalBoards.containsKey(publicKey)) {
+			result = "Error: No such association for PublicKey sent.";
+			return result;
+		}
+		
+		/* Verify correct size of message */
+		if (!message.size()<=255) {
+			result = "Error: Too many characters in the message (max 255).";
+			return result;
+		}
+		
+		ArrayList<Announcement> board = personalBoards.get(publicKey);
 		Announcement post = new Announcement();
 		post.setContent(message);
-		post.setReferences(refs);
-		board.add(post);
-		String res= "New post submitted";
 		
-		return res;
+		/* Verify structure of announcementList */
+		for (String reference : announcementList) {
+			
+			// TODO: Make sure everything given exists and makes sense
+			//String[] parts = reference.split(";");
+			
+			//if (parts[0].equals("p")) { //personal board
+				
+				
+			//} else { //general board
+				
+			//}
+			
+			post.addReference(reference);
+		}
+		board.add(post);
+		
+		result = "Success";
+		return result;
 	}
 	
 	/* Post General */
-	public String postGeneral(String publicKey, String message, String refs) {
-		//create a Post with message and parse announcements I want to reference 
-	
+	public String postGeneral(String publicKey, String message, List<String> announcementList) {
+		
+		String result = "";
+		
+		/* Verify existence of publicKey */
+		if (!generalBoard.containsKey(publicKey)) {
+			result = "Error: No such association for PublicKey sent.";
+			return result;
+		}
+		
+		/* Verify correct size of message */
+		if (!message.size()<=255) {
+			result = "Error: Too many characters in the message (max 255).";
+			return result;
+		}
+		
 		Announcement post = new Announcement();
 		post.setContent(message);
-		post.setReferences(refs);
+		
+		/* Verify structure of announcementList */
+		for (String reference : announcementList) {
+			
+			// TODO: Make sure everything given exists and makes sense
+			
+			//String[] parts = reference.split(";");
+			
+			//if (parts[0].equals("p")) { //personal board
+				
+				
+			//} else { //general board
+				
+			//}
+			
+			post.addReference(reference);
+		}
 		generalBoard.add(post);
 				
-		String res= "New post submitted";
-				
-		return res;
+		result= "Success";
+		return result;
 	}
 	
 	/* Read */

@@ -57,12 +57,12 @@ public class AnnouncementServerClient {
 		return port.register(publicKey);
 	}
 	
-	public String post() {
-		return port.post("default", "default", "default");
+	public String post(String publicKey, String message, String announcementList) {
+		return port.post(publicKey, message, announcementList);
 	}
 	
-	public String postGeneral() {
-		return port.postGeneral("default", "default", "default");
+	public String postGeneral(String publicKey, String message, String announcementList) {
+		return port.postGeneral(publicKey, message, announcementList);
 	}
 	
 	public String read() {

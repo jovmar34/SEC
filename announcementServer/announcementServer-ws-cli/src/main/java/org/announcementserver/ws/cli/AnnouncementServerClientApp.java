@@ -136,21 +136,117 @@ public class AnnouncementServerClientApp {
     /* Register Menu */
     public static void registerMenu() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
     	
-    	/* Get public key */
+    	/* Get PublicKey */
     	String publicKey = CryptoTools.getPublicKeyAsString("src/main/resources/"+username+"pub.key");
  
     	String returned = client.register(publicKey);
     	System.out.println(returned);
+    	
+    	mainMenu();
     }
     
     /* Post Menu */
-    public static void postMenu() {
+    public static void postMenu() throws IOException {
+    	
     	menu.displayPostMenu();
+    	
+    	/* Get PublicKey */
+    	String publicKey = CryptoTools.getPublicKeyAsString("src/main/resources/"+username+"pub.key");
+    	
+    	/* Get Message */
+    	System.out.print("Message to send: ");
+    	String message = userStringInput();
+    	
+    	/* Get AnnouncementList */
+    	List<String> announcementList = new ArrayList<String>();
+    	int ok=1;
+    	while (!ok) {
+    		System.out.print("Do you want to make references? (Use 'y' for yes and 'n' for no): ");
+        	String ans = userStringInput();
+        	if (ans.equals("y") || ans.equals("n")) {
+        		ok = 0;
+        	} else {
+        		System.err.println("Error: Either use 'y' or 'n'");
+        	}
+    	}
+    	
+    	System.out.print("How many references would you like to make? (Use 0 for none): ");
+    	int nrefs = userIntInput();
+    	
+    	for (nrefs; nrefs>0; nrefs--) {
+    		System.out.print("Board Type (Use 'p' for public and 'g' for general): ");
+    		String boardType = userStringInput();
+    		System.out.print("UserId: ");
+    		String userId = userStringInput();
+    		System.out.print("AnnouncementId: ");
+    		String announcementId = userStringInput();
+    		
+    		String reference = "<"+boardType+">"+"<"+userId+">"+"<"+announcementId+">";
+    		announcementList.add(reference);
+    	}
+    	
+    	String returned = client.post(publicKey, message, announcementList);
+    	
+    	/* Verifying returned values */
+    	if (!returned.equals("Success")) { // In case something failed
+    		System.err.println(returned);
+    		System.err.println("Please repeat!");
+    		postMenu();
+    	} else { // In case of success
+    		System.out.println("Success, your post was posted!");
+    	}
     }
     
     /* Post General Menu */
-    public static void postGeneralMenu() {
+    public static void postGeneralMenu() throws IOException {
+    	
     	menu.displayPostGeneralMenu();
+    	
+    	/* Get PublicKey */
+    	String publicKey = CryptoTools.getPublicKeyAsString("src/main/resources"+username+"pub.key");
+    	
+    	/* Get Message */
+    	System.out.print("Message to send: ");
+    	String message = userStringInput();
+    	
+    	/* Get AnnouncementList */
+    	List<String> announcementList = new ArrayList<String>();
+    	int ok=1;
+    	while (!ok) {
+    		System.out.print("Do you want to make references? (Use 'y' for yes and 'n' for no): ");
+        	String ans = userStringInput();
+        	if (ans.equals("y") || ans.equals("n")) {
+        		ok = 0;
+        	} else {
+        		System.out.println("Error: Either use 'y' or 'n'");
+        	}
+    	}
+    	
+    	System.out.print("How many references would you like to make? (Use 0 for none): ");
+    	int nrefs = userIntInput();
+    	
+    	for (nrefs; nrefs>0; nrefs--) {
+    		System.out.print("Board Type (Use 'p' for public and 'g' for general): ");
+    		String boardType = userStringInput();
+    		System.out.print("UserId: ");
+    		String userId = userStringInput();
+    		System.out.print("AnnouncementId: ");
+    		String announcementId = userStringInput();
+    		
+    		String reference = boardType+";"+userId+";"+announcementId;
+    		announcementList.add(reference);
+    	}
+    	
+    	String returned = client.postGeneral(publicKey, message, announcementList);
+    	
+    	/* Verifying returned values */
+    	if (!returned.equals("Success")) { // In case something failed
+    		System.err.println(returned);
+    		System.err.println("Please repeat!");
+    		postGeneralMenu();
+    	} else { // In case of success
+    		System.out.println("Success, your post was posted");
+    	}
     }
     
     /* Read Menu */
