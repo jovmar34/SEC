@@ -12,8 +12,8 @@ public class ReadTest {
 	@Before
 	public void start() {
 		instance = AnnouncementServer.getInstance();
-		Announcement a1 = new Announcement("c1", "Testing Testing", 0, "");
-		Announcement a2 = new Announcement("c1", "New Testing", 1, "");
+		Announcement a1 = new Announcement("c1", "Testing Testing", "id1");
+		Announcement a2 = new Announcement("c1", "New Testing", "id2");
 		
 		instance.register("userkey");
 		instance.register("newkey");

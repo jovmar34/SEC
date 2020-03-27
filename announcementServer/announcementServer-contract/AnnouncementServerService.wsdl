@@ -56,7 +56,7 @@
   		<xs:sequence>
   		  	<xs:element minOccurs="0" name="publicKey" type="xs:string" />
   			<xs:element minOccurs="0" name="message" type="xs:string" />
-  			<xs:element minOccurs="0" name="announcementList" type="xs:string" />
+  			<xs:element minOccurs="0" name="announcementList" type="xs:string" maxOccurs="unbounded" />
   		</xs:sequence>
   	</xs:complexType>
   	<xs:complexType name="postResponse">
@@ -70,7 +70,7 @@
   		<xs:sequence>
   		  	<xs:element minOccurs="0" name="publicKey" type="xs:string" />
   			<xs:element minOccurs="0" name="message" type="xs:string" />
-  			<xs:element minOccurs="0" name="announcementList" type="xs:string" />
+  			<xs:element minOccurs="0" name="announcementList" type="xs:string" maxOccurs="unbounded" />
   		</xs:sequence>
   	</xs:complexType>
   	<xs:complexType name="postGeneralResponse">

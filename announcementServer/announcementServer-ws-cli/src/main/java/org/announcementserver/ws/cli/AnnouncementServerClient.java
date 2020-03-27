@@ -2,6 +2,7 @@ package org.announcementserver.ws.cli;
 
 import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
 import java.util.Map;
+import java.util.List;
 import javax.xml.ws.BindingProvider;
 import org.announcementserver.ws.*;
 
@@ -57,11 +58,11 @@ public class AnnouncementServerClient {
 		return port.register(publicKey);
 	}
 	
-	public String post(String publicKey, String message, String announcementList) {
+	public String post(String publicKey, String message, List<String> announcementList) {
 		return port.post(publicKey, message, announcementList);
 	}
 	
-	public String postGeneral(String publicKey, String message, String announcementList) {
+	public String postGeneral(String publicKey, String message, List<String> announcementList) {
 		return port.postGeneral(publicKey, message, announcementList);
 	}
 	

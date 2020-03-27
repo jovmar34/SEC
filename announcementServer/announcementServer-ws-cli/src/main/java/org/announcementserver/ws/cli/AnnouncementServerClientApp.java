@@ -11,6 +11,8 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Scanner;
 import org.announcementserver.utils.*;
 import com.google.common.hash.Hashing;
@@ -159,12 +161,12 @@ public class AnnouncementServerClientApp {
     	
     	/* Get AnnouncementList */
     	List<String> announcementList = new ArrayList<String>();
-    	int ok=1;
+    	boolean ok = true;
     	while (!ok) {
     		System.out.print("Do you want to make references? (Use 'y' for yes and 'n' for no): ");
         	String ans = userStringInput();
         	if (ans.equals("y") || ans.equals("n")) {
-        		ok = 0;
+        		ok = false;
         	} else {
         		System.err.println("Error: Either use 'y' or 'n'");
         	}
@@ -173,15 +175,15 @@ public class AnnouncementServerClientApp {
     	System.out.print("How many references would you like to make? (Use 0 for none): ");
     	int nrefs = userIntInput();
     	
-    	for (nrefs; nrefs>0; nrefs--) {
-    		System.out.print("Board Type (Use 'p' for public and 'g' for general): ");
+    	for (; nrefs>0; nrefs--) {
+    		System.out.print("Board Type (Use 'p' for personal and 'g' for general): ");
     		String boardType = userStringInput();
     		System.out.print("UserId: ");
     		String userId = userStringInput();
     		System.out.print("AnnouncementId: ");
     		String announcementId = userStringInput();
     		
-    		String reference = "<"+boardType+">"+"<"+userId+">"+"<"+announcementId+">";
+    		String reference = String.format("%sc%sa%s", boardType, userId, announcementId);
     		announcementList.add(reference);
     	}
     	
@@ -211,12 +213,12 @@ public class AnnouncementServerClientApp {
     	
     	/* Get AnnouncementList */
     	List<String> announcementList = new ArrayList<String>();
-    	int ok=1;
+    	boolean ok = true;
     	while (!ok) {
     		System.out.print("Do you want to make references? (Use 'y' for yes and 'n' for no): ");
         	String ans = userStringInput();
         	if (ans.equals("y") || ans.equals("n")) {
-        		ok = 0;
+        		ok = false;
         	} else {
         		System.out.println("Error: Either use 'y' or 'n'");
         	}
@@ -225,15 +227,15 @@ public class AnnouncementServerClientApp {
     	System.out.print("How many references would you like to make? (Use 0 for none): ");
     	int nrefs = userIntInput();
     	
-    	for (nrefs; nrefs>0; nrefs--) {
-    		System.out.print("Board Type (Use 'p' for public and 'g' for general): ");
+    	for (; nrefs>0; nrefs--) {
+    		System.out.print("Board Type (Use 'p' for personal and 'g' for general): ");
     		String boardType = userStringInput();
     		System.out.print("UserId: ");
     		String userId = userStringInput();
     		System.out.print("AnnouncementId: ");
     		String announcementId = userStringInput();
     		
-    		String reference = boardType+";"+userId+";"+announcementId;
+    		String reference = String.format("%sc%sa%s", boardType, userId, announcementId);
     		announcementList.add(reference);
     	}
     	

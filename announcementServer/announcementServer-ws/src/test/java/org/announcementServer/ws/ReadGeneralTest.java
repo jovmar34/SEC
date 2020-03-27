@@ -11,8 +11,8 @@ public class ReadGeneralTest {
 	@Before
 	public void start() {
 		instance = AnnouncementServer.getInstance();
-		a1 = new Announcement("c1", "Testing Testing", 0, "");
-		a2 = new Announcement("c1", "New Testing", 1, "");
+		a1 = new Announcement("c1", "Testing Testing", "id1");
+		a2 = new Announcement("c1", "New Testing", "id2");
 	}
 	
 	@Test
