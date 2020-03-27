@@ -121,45 +121,56 @@ public class AnnouncementServer {
 	/* Read */
 	public String read(String publicKey, Long number) {
 		//number and PublicKey enough to find a post in PersonalBoards
+		if (number < 0) return "Invalid number";
+		
+		if (!personalBoards.containsKey(publicKey)) return "Unknown user";
 		
 		ArrayList<Announcement> board = personalBoards.get(publicKey); //get the personal board
-		int nposts = number.intValue();
-		if(number==0) {
-			return board;
+		
+		if (board.isEmpty()) return "No posts";
+		
+		if (number > board.size()) return "Not enough posts";
+	
+		String res = "";      //save the posts you want to see
+		int end = board.size() - 1;
+		
+		for(int i = 0; i < number; i++) {
+			res += board.get(end - i).toString();
 		}
 		
-		else {
-			ArrayList<Announcement> posts = new ArrayList<Announcement>(nposts);       //save the posts you want to see
-			
-			int stop= board.size()-nposts;						
-			
-			for(int i = board.size()-1; i>stop-1; i--) {
-				posts.add(board.get(i));
-			}
-			return posts;
-		}
+		return res;
 	}
 	
 	/* Read General */
 	public String readGeneral(Long number) {
 		//number and PublicKey enough to find a post in GeneralBoard
-		ArrayList<Announcement> board = generalBoard; //get the personal board
-		int nposts = number.intValue();
-		if(nposts==0) {
-			return board;
+		if (number < 0) return "Invalid number";
+		
+		if (generalBoard.isEmpty()) return "No posts";
+		
+		if (number > generalBoard.size()) return "Not enough posts";
+
+		String res = "";      //save the posts you want to see
+		int end = generalBoard.size() - 1;
+		
+		for(int i = 0; i < number; i++) {
+			res += generalBoard.get(end - i).toString();
 		}
 		
-		else {
-			ArrayList<Announcement> posts = new ArrayList<Announcement>(nposts);       //save the posts you want to see
-			
-			int stop= board.size()-nposts;						
-			
-			for(int i = board.size()-1; i>stop-1; i--) {
-				posts.add(board.get(i));
-			}
-			return posts;
-			
-		
-		}
+		return res;
+	}
+	
+	/* For testing purposes */
+	public void putGeneral(Announcement ann) {
+		generalBoard.add(ann);
+	}
+	
+	public void putPersonal(String publicKey, Announcement ann) {
+		personalBoards.get(publicKey).add(ann);
+	}
+	
+	public void clean() {
+		personalBoards.clear();
+		generalBoard.clear();
 	}
 }

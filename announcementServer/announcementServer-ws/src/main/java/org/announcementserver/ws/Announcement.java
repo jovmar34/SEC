@@ -1,7 +1,5 @@
 package org.announcementserver.ws;
 
-import java.util.ArrayList;
-
 public class Announcement {
 	private String author;
 	private String content;
@@ -30,5 +28,10 @@ public class Announcement {
 	
 	public void setReferences(String refs) {
 		this.references=refs;
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("auth: %s, id: %d\n  text: \"%s\"\n  references: %s\n\n", this.author, this.id, this.content, this.references);
 	}
 }
