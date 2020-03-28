@@ -50,7 +50,7 @@ public class AnnouncementServer {
 			return String.format("Welcome new user (pk: %s)! ", publicKey);
 		
 		} else {
-			return "PublicKey provided is already associated! ";
+			return "PublicKey provided is already associated!";
 		}
 	}
 	

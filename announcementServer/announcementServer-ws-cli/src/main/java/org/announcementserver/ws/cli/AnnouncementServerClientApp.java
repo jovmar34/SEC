@@ -29,7 +29,7 @@ public class AnnouncementServerClientApp {
 	public static final String client1sha = "9bd915291749076d56d4198b4ea35003249be5c88acebce51fcf559d52bde24e";
 	public static final String client2sha = "4416f05dcc94e63edddd1e7459caefc6eb3137932ea64d446a08b2301aaefac6";
 	public static final String client3sha = "27d728e7c5ed0f593fce0b49518a9d470826cac65778c5b5d2e14e2302db7636";
-	public static String username;
+	public static String username = "";
 	
 	private static Menus menu = new Menus();
 	private static AnnouncementServerClient client = null;
@@ -49,11 +49,10 @@ public class AnnouncementServerClientApp {
         client = new AnnouncementServerClient(wsURL);
     	
         // Start of Interaction
-    	mainMenu();
+    	authenticationMenu();
     }
     
-    /* Main Menu */
-    private static void mainMenu() throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {
+    private static void authenticationMenu() throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {
     	
     	/* Authentication */
     	System.out.print("Provide your username: ");
@@ -65,31 +64,46 @@ public class AnnouncementServerClientApp {
     		
     		String hash = Hashing.sha256().hashString(pass, StandardCharsets.UTF_8).toString();
     		if (!hash.equals(client1sha)) {
+    			System.out.println(RED_BOLD_BRIGHT);
     			System.err.println("Wrong password! Try again.");
-    			mainMenu();
+    			System.out.println(RESET);
+    			authenticationMenu();
     		}
     	}
     	else if (username.equals("client2")) {
     		
     		String hash = Hashing.sha256().hashString(pass, StandardCharsets.UTF_8).toString();
     		if (!hash.equals(client2sha)) {
+    			System.out.println(RED_BOLD_BRIGHT);
     			System.err.println("Wrong password! Try again.");
-    			mainMenu();
+    			System.out.println(RESET);
+    			authenticationMenu();
     		}
     	}
     	else if (username.equals("client3")) {
     		
     		String hash = Hashing.sha256().hashString(pass, StandardCharsets.UTF_8).toString();
     		if (!hash.equals(client3sha)) {
+    			System.out.println(RED_BOLD_BRIGHT);
     			System.err.println("Wrong password! Try again.");
-    			mainMenu();
+    			System.out.println(RESET);
+    			authenticationMenu();
     		}
     	} else {
+    		System.out.println(RED_BOLD_BRIGHT);
     		System.err.println("Wrong username!");
-    		mainMenu();
+    		System.out.println(RESET);
+    		authenticationMenu();
     	}
     	
+    	System.out.println(GREEN_BOLD_BRIGHT);
     	System.out.println("Sucessfull authentication! Welcome!");
+    	System.out.println(RESET);
+    	mainMenu();
+    }
+    
+    /* Main Menu */
+    private static void mainMenu() throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {
     	
     	final int NCHOICES = 6;
     	int menuItem = -1;
@@ -100,7 +114,9 @@ public class AnnouncementServerClientApp {
     	try {
     		menuItem = userIntInput();
     	} catch (Exception e) {
+    		System.out.println(RED_BOLD_BRIGHT);
     		System.err.println("Must be a number!");
+    		System.out.println(RESET);
     		mainMenu();
     	}
     	
@@ -130,7 +146,9 @@ public class AnnouncementServerClientApp {
     		menu.displayExitMenu();
     		System.exit(0);
     	default:
+    		System.out.println(RED_BOLD_BRIGHT);
     		System.err.println("Invalid choice.\nMust be a number between 1 and " + NCHOICES);
+    		System.out.println(RESET);
     		mainMenu();
     	}
     }
@@ -142,13 +160,22 @@ public class AnnouncementServerClientApp {
     	String publicKey = CryptoTools.getPublicKeyAsString("src/main/resources/"+username+"pub.key");
  
     	String returned = client.register(publicKey);
-    	System.out.println(returned);
+    	
+    	if (returned.equals("PublicKey provided is already associated!")) {
+    		System.out.println(RED_BOLD_BRIGHT);
+    		System.out.println(returned);
+    		System.out.println(RESET);
+    	} else {
+    		System.out.println(GREEN_BOLD_BRIGHT);
+    		System.out.println(returned);
+    		System.out.println(RESET);
+    	}
     	
     	mainMenu();
     }
     
     /* Post Menu */
-    public static void postMenu() throws IOException {
+    public static void postMenu() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
     	
     	menu.displayPostMenu();
     	
@@ -168,7 +195,9 @@ public class AnnouncementServerClientApp {
         	if (ans.equals("y") || ans.equals("n")) {
         		ok = false;
         	} else {
+        		System.out.println(RED_BOLD_BRIGHT);
         		System.err.println("Error: Either use 'y' or 'n'");
+        		System.out.println(RESET);
         	}
     	}
     	
@@ -191,21 +220,27 @@ public class AnnouncementServerClientApp {
     	
     	/* Verifying returned values */
     	if (!returned.equals("Success")) { // In case something failed
+    		System.out.println(RED_BOLD_BRIGHT);
     		System.err.println(returned);
     		System.err.println("Please repeat!");
-    		postMenu();
+    		System.out.println(RESET);
+    		mainMenu();
     	} else { // In case of success
+    		System.out.println(GREEN_BOLD_BRIGHT);
     		System.out.println("Success, your post was posted!");
+    		System.out.println(RESET);
     	}
+    	
+    	mainMenu();
     }
     
     /* Post General Menu */
-    public static void postGeneralMenu() throws IOException {
+    public static void postGeneralMenu() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
     	
     	menu.displayPostGeneralMenu();
     	
     	/* Get PublicKey */
-    	String publicKey = CryptoTools.getPublicKeyAsString("src/main/resources"+username+"pub.key");
+    	String publicKey = CryptoTools.getPublicKeyAsString("src/main/resources/"+username+"pub.key");
     	
     	/* Get Message */
     	System.out.print("Message to send: ");
@@ -220,7 +255,9 @@ public class AnnouncementServerClientApp {
         	if (ans.equals("y") || ans.equals("n")) {
         		ok = false;
         	} else {
+        		System.out.println(RED_BOLD_BRIGHT);
         		System.out.println("Error: Either use 'y' or 'n'");
+        		System.out.println(RESET);
         	}
     	}
     	
@@ -243,22 +280,68 @@ public class AnnouncementServerClientApp {
     	
     	/* Verifying returned values */
     	if (!returned.equals("Success")) { // In case something failed
+    		System.out.println(RED_BOLD_BRIGHT);
     		System.err.println(returned);
     		System.err.println("Please repeat!");
-    		postGeneralMenu();
+    		System.out.println(RESET);
+    		mainMenu();
     	} else { // In case of success
+    		System.out.println(GREEN_BOLD_BRIGHT);
     		System.out.println("Success, your post was posted");
+    		System.out.println(RESET);
     	}
+    	
+    	mainMenu();
     }
     
     /* Read Menu */
-    public static void readMenu() {
+    public static void readMenu() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
     	menu.displayReadMenu();
+    	
+    	/* Get PublicKey */
+    	String publicKey = CryptoTools.getPublicKeyAsString("src/main/resources/"+username+"pub.key");
+    	
+    	System.out.print("Number of posts to read (use 0 for all): ");
+    	int number = userIntInput();
+    	
+    	String returned = client.read(publicKey, Long.valueOf(number));
+    	
+    	/* Verification of returned values */
+    	if (returned.equals("Invalid number") || returned.equals("Unknown user") || returned.equals("No posts") || returned.equals("Not enough posts")) {
+    		System.out.println(RED_BOLD_BRIGHT);
+    		System.out.println(returned);
+    		System.out.println(RESET);
+    	} else {
+    		System.out.println(GREEN_BOLD_BRIGHT);
+    		System.out.println(returned);
+    		System.out.println(RESET);
+    	}
+    	
+    	mainMenu();
     }
     
     /* Read General Menu */
-    public static void readGeneralMenu() {
+    public static void readGeneralMenu() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
     	menu.displayReadGeneralMenu();
+    	
+    	System.out.print("Number of posts to read (use 0 for all): ");
+    	int number = userIntInput();
+    	
+    	String returned = client.readGeneral(Long.valueOf(number));
+    	
+    	/* Verification of returned values */
+    	if (returned.equals("Invalid number") || returned.equals("No posts") || returned.equals("Not enough posts")) {
+    		System.out.println(RED_BOLD_BRIGHT);
+    		System.out.println(returned);
+    		System.out.println(RESET);
+    	} else {
+    		System.out.println(GREEN_BOLD_BRIGHT);
+    		System.out.println(returned);
+    		System.out.println(RESET);
+    	}
+    	
+    	
+    	mainMenu();
     }
     
     // --- Checkings -------------------------------------

@@ -66,12 +66,12 @@ public class AnnouncementServerClient {
 		return port.postGeneral(publicKey, message, announcementList);
 	}
 	
-	public String read() {
-		return port.read("default", Long.parseLong("1"));
+	public String read(String publicKey, Long number) {
+		return port.read(publicKey, number);
 	}
 	
-	public String readGeneral() {
-		return port.readGeneral(Long.parseLong("1"));
+	public String readGeneral(Long number) {
+		return port.readGeneral(number);
 	}
 	
 }
