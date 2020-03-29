@@ -1,6 +1,9 @@
 package org.announcementServer.ws;
 
 import org.announcementserver.ws.AnnouncementServer;
+import org.announcementserver.exceptions.EmptyBoardException;
+import org.announcementserver.exceptions.InvalidNumberException;
+import org.announcementserver.exceptions.NumberPostsException;
 import org.announcementserver.ws.Announcement;
 import org.junit.*;
 
@@ -16,7 +19,7 @@ public class ReadGeneralTest {
 	}
 	
 	@Test
-	public void readNormal() {
+	public void readNormal() throws InvalidNumberException, EmptyBoardException, NumberPostsException {
 		// nothing bad should happen
 		instance.putGeneral(a1);
 		
@@ -24,7 +27,7 @@ public class ReadGeneralTest {
 	}
 	
 	@Test
-	public void readNormal2() {
+	public void readNormal2() throws InvalidNumberException, EmptyBoardException, NumberPostsException {
 		// nothing bad should happen
 		instance.putGeneral(a1);
 		instance.putGeneral(a2);
@@ -33,13 +36,13 @@ public class ReadGeneralTest {
 	}
 	
 	@Test
-	public void noPosts() {
+	public void noPosts() throws InvalidNumberException, EmptyBoardException, NumberPostsException {
 		// user is not known
 		Assert.assertEquals("No posts", instance.readGeneral(new Long(1)));
 	}
 	
 	@Test
-	public void notEnough() {
+	public void notEnough() throws InvalidNumberException, EmptyBoardException, NumberPostsException {
 		// user is not known
 		instance.putGeneral(a1);
 		instance.putGeneral(a2);
@@ -48,7 +51,7 @@ public class ReadGeneralTest {
 	}
 	
 	@Test
-	public void invalidRead() {
+	public void invalidRead() throws InvalidNumberException, EmptyBoardException, NumberPostsException {
 		// user is not known
 		Assert.assertEquals("Invalid number", instance.readGeneral(new Long(-1)));
 	}

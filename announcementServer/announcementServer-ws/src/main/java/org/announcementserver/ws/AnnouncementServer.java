@@ -7,6 +7,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 
+import org.announcementserver.exceptions.EmptyBoardException;
+import org.announcementserver.exceptions.InvalidNumberException;
+import org.announcementserver.exceptions.MessageSizeException;
+import org.announcementserver.exceptions.NumberPostsException;
+import org.announcementserver.exceptions.PostTypeException;
+import org.announcementserver.exceptions.ReferredAnnouncementException;
+import org.announcementserver.exceptions.ReferredUserException;
+import org.announcementserver.exceptions.UserNotRegisteredException;
+
 public class AnnouncementServer {
 	private HashMap<Integer, String> pks; // client id => public key association
 	private HashMap<String, Integer> clients; // public key => client id association (OVERKILL?) FIXME
@@ -46,20 +55,19 @@ public class AnnouncementServer {
 	}
 	
 	/* Post */
-	public String post(String publicKey, String message, List<String> announcementList) {
+	public String post(String publicKey, String message, List<String> announcementList) throws UserNotRegisteredException, MessageSizeException, ReferredUserException, PostTypeException, ReferredAnnouncementException {
 		
 		String result;
 		
 		/* Verify existence of publicKey */
-		if (!personalBoards.containsKey(publicKey)) {
-			result = "Error: No such association for PublicKey sent.";
-			return result;
+		if (!personalBoards.containsKey(publicKey))  {
+			throw new UserNotRegisteredException("User is already registered");
+			
 		}
 		
 		/* Verify correct size of message */
 		if (message.length() > 255) {
-			result = "Error: Too many characters in the message (max 255).";
-			return result;
+			throw new MessageSizeException("Too many characters in the message (max:255)");
 		}
 		
 		ArrayList<Announcement> board = personalBoards.get(publicKey);
@@ -72,20 +80,17 @@ public class AnnouncementServer {
 			String pk = pks.get(Integer.parseInt(parts[1]));
 			
 			if (!personalBoards.containsKey(pk)) {
-				result = "Error: post in reference doesn't exist";
-				return result;
+				throw new ReferredUserException("Referred user doesn’t exist");
 			}
 			
 			if (parts[0] == "p") {								
 				if (personalBoards.get(pk).size() < Integer.parseInt(parts[2])) {
-					result = "Error: post in reference doesn't exist";
-					return result;
+					throw new ReferredAnnouncementException("The referred announcement doesn’t exist");
 				}
 				
 			} else if (parts[0] == "g") {
 				if (generalBoard.size() < Integer.parseInt(parts[2])) {
-					result = "Error: post in reference doesn't exist";
-					return result;
+					throw new ReferredAnnouncementException("The referred announcement doesn’t exist");
 				}
 			}
 			
@@ -103,20 +108,18 @@ public class AnnouncementServer {
 	}
 	
 	/* Post General */
-	public String postGeneral(String publicKey, String message, List<String> announcementList) {
+	public String postGeneral(String publicKey, String message, List<String> announcementList) throws UserNotRegisteredException, MessageSizeException, ReferredUserException, ReferredAnnouncementException, PostTypeException {
 		
 		String result = "";
 		
 		/* Verify existence of publicKey */
 		if (!personalBoards.containsKey(publicKey)) {
-			result = "Error: No such association for PublicKey sent.";
-			return result;
+			throw new UserNotRegisteredException("User is already registered");
 		}
 		
 		/* Verify correct size of message */
 		if (message.length() > 255) {
-			result = "Error: Too many characters in the message (max 255).";
-			return result;
+			throw new MessageSizeException("Too many characters in the message (max:255)");
 		}
 		
 		Announcement post = new Announcement();
@@ -128,24 +131,20 @@ public class AnnouncementServer {
 			String pk = pks.get(Integer.parseInt(parts[1]));
 			
 			if (!personalBoards.containsKey(pk)) {
-				result = "Error: post in reference doesn't exist";
-				return result;
+				throw new ReferredUserException("Referred user doesn’t exist");
 			}
 			
 			if (parts[0] == "p") {								
 				if (personalBoards.get(pk).size() < Integer.parseInt(parts[2])) {
-					result = "Error: post in reference doesn't exist";
-					return result;
+					throw new ReferredAnnouncementException("The referred announcement doesn’t exist");
 				}
 				
 			} else if (parts[0] == "g") {
 				if (generalBoard.size() < Integer.parseInt(parts[2])) {
-					result = "Error: post in reference doesn't exist";
-					return result;
+					throw new ReferredAnnouncementException("The referred announcement doesn’t exist");
 				}
 			} else {
-				result = "Error: type of post in reference incorrect";
-				return result;
+				throw new PostTypeException("The type of post in reference is incorrect");
 			}
 			
 			post.addReference(reference);
@@ -161,17 +160,17 @@ public class AnnouncementServer {
 	}
 	
 	/* Read */
-	public String read(String publicKey, Long number) {
+	public String read(String publicKey, Long number) throws InvalidNumberException, ReferredUserException, EmptyBoardException, NumberPostsException {
 		//number and PublicKey enough to find a post in PersonalBoards
-		if (number < 0) return "Invalid number";
+		if (number < 0) throw new InvalidNumberException("Invalid number");
 		
-		if (!personalBoards.containsKey(publicKey)) return "Unknown user";
+		if (!personalBoards.containsKey(publicKey)) throw new ReferredUserException("Referred user doesn’t exist");
 		
 		ArrayList<Announcement> board = personalBoards.get(publicKey); //get the personal board
 		
-		if (board.isEmpty()) return "No posts";
+		if (board.isEmpty()) throw new EmptyBoardException("The board has no posts");
 		
-		if (number > board.size()) return "Not enough posts";
+		if (number > board.size()) throw new NumberPostsException("The board doesn't have that many posts");
 	
 		String res = "";      //save the posts you want to see
 		int end = board.size() - 1;
@@ -186,13 +185,13 @@ public class AnnouncementServer {
 	}
 	
 	/* Read General */
-	public String readGeneral(Long number) {
+	public String readGeneral(Long number) throws InvalidNumberException, EmptyBoardException, NumberPostsException {
 		//number and PublicKey enough to find a post in GeneralBoard
-		if (number < 0) return "Invalid number";
+		if (number < 0) throw new InvalidNumberException("Invalid number");
 		
-		if (generalBoard.isEmpty()) return "No posts";
+		if (generalBoard.isEmpty()) throw new EmptyBoardException("The board has no posts");
 		
-		if (number > generalBoard.size()) return "Not enough posts";
+		if (number > generalBoard.size()) throw new NumberPostsException("The board doesn't have that many posts");
 
 		String res = "";      //save the posts you want to see
 		int end = generalBoard.size() - 1;
