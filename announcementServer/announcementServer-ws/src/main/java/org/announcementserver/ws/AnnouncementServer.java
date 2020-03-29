@@ -47,6 +47,9 @@ public class AnnouncementServer {
 		
 		if (!personalBoards.containsKey(publicKey)) {
 			personalBoards.put(publicKey, new ArrayList<>());
+			int clientID = personalBoards.size();
+			clients.put(publicKey, clientID );
+			pks.put(clientID, publicKey);
 			return String.format("Welcome new user (pk: %s)! ", publicKey);
 		
 		} else {
