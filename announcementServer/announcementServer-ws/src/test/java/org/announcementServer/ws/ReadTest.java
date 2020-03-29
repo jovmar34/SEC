@@ -5,6 +5,7 @@ import org.announcementserver.exceptions.EmptyBoardException;
 import org.announcementserver.exceptions.InvalidNumberException;
 import org.announcementserver.exceptions.NumberPostsException;
 import org.announcementserver.exceptions.ReferredUserException;
+import org.announcementserver.exceptions.UserAlreadyRegisteredException;
 import org.announcementserver.ws.Announcement;
 import org.junit.*;
 
@@ -14,7 +15,7 @@ public class ReadTest {
 	AnnouncementServer instance;
 	
 	@Before
-	public void start() {
+	public void start() throws UserAlreadyRegisteredException {
 		instance = AnnouncementServer.getInstance();
 		Announcement a1 = new Announcement("c1", "Testing Testing", "id1");
 		Announcement a2 = new Announcement("c1", "New Testing", "id2");

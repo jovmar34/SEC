@@ -23,9 +23,20 @@
   <types>
   	<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://ws.announcementserver.org/" version="1.0">
   	
+	<xs:element name="UserAlreadyRegisteredFault" type="tns:UserAlreadyRegisteredFault" />
+	<!--<xs:element name="EmptyCartFault" type="tns:EmptyCartFault" />
+	<xs:element name="EmptyCartFault" type="tns:EmptyCartFault" />
+	<xs:element name="EmptyCartFault" type="tns:EmptyCartFault" />
+	<xs:element name="EmptyCartFault" type="tns:EmptyCartFault" />
+	<xs:element name="EmptyCartFault" type="tns:EmptyCartFault" />
+	<xs:element name="EmptyCartFault" type="tns:EmptyCartFault" />
+	<xs:element name="EmptyCartFault" type="tns:EmptyCartFault" />
+	<xs:element name="EmptyCartFault" type="tns:EmptyCartFault" />
+	-->
+
   	<xs:element name="register" type="tns:register" />
   	<xs:element name="registerResponse" type="tns:registerResponse" />
-  	
+
   	<xs:element name="post" type="tns:post" />
   	<xs:element name="postResponse" type="tns:postResponse" />
   	
@@ -103,6 +114,12 @@
   			<xs:element minOccurs="0" name="return" type="xs:string" />
   		</xs:sequence>
   	</xs:complexType>
+
+	<xs:complexType name="UserAlreadyRegisteredFault">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="message" type="xs:string" />
+        </xs:sequence>
+    </xs:complexType>
   	
   	</xs:schema>
   </types>
@@ -142,7 +159,28 @@
   <message name="readGeneralResponse">
   	<part element="tns:readGeneralResponse" name="parameters" />
   </message>
+
+  <message name="UserAlreadyRegisteredFault">
+    <part name="fault" element="tns:UserAlreadyRegisteredFault" /> 
+  </message>
+
+  <!--
+  <message name="UserNotRegisteredFault">
+  	<part element="tns:UserNotRegisteredFault" name="fault" />
+  </message>
   
+  <message name="MessageSizeFault">
+  	<part element="tns:UserAlreadyRegisteredFaultException" name="fault" />
+  </message>
+
+  <message name="ReferredUserFault">
+  	<part element="tns:UserAlreadyRegisteredFaultException" name="fault" />
+  </message>
+
+  <message name="UserAlreadyRegisteredFaultException">
+  	<part element="tns:UserAlreadyRegisteredFaultException" name="fault" />
+  </message>
+  -->
   
   <!--  Port type (interface). -->
   <!--  Each operation has input, output and fault messages. -->
@@ -150,7 +188,8 @@
   	<operation name="register">
   		<input message="tns:register" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/register" />
   		<output message="tns:registerResponse" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/registerResponse" />
-  	</operation>
+		<fault message="tns:UserAlreadyRegisteredFault" name="UserAlreadyRegisteredFault" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/register/Fault/UserAlreadyRegisteredFault" />
+	</operation>
   	
   	<operation name="post">
   		<input message="tns:post" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/post" />
@@ -186,6 +225,9 @@
   		<output>
   			<soap:body use="literal" />
   		</output>
+		<fault name="UserAlreadyRegisteredFault">
+			<soap:fault name="UserAlreadyRegisteredFault" use="literal" /> 
+		</fault>
   	</operation>
   	
   	<operation name="post">

@@ -15,6 +15,7 @@ import org.announcementserver.exceptions.PostTypeException;
 import org.announcementserver.exceptions.ReferredAnnouncementException;
 import org.announcementserver.exceptions.ReferredUserException;
 import org.announcementserver.exceptions.UserNotRegisteredException;
+import org.announcementserver.exceptions.UserAlreadyRegisteredException;
 
 public class AnnouncementServer {
 	private HashMap<Integer, String> pks; // client id => public key association
@@ -38,7 +39,7 @@ public class AnnouncementServer {
 	}
 	
 	/* Register */
-	public  String register(String publicKey) {
+	public String register(String publicKey) throws UserAlreadyRegisteredException {
 		
 		// TODO: assign association on file (client - pk)
 		
@@ -50,7 +51,7 @@ public class AnnouncementServer {
 			return "Welcome new user!";
 		
 		} else {
-			return "PublicKey provided is already associated!";
+			throw new UserAlreadyRegisteredException("User is already registered");
 		}
 	}
 	
@@ -61,7 +62,7 @@ public class AnnouncementServer {
 		
 		/* Verify existence of publicKey */
 		if (!personalBoards.containsKey(publicKey))  {
-			throw new UserNotRegisteredException("User is already registered");
+			throw new UserNotRegisteredException("User is not registered yet");
 			
 		}
 		
