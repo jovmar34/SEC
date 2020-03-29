@@ -26,18 +26,6 @@ public class AnnouncementServer {
 		this.personalBoards = new HashMap<>();
 		this.clients = new HashMap<>();
 		this.pks = new HashMap<>();
-		
-		try {
-			File f = new File("src/main/resources/clients.txt");
-			Scanner scan = new Scanner(f);
-			while (scan.hasNextLine()) {
-				String[] data = scan.nextLine().split(" ");
-				this.pks.put(Integer.parseInt(data[0]), data[1]);
-				this.clients.put(data[1], Integer.parseInt(data[0]));
-			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-	    }
 	}
 	
 	/* Register */
@@ -50,7 +38,7 @@ public class AnnouncementServer {
 			int clientID = personalBoards.size();
 			clients.put(publicKey, clientID );
 			pks.put(clientID, publicKey);
-			return String.format("Welcome new user (pk: %s)! ", publicKey);
+			return "Welcome new user!";
 		
 		} else {
 			return "PublicKey provided is already associated!";
@@ -188,7 +176,9 @@ public class AnnouncementServer {
 		String res = "";      //save the posts you want to see
 		int end = board.size() - 1;
 		
-		for(int i = 0; i < number; i++) {
+		Long limit = (number == 0) ? board.size() : number;
+		
+		for(int i = 0; i < limit; i++) {
 			res += board.get(end - i).toString();
 		}
 		
@@ -207,7 +197,9 @@ public class AnnouncementServer {
 		String res = "";      //save the posts you want to see
 		int end = generalBoard.size() - 1;
 		
-		for(int i = 0; i < number; i++) {
+		Long limit = (number == 0) ? generalBoard.size() : number;
+		
+		for(int i = 0; i < limit; i++) {
 			res += generalBoard.get(end - i).toString();
 		}
 		

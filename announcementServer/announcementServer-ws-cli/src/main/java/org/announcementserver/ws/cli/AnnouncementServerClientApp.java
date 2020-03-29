@@ -157,7 +157,7 @@ public class AnnouncementServerClientApp {
     public static void registerMenu() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
     	
     	/* Get PublicKey */
-    	String publicKey = CryptoTools.getPublicKeyAsString("src/main/resources/"+username+"pub.key");
+    	String publicKey = CryptoTools.pubKeyAsString("src/main/resources/"+username+"pub.der");
  
     	String returned = client.register(publicKey);
     	
@@ -180,7 +180,7 @@ public class AnnouncementServerClientApp {
     	menu.displayPostMenu();
     	
     	/* Get PublicKey */
-    	String publicKey = CryptoTools.getPublicKeyAsString("src/main/resources/"+username+"pub.key");
+    	String publicKey = CryptoTools.pubKeyAsString("src/main/resources/"+username+"pub.der");
     	
     	/* Get Message */
     	System.out.print("Message to send: ");
@@ -240,7 +240,7 @@ public class AnnouncementServerClientApp {
     	menu.displayPostGeneralMenu();
     	
     	/* Get PublicKey */
-    	String publicKey = CryptoTools.getPublicKeyAsString("src/main/resources/"+username+"pub.key");
+    	String publicKey = CryptoTools.getPublicKeyAsString("src/main/resources/"+username+"pub.der");
     	
     	/* Get Message */
     	System.out.print("Message to send: ");
@@ -299,7 +299,7 @@ public class AnnouncementServerClientApp {
     	menu.displayReadMenu();
     	
     	/* Get PublicKey */
-    	String publicKey = CryptoTools.getPublicKeyAsString("src/main/resources/"+username+"pub.key");
+    	String publicKey = CryptoTools.getPublicKeyAsString("src/main/resources/"+username+"pub.der");
     	
     	System.out.print("Number of posts to read (use 0 for all): ");
     	int number = userIntInput();
