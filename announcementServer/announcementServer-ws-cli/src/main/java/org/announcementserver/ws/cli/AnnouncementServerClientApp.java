@@ -15,9 +15,9 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-import org.announcementserver.exceptions.*;
 import org.announcementserver.utils.CryptoTools;
 import org.announcementserver.utils.Menus;
+import org.announcementserver.ws.*;
 
 import com.google.common.hash.Hashing;
 
@@ -162,17 +162,11 @@ public class AnnouncementServerClientApp {
     	
     	/* Get PublicKey */
     	String publicKey = CryptoTools.pubKeyAsString("src/main/resources/"+username+"pub.der");
- 
-    	String returned = client.register(publicKey);
     	
-    	if (returned.equals("PublicKey provided is already associated!")) {
-    		System.out.println(RED_BOLD_BRIGHT);
-    		System.out.println(returned);
-    		System.out.println(RESET);
-    	} else {
-    		System.out.println(GREEN_BOLD_BRIGHT);
-    		System.out.println(returned);
-    		System.out.println(RESET);
+    	try {
+    		printSuccess(client.register(publicKey));
+    	} catch (UserAlreadyRegisteredFault_Exception e) {
+    		printError(e.getMessage());
     	}
     	
     	mainMenu();
@@ -199,9 +193,7 @@ public class AnnouncementServerClientApp {
         	if (ans.equals("y") || ans.equals("n")) {
         		ok = false;
         	} else {
-        		System.out.println(RED_BOLD_BRIGHT);
-        		System.err.println("Error: Either use 'y' or 'n'");
-        		System.out.println(RESET);
+        		printError("Error: Either use 'y' or 'n'");
         	}
     	}
     	
@@ -220,20 +212,12 @@ public class AnnouncementServerClientApp {
     		announcementList.add(reference);
     	}
     	
-    	String returned = client.post(publicKey, message, announcementList);
-    	
-    	/* Verifying returned values */
-    	if (!returned.equals("Success")) { // In case something failed
-    		System.out.println(RED_BOLD_BRIGHT);
-    		System.err.println(returned);
-    		System.err.println("Please repeat!");
-    		System.out.println(RESET);
-    		mainMenu();
-    	} else { // In case of success
-    		System.out.println(GREEN_BOLD_BRIGHT);
-    		System.out.println("Success, your post was posted!");
-    		System.out.println(RESET);
-    	}
+    	try {
+    		printSuccess(client.post(publicKey, message, announcementList));
+    	} catch ( MessageSizeFault_Exception | PostTypeFault_Exception | ReferredAnnouncementFault_Exception
+    			| ReferredUserFault_Exception | UserNotRegisteredFault_Exception e) {
+    		printError(e.getMessage() + "\nTry again");
+    	} 
     	
     	mainMenu();
     }
@@ -259,9 +243,7 @@ public class AnnouncementServerClientApp {
         	if (ans.equals("y") || ans.equals("n")) {
         		ok = false;
         	} else {
-        		System.out.println(RED_BOLD_BRIGHT);
-        		System.out.println("Error: Either use 'y' or 'n'");
-        		System.out.println(RESET);
+        		printError("Error: Either use 'y' or 'n'");
         	}
     	}
     	
@@ -279,21 +261,13 @@ public class AnnouncementServerClientApp {
     		String reference = String.format("%sc%sa%s", boardType, userId, announcementId);
     		announcementList.add(reference);
     	}
-    	
-    	String returned = client.postGeneral(publicKey, message, announcementList);
-    	
-    	/* Verifying returned values */
-    	if (!returned.equals("Success")) { // In case something failed
-    		System.out.println(RED_BOLD_BRIGHT);
-    		System.err.println(returned);
-    		System.err.println("Please repeat!");
-    		System.out.println(RESET);
-    		mainMenu();
-    	} else { // In case of success
-    		System.out.println(GREEN_BOLD_BRIGHT);
-    		System.out.println("Success, your post was posted");
-    		System.out.println(RESET);
-    	}
+    
+		try {
+			printSuccess(client.postGeneral(publicKey, message, announcementList));
+		} catch (MessageSizeFault_Exception | PostTypeFault_Exception | ReferredAnnouncementFault_Exception
+				| ReferredUserFault_Exception | UserNotRegisteredFault_Exception e) {
+			printError(e.getMessage() + "\nPlease repeat!");
+		}
     	
     	mainMenu();
     }
@@ -308,18 +282,12 @@ public class AnnouncementServerClientApp {
     	System.out.print("Number of posts to read (use 0 for all): ");
     	int number = userIntInput();
     	
-    	String returned = client.read(publicKey, Long.valueOf(number));
-    	
-    	/* Verification of returned values */
-    	if (returned.equals("Invalid number") || returned.equals("Unknown user") || returned.equals("No posts") || returned.equals("Not enough posts")) {
-    		System.out.println(RED_BOLD_BRIGHT);
-    		System.out.println(returned);
-    		System.out.println(RESET);
-    	} else {
-    		System.out.println(GREEN_BOLD_BRIGHT);
-    		System.out.println(returned);
-    		System.out.println(RESET);
-    	}
+		try {
+			printSuccess(client.read(publicKey, Long.valueOf(number)));
+		} catch (EmptyBoardFault_Exception | InvalidNumberFault_Exception | NumberPostsFault_Exception
+				| ReferredUserFault_Exception e) {
+			printError(e.getMessage());
+		}
     	
     	mainMenu();
     }
@@ -331,20 +299,12 @@ public class AnnouncementServerClientApp {
     	System.out.print("Number of posts to read (use 0 for all): ");
     	int number = userIntInput();
     	
-    	String returned = client.readGeneral(Long.valueOf(number));
-    	
-    	/* Verification of returned values */
-    	if (returned.equals("Invalid number") || returned.equals("No posts") || returned.equals("Not enough posts")) {
-    		System.out.println(RED_BOLD_BRIGHT);
-    		System.out.println(returned);
-    		System.out.println(RESET);
-    	} else {
-    		System.out.println(GREEN_BOLD_BRIGHT);
-    		System.out.println(returned);
-    		System.out.println(RESET);
-    	}
-    	
-    	
+		try {
+			printSuccess(client.readGeneral(Long.valueOf(number)));
+		} catch (EmptyBoardFault_Exception | InvalidNumberFault_Exception | NumberPostsFault_Exception e) {
+			printError(e.getMessage());
+		}
+    	    	
     	mainMenu();
     }
     
@@ -362,6 +322,18 @@ public class AnnouncementServerClientApp {
 		Scanner in = new Scanner(System.in);
 		String i = in.nextLine();
 		return i;
+	}
+	
+	private static void printSuccess(String message) {
+		System.out.println(GREEN_BOLD_BRIGHT);
+		System.out.println(message);
+		System.out.println(RESET);
+	}
+	
+	private static void printError(String message) {
+		System.out.println(RED_BOLD_BRIGHT);
+		System.out.println(message);
+		System.out.println(RESET);
 	}
     
 }

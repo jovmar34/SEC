@@ -24,15 +24,14 @@
   	<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://ws.announcementserver.org/" version="1.0">
   	
 	<xs:element name="UserAlreadyRegisteredFault" type="tns:UserAlreadyRegisteredFault" />
-	<!--<xs:element name="EmptyCartFault" type="tns:EmptyCartFault" />
-	<xs:element name="EmptyCartFault" type="tns:EmptyCartFault" />
-	<xs:element name="EmptyCartFault" type="tns:EmptyCartFault" />
-	<xs:element name="EmptyCartFault" type="tns:EmptyCartFault" />
-	<xs:element name="EmptyCartFault" type="tns:EmptyCartFault" />
-	<xs:element name="EmptyCartFault" type="tns:EmptyCartFault" />
-	<xs:element name="EmptyCartFault" type="tns:EmptyCartFault" />
-	<xs:element name="EmptyCartFault" type="tns:EmptyCartFault" />
-	-->
+	<xs:element name="UserNotRegisteredFault" type="tns:UserNotRegisteredFault" />
+	<xs:element name="MessageSizeFault" type="tns:MessageSizeFault" />
+	<xs:element name="ReferredUserFault" type="tns:ReferredUserFault" />
+	<xs:element name="ReferredAnnouncementFault" type="tns:ReferredAnnouncementFault" />
+	<xs:element name="PostTypeFault" type="tns:PostTypeFault" />
+	<xs:element name="InvalidNumberFault" type="tns:InvalidNumberFault" />
+	<xs:element name="EmptyBoardFault" type="tns:EmptyBoardFault" />
+	<xs:element name="NumberPostsFault" type="tns:NumberPostsFault" />
 
   	<xs:element name="register" type="tns:register" />
   	<xs:element name="registerResponse" type="tns:registerResponse" />
@@ -115,7 +114,57 @@
   		</xs:sequence>
   	</xs:complexType>
 
+
+	<!-- EXCEPTIONS -->
 	<xs:complexType name="UserAlreadyRegisteredFault">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="message" type="xs:string" />
+        </xs:sequence>
+    </xs:complexType>
+
+	<xs:complexType name="UserNotRegisteredFault">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="message" type="xs:string" />
+        </xs:sequence>
+    </xs:complexType>
+
+	<xs:complexType name="MessageSizeFault">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="message" type="xs:string" />
+        </xs:sequence>
+    </xs:complexType>
+
+	<xs:complexType name="ReferredUserFault">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="message" type="xs:string" />
+        </xs:sequence>
+    </xs:complexType>
+
+	<xs:complexType name="ReferredAnnouncementFault">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="message" type="xs:string" />
+        </xs:sequence>
+    </xs:complexType>
+
+	<xs:complexType name="PostTypeFault">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="message" type="xs:string" />
+        </xs:sequence>
+    </xs:complexType>
+
+	<xs:complexType name="InvalidNumberFault">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="message" type="xs:string" />
+        </xs:sequence>
+    </xs:complexType>
+
+	<xs:complexType name="EmptyBoardFault">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="message" type="xs:string" />
+        </xs:sequence>
+    </xs:complexType>
+
+	<xs:complexType name="NumberPostsFault">
         <xs:sequence>
           <xs:element minOccurs="0" name="message" type="xs:string" />
         </xs:sequence>
@@ -164,23 +213,37 @@
     <part name="fault" element="tns:UserAlreadyRegisteredFault" /> 
   </message>
 
-  <!--
   <message name="UserNotRegisteredFault">
   	<part element="tns:UserNotRegisteredFault" name="fault" />
   </message>
   
   <message name="MessageSizeFault">
-  	<part element="tns:UserAlreadyRegisteredFaultException" name="fault" />
+  	<part element="tns:MessageSizeFault" name="fault" />
   </message>
 
   <message name="ReferredUserFault">
-  	<part element="tns:UserAlreadyRegisteredFaultException" name="fault" />
+  	<part element="tns:ReferredUserFault" name="fault" />
   </message>
 
-  <message name="UserAlreadyRegisteredFaultException">
-  	<part element="tns:UserAlreadyRegisteredFaultException" name="fault" />
+  <message name="ReferredAnnouncementFault">
+  	<part element="tns:ReferredAnnouncementFault" name="fault" />
   </message>
-  -->
+  
+  <message name="PostTypeFault">
+  	<part element="tns:PostTypeFault" name="fault" />
+  </message>
+
+  <message name="InvalidNumberFault">
+  	<part element="tns:InvalidNumberFault" name="fault" />
+  </message>
+
+  <message name="EmptyBoardFault">
+  	<part element="tns:EmptyBoardFault" name="fault" />
+  </message>
+
+  <message name="NumberPostsFault">
+  	<part element="tns:NumberPostsFault" name="fault" />
+  </message>
   
   <!--  Port type (interface). -->
   <!--  Each operation has input, output and fault messages. -->
@@ -194,21 +257,38 @@
   	<operation name="post">
   		<input message="tns:post" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/post" />
   		<output message="tns:postResponse" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/postResponse" />
-  	</operation>
+		<fault message="tns:UserNotRegisteredFault" name="UserNotRegisteredFault" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/post/Fault/UserNotRegisteredFault" />
+		<fault message="tns:MessageSizeFault" name="MessageSizeFault" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/post/Fault/MessageSizeFault" />
+		<fault message="tns:ReferredUserFault" name="ReferredUserFault" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/post/Fault/ReferredUserFault" />
+		<fault message="tns:PostTypeFault" name="PostTypeFault" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/post/Fault/PostTypeFault" />
+		<fault message="tns:ReferredAnnouncementFault" name="ReferredAnnouncementFault" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/post/Fault/ReferredAnnouncementFault" />
+	</operation>
   	
   	<operation name="postGeneral">
   		<input message="tns:postGeneral" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/postGeneral" />
   		<output message="tns:postGeneralResponse" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/postGeneralResponse" />
+		<fault message="tns:UserNotRegisteredFault" name="UserNotRegisteredFault" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/postGeneral/Fault/UserNotRegisteredFault" />
+		<fault message="tns:MessageSizeFault" name="MessageSizeFault" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/postGeneral/Fault/MessageSizeFault" />
+		<fault message="tns:ReferredUserFault" name="ReferredUserFault" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/postGeneral/Fault/ReferredUserFault" />
+		<fault message="tns:PostTypeFault" name="PostTypeFault" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/postGeneral/Fault/PostTypeFault" />
+		<fault message="tns:ReferredAnnouncementFault" name="ReferredAnnouncementFault" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/postGeneral/Fault/ReferredAnnouncementFault" />
   	</operation>
   	
   	<operation name="read">
   		<input message="tns:read" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/read" />
   		<output message="tns:readResponse" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/readResponse" />
+		<fault message="tns:InvalidNumberFault" name="InvalidNumberFault" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/read/Fault/InvalidNumberFault" />
+		<fault message="tns:ReferredUserFault" name="ReferredUserFault" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/read/Fault/ReferredUserFault" />
+		<fault message="tns:EmptyBoardFault" name="EmptyBoardFault" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/read/Fault/EmptyBoardFault" />
+		<fault message="tns:NumberPostsFault" name="NumberPostsFault" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/read/Fault/NumberPostsFault" />
   	</operation>
   	
   	<operation name="readGeneral">
   		<input message="tns:readGeneral" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/readGeneral" />
   		<output message="tns:readGeneralResponse" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/readGeneralResponse" />
+		<fault message="tns:InvalidNumberFault" name="InvalidNumberFault" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/readGeneral/Fault/InvalidNumberFault" />
+		<fault message="tns:EmptyBoardFault" name="EmptyBoardFault" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/readGeneral/Fault/EmptyBoardFault" />
+		<fault message="tns:NumberPostsFault" name="NumberPostsFault" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/readGeneral/Fault/NumberPostsFault" />
   	</operation>
   	
   </portType>
@@ -238,6 +318,21 @@
   		<output>
   			<soap:body use="literal" />
   		</output>
+		<fault name="UserNotRegisteredFault">
+			<soap:fault name="UserNotRegisteredFault" use="literal" /> 
+		</fault>
+		<fault name="MessageSizeFault">
+			<soap:fault name="MessageSizeFault" use="literal" /> 
+		</fault>
+		<fault name="ReferredUserFault">
+			<soap:fault name="ReferredUserFault" use="literal" /> 
+		</fault>
+		<fault name="PostTypeFault">
+			<soap:fault name="PostTypeFault" use="literal" /> 
+		</fault>
+		<fault name="ReferredAnnouncementFault">
+			<soap:fault name="ReferredAnnouncementFault" use="literal" /> 
+		</fault>		  
   	</operation>
   	
   	<operation name="postGeneral">
@@ -248,6 +343,21 @@
   		<output>
   			<soap:body use="literal" />
   		</output>
+		<fault name="UserNotRegisteredFault">
+			<soap:fault name="UserNotRegisteredFault" use="literal" /> 
+		</fault>
+		<fault name="MessageSizeFault">
+			<soap:fault name="MessageSizeFault" use="literal" /> 
+		</fault>
+		<fault name="ReferredUserFault">
+			<soap:fault name="ReferredUserFault" use="literal" /> 
+		</fault>
+		<fault name="PostTypeFault">
+			<soap:fault name="PostTypeFault" use="literal" /> 
+		</fault>
+		<fault name="ReferredAnnouncementFault">
+			<soap:fault name="ReferredAnnouncementFault" use="literal" /> 
+		</fault>		  
   	</operation>
   	
   	<operation name="read">
@@ -258,6 +368,18 @@
   		<output>
   			<soap:body use="literal" />
   		</output>
+		<fault name="InvalidNumberFault">
+			<soap:fault name="InvalidNumberFault" use="literal" /> 
+		</fault>
+		<fault name="ReferredUserFault">
+			<soap:fault name="ReferredUserFault" use="literal" /> 
+		</fault>
+		<fault name="EmptyBoardFault">
+			<soap:fault name="EmptyBoardFault" use="literal" /> 
+		</fault>
+		<fault name="NumberPostsFault">
+			<soap:fault name="NumberPostsFault" use="literal" /> 
+		</fault>
   	</operation>
   	
   	<operation name="readGeneral">
@@ -268,6 +390,15 @@
   		<output>
   			<soap:body use="literal" />
   		</output>
+		<fault name="InvalidNumberFault">
+			<soap:fault name="InvalidNumberFault" use="literal" /> 
+		</fault>
+		<fault name="EmptyBoardFault">
+			<soap:fault name="EmptyBoardFault" use="literal" /> 
+		</fault>
+		<fault name="NumberPostsFault">
+			<soap:fault name="NumberPostsFault" use="literal" /> 
+		</fault>
   	</operation>
   
   </binding>

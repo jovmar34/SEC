@@ -54,29 +54,27 @@ public class AnnouncementServerClient {
 	
 	// remote invocation methods ------------------------------------------------------------
 
-	public String register(String publicKey) {
-		String res = "";
-		try {
-			res = port.register(publicKey);
-		} catch (UserAlreadyRegisteredFault_Exception e) {
-			res = e.getMessage();
-		}
-		return res;
+	public String register(String publicKey) throws UserAlreadyRegisteredFault_Exception {
+		return port.register(publicKey);
 	}
 	
-	public String post(String publicKey, String message, List<String> announcementList) {
+	public String post(String publicKey, String message, List<String> announcementList) 
+			throws MessageSizeFault_Exception, PostTypeFault_Exception, ReferredAnnouncementFault_Exception, ReferredUserFault_Exception, UserNotRegisteredFault_Exception {
 		return port.post(publicKey, message, announcementList);
 	}
 	
-	public String postGeneral(String publicKey, String message, List<String> announcementList) {
+	public String postGeneral(String publicKey, String message, List<String> announcementList) 
+			throws MessageSizeFault_Exception, PostTypeFault_Exception, ReferredAnnouncementFault_Exception, ReferredUserFault_Exception, UserNotRegisteredFault_Exception {
 		return port.postGeneral(publicKey, message, announcementList);
 	}
 	
-	public String read(String publicKey, Long number) {
+	public String read(String publicKey, Long number) 
+			throws EmptyBoardFault_Exception, InvalidNumberFault_Exception, NumberPostsFault_Exception, ReferredUserFault_Exception {
 		return port.read(publicKey, number);
 	}
 	
-	public String readGeneral(Long number) {
+	public String readGeneral(Long number) 
+			throws EmptyBoardFault_Exception, InvalidNumberFault_Exception, NumberPostsFault_Exception {
 		return port.readGeneral(number);
 	}
 	

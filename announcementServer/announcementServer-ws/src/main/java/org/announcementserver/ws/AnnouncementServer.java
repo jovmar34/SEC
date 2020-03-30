@@ -56,7 +56,8 @@ public class AnnouncementServer {
 	}
 	
 	/* Post */
-	public String post(String publicKey, String message, List<String> announcementList) throws UserNotRegisteredException, MessageSizeException, ReferredUserException, PostTypeException, ReferredAnnouncementException {
+	public String post(String publicKey, String message, List<String> announcementList) 
+			throws UserNotRegisteredException, MessageSizeException, ReferredUserException, PostTypeException, ReferredAnnouncementException {
 		
 		String result;
 		
@@ -104,12 +105,13 @@ public class AnnouncementServer {
 		
 		board.add(post);
 		
-		result = "Success";
+		result = "Success your post was posted!";
 		return result;
 	}
 	
 	/* Post General */
-	public String postGeneral(String publicKey, String message, List<String> announcementList) throws UserNotRegisteredException, MessageSizeException, ReferredUserException, ReferredAnnouncementException, PostTypeException {
+	public String postGeneral(String publicKey, String message, List<String> announcementList) 
+			throws UserNotRegisteredException, MessageSizeException, ReferredUserException, ReferredAnnouncementException, PostTypeException {
 		
 		String result = "";
 		
@@ -151,7 +153,7 @@ public class AnnouncementServer {
 			post.addReference(reference);
 		}
 		
-		post.setId(String.format("pc%da%d", clients.get(publicKey), generalBoard.size()));
+		post.setId(String.format("gc%da%d", clients.get(publicKey), generalBoard.size()));
 		post.setAuthor(String.format("client%d", clients.get(publicKey)));
 		
 		generalBoard.add(post);
