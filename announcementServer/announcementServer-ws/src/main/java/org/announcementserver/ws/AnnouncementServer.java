@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Scanner;
 
 import org.announcementserver.exceptions.EmptyBoardException;
@@ -36,6 +37,19 @@ public class AnnouncementServer {
 		this.personalBoards = new HashMap<>();
 		this.clients = new HashMap<>();
 		this.pks = new HashMap<>();
+		
+		try {
+			Scanner reader = new Scanner(new File("src/main/resources/clients.txt"));
+			while (reader.hasNextLine()) {
+				String[] data = reader.nextLine().split(" ");
+				int clientID = Integer.parseInt(data[0]);
+				String publicKey = data[1];
+				clients.put(publicKey, clientID );
+				pks.put(clientID, publicKey);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/* Register */
@@ -45,9 +59,9 @@ public class AnnouncementServer {
 		
 		if (!personalBoards.containsKey(publicKey)) {
 			personalBoards.put(publicKey, new ArrayList<>());
-			int clientID = personalBoards.size();
+			/*int clientID = personalBoards.size();
 			clients.put(publicKey, clientID );
-			pks.put(clientID, publicKey);
+			pks.put(clientID, publicKey);*/
 			return "Welcome new user!";
 		
 		} else {
@@ -82,7 +96,7 @@ public class AnnouncementServer {
 			String pk = pks.get(Integer.parseInt(parts[1]));
 			
 			if (!personalBoards.containsKey(pk)) {
-				throw new ReferredUserException("Referred user doesn’t exist");
+				throw new ReferredUserException("Referred user doesn't exist");
 			}
 			
 			if (parts[0] == "p") {								
@@ -134,7 +148,7 @@ public class AnnouncementServer {
 			String pk = pks.get(Integer.parseInt(parts[1]));
 			
 			if (!personalBoards.containsKey(pk)) {
-				throw new ReferredUserException("Referred user doesn’t exist");
+				throw new ReferredUserException("Referred user does't exist");
 			}
 			
 			if (parts[0] == "p") {								
@@ -167,7 +181,7 @@ public class AnnouncementServer {
 		//number and PublicKey enough to find a post in PersonalBoards
 		if (number < 0) throw new InvalidNumberException("Invalid number");
 		
-		if (!personalBoards.containsKey(publicKey)) throw new ReferredUserException("Referred user doesn’t exist");
+		if (!personalBoards.containsKey(publicKey)) throw new ReferredUserException("Referred user doesn't exist");
 		
 		ArrayList<Announcement> board = personalBoards.get(publicKey); //get the personal board
 		

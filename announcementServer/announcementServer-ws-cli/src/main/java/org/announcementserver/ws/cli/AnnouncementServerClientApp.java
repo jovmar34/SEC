@@ -118,9 +118,7 @@ public class AnnouncementServerClientApp {
     	try {
     		menuItem = userIntInput();
     	} catch (Exception e) {
-    		System.out.println(RED_BOLD_BRIGHT);
-    		System.err.println("Must be a number!");
-    		System.out.println(RESET);
+    		printError("Must be a number!");
     		mainMenu();
     	}
     	
@@ -150,9 +148,7 @@ public class AnnouncementServerClientApp {
     		menu.displayExitMenu();
     		System.exit(0);
     	default:
-    		System.out.println(RED_BOLD_BRIGHT);
-    		System.err.println("Invalid choice.\nMust be a number between 1 and " + NCHOICES);
-    		System.out.println(RESET);
+    		printError("Invalid choice.\nMust be a number between 1 and " + NCHOICES);
     		mainMenu();
     	}
     }
@@ -276,8 +272,11 @@ public class AnnouncementServerClientApp {
     public static void readMenu() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
     	menu.displayReadMenu();
     	
+    	System.out.print("Client whose posts you want to see: ");
+    	String clientID = userStringInput();
+    	
     	/* Get PublicKey */
-    	String publicKey = CryptoTools.getPublicKeyAsString("src/main/resources/"+username+"pub.der");
+    	String publicKey = CryptoTools.getPublicKeyAsString("src/main/resources/"+clientID+"pub.der");
     	
     	System.out.print("Number of posts to read (use 0 for all): ");
     	int number = userIntInput();
