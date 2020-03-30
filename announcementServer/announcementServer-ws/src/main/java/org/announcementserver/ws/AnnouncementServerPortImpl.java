@@ -102,12 +102,17 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 	}
 	
 	/* Read General */
-	public String readGeneral(Long number) {
+	public String readGeneral(Long number) 
+			throws InvalidNumberFault_Exception, EmptyBoardFault_Exception, NumberPostsFault_Exception {
 		String res = "";
 		try {
 			res = AnnouncementServer.getInstance().readGeneral(number);
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (InvalidNumberException e) {
+			throwInvalidNumberFault(e.getMessage());
+		} catch (EmptyBoardException e) {
+			throwEmptyBoardFault(e.getMessage());
+		} catch (NumberPostsException e) {
+			throwNumberPostsFault(e.getMessage());
 		}
 		return res;
 	}

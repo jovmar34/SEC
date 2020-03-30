@@ -1,9 +1,10 @@
 package org.announcementserver.ws;
 
 import java.util.List;
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Announcement {
+public class Announcement implements Serializable {
 	private String author;
 	private String content;
 	private String id;

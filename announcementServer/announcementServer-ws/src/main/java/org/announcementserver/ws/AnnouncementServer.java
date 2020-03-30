@@ -5,6 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.Scanner;
 
 import org.announcementserver.exceptions.EmptyBoardException;
@@ -36,6 +39,19 @@ public class AnnouncementServer {
 		this.personalBoards = new HashMap<>();
 		this.clients = new HashMap<>();
 		this.pks = new HashMap<>();
+		
+		try {
+			Scanner reader = new Scanner(new File("src/main/resources/clients.txt"));
+			while (reader.hasNextLine()) {
+				String[] data = reader.nextLine().split(" ");
+				int clientID = Integer.parseInt(data[0]);
+				String publicKey = data[1];
+				clients.put(publicKey, clientID );
+				pks.put(clientID, publicKey);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/* Register */
@@ -45,14 +61,16 @@ public class AnnouncementServer {
 		
 		if (!personalBoards.containsKey(publicKey)) {
 			personalBoards.put(publicKey, new ArrayList<>());
-			int clientID = personalBoards.size();
+			/*int clientID = personalBoards.size();
 			clients.put(publicKey, clientID );
-			pks.put(clientID, publicKey);
+			pks.put(clientID, publicKey);*/
+			Serialize();
 			return "Welcome new user!";
 		
 		} else {
 			throw new UserAlreadyRegisteredException("User is already registered");
 		}
+		
 	}
 	
 	/* Post */
@@ -82,7 +100,7 @@ public class AnnouncementServer {
 			String pk = pks.get(Integer.parseInt(parts[1]));
 			
 			if (!personalBoards.containsKey(pk)) {
-				throw new ReferredUserException("Referred user doesn’t exist");
+				throw new ReferredUserException("Referred user doesn't exist");
 			}
 			
 			if (parts[0] == "p") {								
@@ -104,7 +122,7 @@ public class AnnouncementServer {
 		post.setAuthor(String.format("client%d", clients.get(publicKey)));
 		
 		board.add(post);
-		
+		Serialize();
 		result = "Success your post was posted!";
 		return result;
 	}
@@ -134,7 +152,7 @@ public class AnnouncementServer {
 			String pk = pks.get(Integer.parseInt(parts[1]));
 			
 			if (!personalBoards.containsKey(pk)) {
-				throw new ReferredUserException("Referred user doesn’t exist");
+				throw new ReferredUserException("Referred user does't exist");
 			}
 			
 			if (parts[0] == "p") {								
@@ -157,7 +175,8 @@ public class AnnouncementServer {
 		post.setAuthor(String.format("client%d", clients.get(publicKey)));
 		
 		generalBoard.add(post);
-				
+		
+		Serialize();
 		result= "Success";
 		return result;
 	}
@@ -167,7 +186,7 @@ public class AnnouncementServer {
 		//number and PublicKey enough to find a post in PersonalBoards
 		if (number < 0) throw new InvalidNumberException("Invalid number");
 		
-		if (!personalBoards.containsKey(publicKey)) throw new ReferredUserException("Referred user doesn’t exist");
+		if (!personalBoards.containsKey(publicKey)) throw new ReferredUserException("Referred user doesn't exist");
 		
 		ArrayList<Announcement> board = personalBoards.get(publicKey); //get the personal board
 		
@@ -205,9 +224,22 @@ public class AnnouncementServer {
 			res += generalBoard.get(end - i).toString();
 		}
 		
+		
 		return res;
 	}
-	
+	public void Serialize() {
+		 try {
+	         FileOutputStream fileOut =
+	         new FileOutputStream("/src/main/serverstate.ser");
+	         ObjectOutputStream out = new ObjectOutputStream(fileOut);
+	         out.writeObject(this);
+	         out.close();
+	         fileOut.close();
+	         System.out.printf("Serialized data is saved in /src/main/serverstate.ser");
+	      } catch (IOException i) {
+	         i.printStackTrace();
+	      }
+	}
 	/* For testing purposes */
 	public void putGeneral(Announcement ann) {
 		generalBoard.add(ann);
