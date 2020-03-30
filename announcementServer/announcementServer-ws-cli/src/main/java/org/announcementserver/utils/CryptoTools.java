@@ -1,6 +1,10 @@
 package org.announcementserver.utils;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.spec.InvalidKeySpecException;
@@ -8,9 +12,14 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.security.KeyFactory;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.UnrecoverableEntryException;
+import java.security.cert.CertificateException;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import java.util.Base64;
 import java.util.Properties;
 
@@ -24,38 +33,38 @@ public class CryptoTools {
 	private static final String KEYSTORE_FILENAME = "announcement.jks";
 	private static final String PASSWORD_FILENAME = "announcement.properties";
 	
-	public static Keystore getKeystore(String password) {
-		ClassPathResource keystoreResource = new ClassPathResource(KEYSTORE_FILENAME);
-		InputStream keystoreIS = keystoreResource.getInputStream();
-		KeyStore keyStore = keyStore.getInstance("PKCS12");
+	public static KeyStore getKeystore(String password) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+		File keystoreResource = new File(KEYSTORE_FILE_PATH + KEYSTORE_FILENAME);
+		InputStream keyStoreIS = new FileInputStream(keystoreResource);
+		KeyStore keyStore = KeyStore.getInstance("PKCS12");
 		keyStore.load(keyStoreIS, password.toCharArray());
 		return keyStore;
 	}
-	
-	private static String getPassword() {
+
+	private static String getPassword() throws IOException {
 		Properties passwordProps = new Properties();
-		ClassPathResource passwordResource = new ClassPathResource(PASSWORD_FILENAME);
-		InputStream passwordIS = passwordResource.getInputStream();
+		File passwordResource = new File(KEYSTORE_FILE_PATH + PASSWORD_FILENAME);
+		InputStream passwordIS = new FileInputStream(passwordResource);
 		passwordProps.load(passwordIS);
 		String password = passwordProps.getProperty("keystore-password");
 		return password;
 	}
 	
-	public static PublicKey getPublicKey(String clientId) {
+	public static PublicKey getPublicKey(String clientId) throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, IOException, CertificateException {
 		
 		String password = getPassword();
 		KeyStore keyStore = getKeystore(getPassword());
-		KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(id, new KeyStore.PasswordProtection(password.toCharArray()));
+		KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(clientId, new KeyStore.PasswordProtection(password.toCharArray()));
 		
 		RSAPublicKey publicKey = (RSAPublicKey) privateKeyEntry.getCertificate().getPublicKey();
 		return publicKey;
 	}
 	
-	public static PrivateKey getPrivateKey(String clientId) {
+	public static PrivateKey getPrivateKey(String clientId) throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, IOException, CertificateException {
 		
 		String password = getPassword();
 		KeyStore keyStore = getKeystore(getPassword());
-		KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(id, new KeyStore.PasswordProtection(password.toCharArray()));
+		KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(clientId, new KeyStore.PasswordProtection(password.toCharArray()));
 		
 		RSAPrivateKey privateKey = (RSAPrivateKey) privateKeyEntry.getPrivateKey();
 		return privateKey;
@@ -66,7 +75,7 @@ public class CryptoTools {
 	}
 	
 	public static String privateKeyAsString(PrivateKey privateKey) {
-		return Base64.getEncoder().encodeToString(privateKey.getEncoded())
+		return Base64.getEncoder().encodeToString(privateKey.getEncoded());
 	}
 	
 	// ---- Old Stuff --------------------------------------------------------------------------------------
