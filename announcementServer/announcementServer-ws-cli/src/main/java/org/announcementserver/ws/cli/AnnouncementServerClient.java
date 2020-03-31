@@ -41,6 +41,7 @@ public class AnnouncementServerClient {
 		if (verbose)
 			System.out.println("Creating stub ...");
 		service = new AnnouncementServerService();
+		service.setHandlerResolver(new MyHandlerResolver());
 		port = service.getAnnouncementServerPort();
 
 		if (wsURL != null) {

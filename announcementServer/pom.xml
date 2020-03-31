@@ -44,6 +44,7 @@
   </dependencies>
   
   <modules>
+  	<module>announcementServer-common</module>
     <module>announcementServer-ws</module>
     <module>announcementServer-ws-cli</module>
   </modules>

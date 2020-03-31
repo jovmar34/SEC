@@ -31,6 +31,12 @@
   		<artifactId>announcementServer-ws</artifactId>
   		<version>0.1</version>
   	</dependency>
+  	<!-- Common -->
+  	<dependency>
+      <groupId>com.sec</groupId>
+	  <artifactId>announcementServer-common</artifactId>
+	  <version>0.1</version>
+	</dependency>
   	<!-- JUnit -->
     <dependency>
       <groupId>junit</groupId>

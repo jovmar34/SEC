@@ -1,0 +1,4 @@
+org\announcementserver\common\handlers\CommonHandler.class
+org\announcementserver\common\handlers\HashHandler.class
+org\announcementserver\common\HandlerOpInterface.class
+org\announcementserver\common\PossibleTamperingException.class
