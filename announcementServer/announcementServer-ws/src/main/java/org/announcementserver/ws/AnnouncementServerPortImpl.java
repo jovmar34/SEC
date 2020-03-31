@@ -5,7 +5,6 @@ import java.util.List;
 import javax.annotation.Resource;
 import javax.jws.WebService;
 import javax.xml.ws.WebServiceContext;
-
 import org.announcementserver.exceptions.*;
 
 @WebService(endpointInterface = "org.announcementserver.ws.AnnouncementServerPortType",

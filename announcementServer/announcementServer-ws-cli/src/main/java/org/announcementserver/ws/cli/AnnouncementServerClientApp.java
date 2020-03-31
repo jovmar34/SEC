@@ -6,8 +6,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.KeyFactory;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.security.UnrecoverableEntryException;
+import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
@@ -15,8 +18,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-import org.announcementserver.utils.CryptoTools;
-import org.announcementserver.utils.Menus;
+import org.announcementserver.utils.*;
 import org.announcementserver.ws.*;
 
 import com.google.common.hash.Hashing;
@@ -38,7 +40,7 @@ public class AnnouncementServerClientApp {
 	private static Menus menu = new Menus();
 	private static AnnouncementServerClient client = null;
 	
-    public static void main(String[] args ) throws AnnouncementServerClientException, NoSuchAlgorithmException, InvalidKeySpecException, IOException {
+    public static void main(String[] args ) throws AnnouncementServerClientException, NoSuchAlgorithmException, InvalidKeySpecException, IOException, UnrecoverableEntryException, KeyStoreException, CertificateException {
     	
     	// Check arguments.
     	if (args.length == 0) {
@@ -56,7 +58,7 @@ public class AnnouncementServerClientApp {
     	authenticationMenu();
     }
     
-    private static void authenticationMenu() throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {
+    private static void authenticationMenu() throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, UnrecoverableEntryException, KeyStoreException, CertificateException {
     	
     	/* Authentication */
     	System.out.print("Provide your username: ");
@@ -107,7 +109,7 @@ public class AnnouncementServerClientApp {
     }
     
     /* Main Menu */
-    private static void mainMenu() throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {
+    private static void mainMenu() throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, UnrecoverableEntryException, KeyStoreException, CertificateException {
     	
     	final int NCHOICES = 6;
     	int menuItem = -1;
@@ -154,11 +156,12 @@ public class AnnouncementServerClientApp {
     }
     
     /* Register Menu */
-    public static void registerMenu() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+    public static void registerMenu() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, UnrecoverableEntryException, KeyStoreException, CertificateException {
     	
     	/* Get PublicKey */
-    	String publicKey = CryptoTools.pubKeyAsString("src/main/resources/"+username+"pub.der");
-    	
+    	//String publicKey = CryptoTools.pubKeyAsString("src/main/resources/"+username+"pub.der");
+    	String publicKey = CryptoTools.publicKeyAsString(CryptoTools.getPublicKey(username));
+    			
     	try {
     		printSuccess(client.register(publicKey));
     	} catch (UserAlreadyRegisteredFault_Exception e) {
@@ -169,12 +172,13 @@ public class AnnouncementServerClientApp {
     }
     
     /* Post Menu */
-    public static void postMenu() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+    public static void postMenu() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, UnrecoverableEntryException, KeyStoreException, CertificateException {
     	
     	menu.displayPostMenu();
-    	
+    	 
     	/* Get PublicKey */
-    	String publicKey = CryptoTools.pubKeyAsString("src/main/resources/"+username+"pub.der");
+    	//String publicKey = CryptoTools.pubKeyAsString("src/main/resources/"+username+"pub.der");
+    	String publicKey = CryptoTools.publicKeyAsString(CryptoTools.getPublicKey(username));
     	
     	/* Get Message */
     	System.out.print("Message to send: ");
@@ -219,12 +223,13 @@ public class AnnouncementServerClientApp {
     }
     
     /* Post General Menu */
-    public static void postGeneralMenu() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+    public static void postGeneralMenu() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, UnrecoverableEntryException, KeyStoreException, CertificateException {
     	
     	menu.displayPostGeneralMenu();
     	
     	/* Get PublicKey */
-    	String publicKey = CryptoTools.getPublicKeyAsString("src/main/resources/"+username+"pub.der");
+    	//String publicKey = CryptoTools.getPublicKeyAsString("src/main/resources/"+username+"pub.der");
+    	String publicKey = CryptoTools.publicKeyAsString(CryptoTools.getPublicKey(username));
     	
     	/* Get Message */
     	System.out.print("Message to send: ");
@@ -269,14 +274,16 @@ public class AnnouncementServerClientApp {
     }
     
     /* Read Menu */
-    public static void readMenu() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+    public static void readMenu() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, UnrecoverableEntryException, KeyStoreException, CertificateException {
     	menu.displayReadMenu();
     	
     	System.out.print("Client whose posts you want to see: ");
+    	// TODO: Verify input
     	String clientID = userStringInput();
     	
     	/* Get PublicKey */
-    	String publicKey = CryptoTools.getPublicKeyAsString("src/main/resources/"+clientID+"pub.der");
+    	// String publicKey = CryptoTools.publicKeyAsString("src/main/resources/"+clientID+"pub.der");
+    	String publicKey = CryptoTools.publicKeyAsString(CryptoTools.getPublicKey(clientID));
     	
     	System.out.print("Number of posts to read (use 0 for all): ");
     	int number = userIntInput();
@@ -292,7 +299,7 @@ public class AnnouncementServerClientApp {
     }
     
     /* Read General Menu */
-    public static void readGeneralMenu() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+    public static void readGeneralMenu() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, UnrecoverableEntryException, KeyStoreException, CertificateException {
     	menu.displayReadGeneralMenu();
     	
     	System.out.print("Number of posts to read (use 0 for all): ");
