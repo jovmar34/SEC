@@ -8,7 +8,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.Scanner;
+import org.announcementserver.utils.*;
 
 import org.announcementserver.exceptions.EmptyBoardException;
 import org.announcementserver.exceptions.InvalidNumberException;
@@ -20,7 +22,7 @@ import org.announcementserver.exceptions.ReferredUserException;
 import org.announcementserver.exceptions.UserNotRegisteredException;
 import org.announcementserver.exceptions.UserAlreadyRegisteredException;
 
-public class AnnouncementServer {
+public class AnnouncementServer implements Serializable {
 	private HashMap<Integer, String> pks; // client id => public key association
 	private HashMap<String, Integer> clients; // public key => client id association (OVERKILL?) FIXME
 	private ArrayList<Announcement> generalBoard;
@@ -32,6 +34,10 @@ public class AnnouncementServer {
 			instance = new AnnouncementServer();
 		}
 		return instance;
+	}
+	
+	public static void setInstance(AnnouncementServer announcementServer) {
+		instance = announcementServer;
 	}
 	
 	private AnnouncementServer () {
@@ -64,7 +70,7 @@ public class AnnouncementServer {
 			/*int clientID = personalBoards.size();
 			clients.put(publicKey, clientID );
 			pks.put(clientID, publicKey);*/
-			Serialize();
+			PersistenceUtils.serialize(instance);
 			return "Welcome new user!";
 		
 		} else {
@@ -122,7 +128,7 @@ public class AnnouncementServer {
 		post.setAuthor(String.format("client%d", clients.get(publicKey)));
 		
 		board.add(post);
-		Serialize();
+		PersistenceUtils.serialize(instance);
 		result = "Success your post was posted!";
 		return result;
 	}
@@ -176,7 +182,7 @@ public class AnnouncementServer {
 		
 		generalBoard.add(post);
 		
-		Serialize();
+		PersistenceUtils.serialize(instance);
 		result= "Success";
 		return result;
 	}
@@ -227,19 +233,21 @@ public class AnnouncementServer {
 		
 		return res;
 	}
+	
 	public void Serialize() {
 		 try {
 	         FileOutputStream fileOut =
-	         new FileOutputStream("/src/main/serverstate.ser");
+	         new FileOutputStream("/src/main/resources/serverstate.ser");
 	         ObjectOutputStream out = new ObjectOutputStream(fileOut);
 	         out.writeObject(this);
 	         out.close();
 	         fileOut.close();
-	         System.out.printf("Serialized data is saved in /src/main/serverstate.ser");
+	         System.out.printf("Serialized data is saved in /src/main/resources/serverstate.ser");
 	      } catch (IOException i) {
 	         i.printStackTrace();
 	      }
 	}
+	
 	/* For testing purposes */
 	public void putGeneral(Announcement ann) {
 		generalBoard.add(ann);

@@ -1,7 +1,8 @@
 package org.announcementserver.ws;
 
+import java.util.Scanner;
 import javax.xml.ws.Endpoint;
-
+import org.announcementserver.utils.*;
 
 /**
  * Server Side Application
@@ -22,12 +23,38 @@ public class AnnouncementServerApp {
     	AnnouncementServerEndpointManager endpoint = null;
     	wsURL = args[0];
     	endpoint = new AnnouncementServerEndpointManager(wsURL);
+    	String answer = "";
 
     	try {
     		endpoint.start();
+    		// Verifies if needed to recover announcement server state
+    		boolean incorrectAnswer = true;
+    		while (incorrectAnswer) {
+    			System.out.print("Want to recover server state? (Use 'y' for Yes and 'n' for No): ");
+    			answer = userStringInput();
+    			if (answer.equals("y") || answer.equals("n")) {
+    				incorrectAnswer = false;
+    			} else {
+    				System.out.println("ERROR: Use either 'y' or 'n'");
+    			}
+    		}
+
+    		if (answer.equals("y")) {
+    			PersistenceUtils.recover();
+    		}
+    		
     		endpoint.awaitConnections();
     	} finally {
     		endpoint.stop();
     	}
     }
+    
+    // --- Checkings -------------------------------------
+
+	@SuppressWarnings("resource")
+	private static String userStringInput() {
+		Scanner in = new Scanner(System.in);
+		String i = in.nextLine();
+		return i;
+	}
 }
