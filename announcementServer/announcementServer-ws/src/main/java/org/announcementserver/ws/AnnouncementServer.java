@@ -234,20 +234,6 @@ public class AnnouncementServer implements Serializable {
 		return res;
 	}
 	
-	public void Serialize() {
-		 try {
-	         FileOutputStream fileOut =
-	         new FileOutputStream("/src/main/resources/serverstate.ser");
-	         ObjectOutputStream out = new ObjectOutputStream(fileOut);
-	         out.writeObject(this);
-	         out.close();
-	         fileOut.close();
-	         System.out.printf("Serialized data is saved in /src/main/resources/serverstate.ser");
-	      } catch (IOException i) {
-	         i.printStackTrace();
-	      }
-	}
-	
 	/* For testing purposes */
 	public void putGeneral(Announcement ann) {
 		generalBoard.add(ann);
