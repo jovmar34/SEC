@@ -3,7 +3,6 @@ package org.announcementserver.ws;
 import java.util.List;
 
 import javax.annotation.Resource;
-import javax.jws.HandlerChain;
 import javax.jws.WebService;
 import javax.xml.ws.WebServiceContext;
 import org.announcementserver.exceptions.*;
@@ -15,7 +14,6 @@ import org.announcementserver.exceptions.*;
 		targetNamespace= "http://ws.announcementserver.org",
 		serviceName = "AnnouncementServerService"
 		)
-@HandlerChain(file="ServerHandlers.xml")
 public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 	
 	@Resource
