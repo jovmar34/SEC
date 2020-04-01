@@ -1,4 +1,4 @@
-package org.announcementserver.utils;
+package org.announcementserver.common;
 
 import java.io.File;
 import java.io.FileInputStream;

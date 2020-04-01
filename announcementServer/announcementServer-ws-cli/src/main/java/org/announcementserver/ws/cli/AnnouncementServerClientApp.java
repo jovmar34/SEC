@@ -18,8 +18,16 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import org.announcementserver.common.*;
+import org.announcementserver.common.handlers.HashHandler;
 import org.announcementserver.utils.*;
 import org.announcementserver.ws.*;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import javax.xml.namespace.QName;
+import javax.xml.ws.Service;
 
 import com.google.common.hash.Hashing;
 
@@ -50,6 +58,10 @@ public class AnnouncementServerClientApp {
     	}
     	
     	String wsURL = args[0];
+    	
+    	SessionManagerInterface sessionManager = createSessionManagerInterface();
+    	
+    	Session session = InitSession(sessionManager);
 
     	System.out.printf("Creating client for server at %s%n", wsURL);
         client = new AnnouncementServerClient(wsURL);
@@ -105,6 +117,7 @@ public class AnnouncementServerClientApp {
     	System.out.println(GREEN_BOLD_BRIGHT);
     	System.out.println("Sucessfull authentication! Welcome!");
     	System.out.println(RESET);
+    	    	
     	mainMenu();
     }
     
@@ -330,6 +343,8 @@ public class AnnouncementServerClientApp {
 		return i;
 	}
 	
+	// Auxiliary functions --------------------------------
+	
 	private static void printSuccess(String message) {
 		System.out.println(GREEN_BOLD_BRIGHT);
 		System.out.println(message);
@@ -341,5 +356,21 @@ public class AnnouncementServerClientApp {
 		System.out.println(message);
 		System.out.println(RESET);
 	}
+	
+  	private static SessionManagerInterface createSessionManagerInterface() throws MalformedURLException
+  	{
+          URL url = new URL(Constants.SESSION_URL);
+          QName qname = new QName(Constants.SERVER_NAMESPACE, "SessionManagerService");  
+          Service service = Service.create(url, qname);
+          SessionManagerInterface hello = service.getPort(SessionManagerInterface.class);
+  		return hello;
+  	}
+  	
+  	private static Session InitSession(SessionManagerInterface sessionManager) {
+		EncryptedSession encrypted = sessionManager.InitSession();
+		
+		return new Session(encrypted);
+  	}
+
     
 }

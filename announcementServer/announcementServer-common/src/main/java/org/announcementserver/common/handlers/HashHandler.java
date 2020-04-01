@@ -18,6 +18,8 @@ import org.announcementserver.common.HandlerOpInterface;
 //import org.announcementserver.common.PossibleTamperingException;
 
 public class HashHandler extends CommonHandler {
+	public static String clientId;
+
 	public void close(MessageContext messagecontext) {
     }
 
@@ -46,9 +48,7 @@ public class HashHandler extends CommonHandler {
 				} catch (NoSuchAlgorithmException e) {
 					throw new RuntimeException("The hashing algorithm does not exist");					
 				}
-				
-				System.out.println(text);
-				
+							
 				digest.update(text.getBytes());
 				
 				byte[] bytes = digest.digest();
@@ -59,10 +59,11 @@ public class HashHandler extends CommonHandler {
 				
 				elem.setTextContent(encodedHash);
 				
-				System.out.println("Woosh!");
+				System.out.println(clientId);
 	        }
 	        else
 	        {
+	        	System.out.println("Dling Dlong!");
 				SOAPElement body = message.getSOAPBody();
 				
 				Iterator<?> iter = body.getChildElements(new QName("Hash"));
@@ -98,7 +99,8 @@ public class HashHandler extends CommonHandler {
 				{
 					throw new PossibleTamperingException("The computed Hash is different from the message Hash");
 				}
-				System.out.println("Dling Dlong!");
+				
+				System.out.println(clientId);
         	}
 		} catch (SOAPException | PossibleTamperingException e) {
 			return this.onPossibleTamperingException(e);
