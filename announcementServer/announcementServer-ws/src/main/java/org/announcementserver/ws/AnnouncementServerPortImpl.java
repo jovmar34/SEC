@@ -15,7 +15,7 @@ import org.announcementserver.exceptions.*;
 		targetNamespace= "http://ws.announcementserver.org",
 		serviceName = "AnnouncementServerService"
 		)
-@HandlerChain(file="/ServerHandlers.xml")
+@HandlerChain(file="ServerHandlers.xml")
 public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 	
 	@Resource

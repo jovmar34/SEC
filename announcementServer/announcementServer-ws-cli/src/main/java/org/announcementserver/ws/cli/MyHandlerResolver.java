@@ -15,7 +15,7 @@ public class MyHandlerResolver implements HandlerResolver {
 		List<Handler> handlers = new ArrayList<Handler>();
     
 	    handlers.add(new HashHandler());
-	    handlers.add(new BadManHandler());
+	    //handlers.add(new BadManHandler());
 	
 	    return handlers;
 	}

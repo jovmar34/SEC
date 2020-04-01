@@ -47,13 +47,15 @@ public class HashHandler extends CommonHandler {
 					throw new RuntimeException("The hashing algorithm does not exist");					
 				}
 				
+				System.out.println(text);
+				
 				digest.update(text.getBytes());
 				
 				byte[] bytes = digest.digest();
         	
 				String encodedHash = Base64.getEncoder().encodeToString(bytes);
 				
-				SOAPElement elem = message.getSOAPBody().addChildElement(new QName("HASH"));
+				SOAPElement elem = message.getSOAPBody().addChildElement(new QName("Hash"));
 				
 				elem.setTextContent(encodedHash);
 				
@@ -63,7 +65,7 @@ public class HashHandler extends CommonHandler {
 	        {
 				SOAPElement body = message.getSOAPBody();
 				
-				Iterator<?> iter = body.getChildElements(new QName("HASH"));
+				Iterator<?> iter = body.getChildElements(new QName("Hash"));
 				
 				if(iter == null || !iter.hasNext())
 				{
@@ -85,6 +87,8 @@ public class HashHandler extends CommonHandler {
 				} catch (NoSuchAlgorithmException e) {
 					throw new RuntimeException("The hashing algorithm does not exist");					
 				}
+				
+				digest.update(text.getBytes());
 				
 				byte[] bytes = digest.digest();
 	    	
