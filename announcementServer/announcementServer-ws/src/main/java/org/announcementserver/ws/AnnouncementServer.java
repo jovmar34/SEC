@@ -1,6 +1,8 @@
 package org.announcementserver.ws;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.io.File;
@@ -9,8 +11,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.security.KeyStoreException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableEntryException;
+import java.security.cert.CertificateException;
 import java.util.Scanner;
 import org.announcementserver.utils.*;
+import org.announcementserver.common.CryptoTools;
 
 import org.announcementserver.exceptions.EmptyBoardException;
 import org.announcementserver.exceptions.InvalidNumberException;
@@ -61,17 +69,25 @@ public class AnnouncementServer implements Serializable {
 	}
 	
 	/* Register */
-	public String register(String publicKey) throws UserAlreadyRegisteredException {
+	public List<String> register(String publicKey, String signature) throws UserAlreadyRegisteredException {
 		
 		// TODO: assign association on file (client - pk)
 		
 		if (!personalBoards.containsKey(publicKey)) {
 			personalBoards.put(publicKey, new ArrayList<>());
-			/*int clientID = personalBoards.size();
-			clients.put(publicKey, clientID );
-			pks.put(clientID, publicKey);*/
+			List<String> response = new ArrayList<>();
 			PersistenceUtils.serialize(instance);
-			return "Welcome new user!";
+			try {
+				if (CryptoTools.checkSignature(publicKey, signature)) {
+					response.add("Welcome new user!");
+					response.add(CryptoTools.makeHash("Welcome new user!"));
+				}
+			} catch (NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException | CertificateException
+					| IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return response;
 		
 		} else {
 			throw new UserAlreadyRegisteredException("User is already registered");
@@ -247,4 +263,5 @@ public class AnnouncementServer implements Serializable {
 		personalBoards.clear();
 		generalBoard.clear();
 	}
+		
 }

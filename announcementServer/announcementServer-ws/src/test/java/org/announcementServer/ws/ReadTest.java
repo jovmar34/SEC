@@ -20,8 +20,8 @@ public class ReadTest {
 		Announcement a1 = new Announcement("c1", "Testing Testing", "id1");
 		Announcement a2 = new Announcement("c1", "New Testing", "id2");
 		
-		instance.register("userkey");
-		instance.register("newkey");
+		instance.register("userkey", "");
+		instance.register("newkey", "");
 		instance.putPersonal("userkey", a1);
 		instance.putPersonal("userkey", a2);
 	}

@@ -7,7 +7,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.KeyFactory;
 import java.security.KeyStoreException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
@@ -169,9 +171,13 @@ public class AnnouncementServerClientApp {
     	/* Get PublicKey */
     	//String publicKey = CryptoTools.pubKeyAsString("src/main/resources/"+username+"pub.der");
     	String publicKey = CryptoTools.publicKeyAsString(CryptoTools.getPublicKey(username));
+    	String signature = CryptoTools.makeHash(publicKey);
     			
     	try {
-    		printSuccess(client.register(publicKey));
+    		List<String> ret = client.register(publicKey, signature);
+    		if (CryptoTools.checkSignature(ret.toArray(new String[0]))) {
+    			printSuccess(ret.get(0));
+    		}
     	} catch (UserAlreadyRegisteredFault_Exception e) {
     		printError(e.getMessage());
     	}
@@ -286,7 +292,6 @@ public class AnnouncementServerClientApp {
     	menu.displayReadMenu();
     	
     	System.out.print("Client whose posts you want to see: ");
-    	// TODO: Verify input
     	String clientID = userStringInput();
     	
     	/* Get PublicKey */
@@ -350,5 +355,7 @@ public class AnnouncementServerClientApp {
 		System.out.println(RED_BOLD_BRIGHT);
 		System.out.println(message);
 		System.out.println(RESET);
-	}    
+	}
 }
+
+

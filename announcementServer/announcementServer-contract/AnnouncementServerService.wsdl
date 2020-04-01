@@ -53,11 +53,12 @@
   	<xs:complexType name="register">
   		<xs:sequence>
   			<xs:element minOccurs="0" name="publicKey" type="xs:string" />
+			<xs:element minOccurs="0" name="signature" type="xs:string" />
   		</xs:sequence>
   	</xs:complexType>
   	<xs:complexType name="registerResponse">
   		<xs:sequence>
-  			<xs:element minOccurs="0" name="return" type="xs:string" />
+  			<xs:element minOccurs="0" name="return" type="xs:string" maxOccurs="2"/>
   		</xs:sequence>
   	</xs:complexType>
   	

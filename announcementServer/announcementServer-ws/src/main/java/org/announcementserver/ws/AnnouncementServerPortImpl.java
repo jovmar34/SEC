@@ -31,10 +31,10 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 	// Main operations -----------------------------------------------
 	
 	/* Register */
-	public  String register(String publicKey) throws UserAlreadyRegisteredFault_Exception {
-		String res = "";
+	public List<String> register(String publicKey, String signature) throws UserAlreadyRegisteredFault_Exception {
+		List<String> res = null;
 		try {
-			res =  AnnouncementServer.getInstance().register(publicKey);
+			res =  AnnouncementServer.getInstance().register(publicKey, signature);
 		} catch (UserAlreadyRegisteredException e) {
 			throwUserAlreadyRegisteredFault(e.getMessage());
 		}
