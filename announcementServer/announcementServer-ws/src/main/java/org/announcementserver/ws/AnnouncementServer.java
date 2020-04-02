@@ -78,7 +78,7 @@ public class AnnouncementServer implements Serializable {
 		try {
 			hash = CryptoTools.decryptSignature(clientID, signature);
 		} catch (Exception e) {
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException("Error: Possible tampering detected on Signature");
 		}
 		
 		try {
