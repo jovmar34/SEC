@@ -32,7 +32,7 @@ public class CryptoTest {
 	public ExpectedException exceptionRule = ExpectedException.none();
 	
 	@Test
-	public void testWithBadHash() throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, UserAlreadyRegisteredException {
+	public void testWithBadHashGoodSignature() throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, UserAlreadyRegisteredException {
 		
 		exceptionRule.expect(RuntimeException.class);
 		exceptionRule.expectMessage("Error: Possible tampering detected on Hash");
@@ -50,7 +50,22 @@ public class CryptoTest {
 	}
 	
 	@Test
-	public void testWithGoodHash() throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, UserAlreadyRegisteredException {
+	public void testWithGoodHashBadSignature() throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, UserAlreadyRegisteredException  {
+		
+		exceptionRule.expect(RuntimeException.class);
+		exceptionRule.expectMessage("Error: Possible tampering detected on Signature");
+		
+		// Get publicKey of client1 from keystore
+		String publicKey = CryptoTools.publicKeyAsString(CryptoTools.getPublicKey("client1"));
+		
+		// Get a bad signature
+		String signature = "a bad bad signature";
+		
+		instance.register(publicKey, signature);
+	}
+	
+	@Test
+	public void testWithGoodHashGoodSignature() throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, UserAlreadyRegisteredException {
 		
 		// Get publicKey of client1 from keystore
 		String publicKey = CryptoTools.publicKeyAsString(CryptoTools.getPublicKey("client1"));
@@ -67,7 +82,7 @@ public class CryptoTest {
 		toHash2.add("server");
 		toHash2.add("client1");
 		toHash2.add("Welcome new user!");
-		
+
 		List<String> response = new ArrayList<>();
 		response.add("Welcome new user!");
 		response.add(CryptoTools.makeSignature(toHash2.toArray(new String[0])));
