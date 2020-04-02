@@ -114,38 +114,26 @@ public class CryptoTools {
 	public static boolean checkHash(String... ret) 
 			throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
 		String[] response = Arrays.copyOfRange(ret, 0, ret.length - 1);
-		String signature = ret[ret.length - 1];
+		String hash = ret[ret.length - 1];
 		
 		String test = makeHash(response);
 		
-		if (test.equals(signature)) {
+		if (test.equals(hash)) {
 			return true;
 		} else {
 			return false;
 		}
 	}
 	
-	public static String makeSignature(String src, String dest, String hash) 
+	public static String makeSignature(String... args) 
 			throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, NoSuchPaddingException, 
 				IllegalBlockSizeException, BadPaddingException, InvalidKeyException, UnrecoverableEntryException {
-		PrivateKey privKey = getPrivateKey(src);
 		
-		List<String> toEncrypt = new ArrayList<>();
-		toEncrypt.add(src);
-		toEncrypt.add(dest);
-		toEncrypt.add(hash);
+		PrivateKey privKey = getPrivateKey(args[0]);
 		
-//		System.out.println(toEncrypt.toString());
+		String hash = makeHash(args);
 		
-		byte[] bytes = null;
-		try {
-			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		    ObjectOutputStream oos = new ObjectOutputStream(bos);
-		    oos.writeObject(toEncrypt);
-		    bytes = bos.toByteArray();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		byte[] bytes = stringToByte(hash);
 			    
 	    Cipher cipher = Cipher.getInstance("RSA");
 		cipher.init(Cipher.ENCRYPT_MODE, privKey);
@@ -155,7 +143,7 @@ public class CryptoTools {
 		return byteToString(cipher.doFinal());		
 	}
 	
-	public static List<String> decryptSignature(String src, String signature) 
+	public static String decryptSignature(String src, String signature) 
 			throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, NoSuchPaddingException, 
 				IllegalBlockSizeException, BadPaddingException, InvalidKeyException, UnrecoverableEntryException {
 		PublicKey pubKey = getPublicKey(src);
@@ -165,21 +153,9 @@ public class CryptoTools {
 		
 		cipher.update(stringToByte(signature));
 		
-		byte[] clearText = cipher.doFinal();
+		byte[] clearText = cipher.doFinal();		
 		
-		List<String> res = null;
-		
-		try {
-			ByteArrayInputStream bis = new ByteArrayInputStream(clearText);
-			ObjectInputStream oi = new ObjectInputStream(bis);
-			res = (List<String>) oi.readObject();
-		} catch (ClassNotFoundException e) {
-			throw new RuntimeException("Possible tampering of message");
-		}
-		
-//		System.out.println(res.toString());
-		
-		return res;
+		return byteToString(clearText);
 	}
 	
 	private static String byteToString(byte[] bytes) {
