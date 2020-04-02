@@ -63,6 +63,7 @@ public class AnnouncementServer implements Serializable {
 				clients.put(publicKey, clientID );
 				pks.put(clientID, publicKey);
 			}
+			reader.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -70,37 +71,38 @@ public class AnnouncementServer implements Serializable {
 	
 	/* Register */
 	public List<String> register(String publicKey, String signature) throws UserAlreadyRegisteredException {
-		
-		// TODO: assign association on file (client - pk)
 		List<String> response = new ArrayList<>();
-		List<String> list = null;
+		String hash = null;
 		String clientID = String.format("client%d", clients.get(publicKey));
 
 		try {
-			list = CryptoTools.decryptSignature(clientID, signature);
+			hash = CryptoTools.decryptSignature(clientID, signature);
 		} catch (Exception e) {
 			throw new RuntimeException(e.getMessage());
 		}
 		
 		try {
-			if (!CryptoTools.checkHash(clientID, "server", publicKey, list.get(2))) { 
-				response.add("Error: Wrong Hash!");
-				response.add(CryptoTools.makeHash("Error: Wrong Hash!"));
-				return response;
+			if (!CryptoTools.checkHash(clientID, "server", publicKey, hash)) { 
+				throw new RuntimeException("Error: Possible tampering detected on Hash");
 			}
+		} catch (RuntimeException e) {
+			throw e;
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new RuntimeException(e.getMessage());
 		}
 		
 		if (!personalBoards.containsKey(publicKey)) {
 			personalBoards.put(publicKey, new ArrayList<>());
-			
 			PersistenceUtils.serialize(instance);
+			
+			List<String> toHash = new ArrayList<>();
+			toHash.add("server");
+			toHash.add(clientID);
+			toHash.add("Welcome new user!");
 			
 			try {
 				response.add("Welcome new user!");
-				response.add(CryptoTools.makeSignature("server", clientID, CryptoTools.makeHash("server", clientID, response.get(0))));
-				//response.add(CryptoTools.makeHash(response.get(0)));
+				response.add(CryptoTools.makeSignature(toHash.toArray(new String[0])));
 			} catch (Exception e) {
 				throw new RuntimeException(e.getMessage());
 			}
@@ -116,27 +118,38 @@ public class AnnouncementServer implements Serializable {
 			throws UserNotRegisteredException, MessageSizeException, ReferredUserException, PostTypeException, ReferredAnnouncementException {
 		
 		List<String> response = new ArrayList<>();
-		List<String> forHash = new ArrayList<>();
-		forHash.add(publicKey);
-		forHash.add(message);
-		forHash.addAll(announcementList);
-		forHash.add(signature);
-		
-		try{
-			if (!CryptoTools.checkHash(forHash.toArray(new String[0]))) { 
-				response.add("Error: Wrong Hash!");
-				response.add(CryptoTools.makeHash("Error: Wrong Hash!"));
-				return response;
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 		
 		/* Verify existence of publicKey */
 		if (!personalBoards.containsKey(publicKey))  {
 			throw new UserNotRegisteredException("User is not registered yet");
 			
 		}
+		
+		String clientID = String.format("client%d", clients.get(publicKey));
+		String hash = null;
+		
+		try {
+			hash = CryptoTools.decryptSignature(clientID, signature);
+		} catch (Exception e) {
+			throw new RuntimeException(e.getMessage());
+		}
+		
+		List<String> inHash = new ArrayList<>();
+		inHash.add(clientID);
+		inHash.add("server");
+		inHash.add(publicKey);
+		inHash.add(message);
+		inHash.addAll(announcementList);
+		inHash.add(hash);
+		
+		try{
+			if (!CryptoTools.checkHash(inHash.toArray(new String[0]))) { 
+				throw new RuntimeException("Error: Possible tampering detected on Hash");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 		
 		/* Verify correct size of message */
 		if (message.length() > 255) {
@@ -156,15 +169,17 @@ public class AnnouncementServer implements Serializable {
 				throw new ReferredUserException("Referred user doesn't exist");
 			}
 			
-			if (parts[0] == "p") {								
+			if (parts[0].equals("p")) {								
 				if (personalBoards.get(pk).size() < Integer.parseInt(parts[2])) {
 					throw new ReferredAnnouncementException("The referred announcement doesn’t exist");
 				}
 				
-			} else if (parts[0] == "g") {
+			} else if (parts[0].equals("g")) {
 				if (generalBoard.size() < Integer.parseInt(parts[2])) {
 					throw new ReferredAnnouncementException("The referred announcement doesn’t exist");
 				}
+			} else {
+				throw new PostTypeException("The type of post in reference is incorrect");
 			}
 			
 			
@@ -177,11 +192,17 @@ public class AnnouncementServer implements Serializable {
 		board.add(post);
 		PersistenceUtils.serialize(instance);
 		
+		List<String> outHash = new ArrayList<>();
+		outHash.add("server");
+		outHash.add(clientID);
+		outHash.add("Success your post was posted!");
+		
 		try {
-			response.add("Success your post was posted!");
-			response.add(CryptoTools.makeHash(response.get(0)));
-		} catch (IOException | NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException | CertificateException e) {
+			response.add(outHash.get(2));
+			response.add(CryptoTools.makeSignature(outHash.toArray(new String[0])));
+		} catch (Exception e) {
 			e.printStackTrace();
+			throw new RuntimeException(e.getMessage());
 		}
 		
 		return response;
@@ -192,25 +213,36 @@ public class AnnouncementServer implements Serializable {
 			throws UserNotRegisteredException, MessageSizeException, ReferredUserException, ReferredAnnouncementException, PostTypeException {
 		
 		List<String> response = new ArrayList<>();
-		List<String> forHash = new ArrayList<>();
-		forHash.add(publicKey);
-		forHash.add(message);
-		forHash.addAll(announcementList);
-		forHash.add(signature);
+		
+		/* Verify existence of publicKey */
+		if (!personalBoards.containsKey(publicKey))  {
+			throw new UserNotRegisteredException("User is not registered yet");
+			
+		}
+		
+		String clientID = String.format("client%d", clients.get(publicKey));
+		String hash = null;
+		
+		try {
+			hash = CryptoTools.decryptSignature(clientID, signature);
+		} catch (Exception e) {
+			throw new RuntimeException(e.getMessage());
+		}
+		
+		List<String> inHash = new ArrayList<>();
+		inHash.add(clientID);
+		inHash.add("server");
+		inHash.add(publicKey);
+		inHash.add(message);
+		inHash.addAll(announcementList);
+		inHash.add(hash);
 		
 		try{
-			if (!CryptoTools.checkHash(forHash.toArray(new String[0]))) { 
-				response.add("Error: Wrong Hash!");
-				response.add(CryptoTools.makeHash("Error: Wrong Hash!"));
-				return response;
+			if (!CryptoTools.checkHash(inHash.toArray(new String[0]))) { 
+				throw new RuntimeException("Error: Possible tampering detected on Hash");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
-		
-		/* Verify existence of publicKey */
-		if (!personalBoards.containsKey(publicKey)) {
-			throw new UserNotRegisteredException("User is already registered");
 		}
 		
 		/* Verify correct size of message */
@@ -230,12 +262,12 @@ public class AnnouncementServer implements Serializable {
 				throw new ReferredUserException("Referred user does't exist");
 			}
 			
-			if (parts[0] == "p") {								
+			if (parts[0].equals("p")) {								
 				if (personalBoards.get(pk).size() < Integer.parseInt(parts[2])) {
 					throw new ReferredAnnouncementException("The referred announcement doesn’t exist");
 				}
 				
-			} else if (parts[0] == "g") {
+			} else if (parts[0].equals("g")) {
 				if (generalBoard.size() < Integer.parseInt(parts[2])) {
 					throw new ReferredAnnouncementException("The referred announcement doesn’t exist");
 				}
@@ -253,11 +285,17 @@ public class AnnouncementServer implements Serializable {
 		
 		PersistenceUtils.serialize(instance);
 		
+		List<String> outHash = new ArrayList<>();
+		outHash.add("server");
+		outHash.add(clientID);
+		outHash.add("Success your post was posted!");
+		
 		try {
-			response.add("Success");
-			response.add(CryptoTools.makeHash(response.get(0)));
-		} catch (IOException | NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException | CertificateException e) {
+			response.add(outHash.get(2));
+			response.add(CryptoTools.makeSignature(outHash.toArray(new String[0])));
+		} catch (Exception e) {
 			e.printStackTrace();
+			throw new RuntimeException(e.getMessage());
 		}
 		
 		return response;
@@ -271,12 +309,11 @@ public class AnnouncementServer implements Serializable {
 		
 		try{
 			if (!CryptoTools.checkHash(publicKey, String.valueOf(number), signature)) { 
-				response.add("Error: Wrong Hash!");
-				response.add(CryptoTools.makeHash("Error: Wrong Hash!"));
-				return response;
+				throw new RuntimeException("Error: Possible tampering from differing hashes");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			throw new RuntimeException(e.getMessage());
 		}
 		
 		if (number < 0) throw new InvalidNumberException("Invalid number");
@@ -301,8 +338,9 @@ public class AnnouncementServer implements Serializable {
 		try {
 			response.add(res);
 			response.add(CryptoTools.makeHash(res));
-		} catch (IOException | NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException | CertificateException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
+			throw new RuntimeException(e.getMessage());
 		}
 		
 		return response;
@@ -316,12 +354,11 @@ public class AnnouncementServer implements Serializable {
 		
 		try{
 			if (!CryptoTools.checkHash(String.valueOf(number), signature)) { 
-				response.add("Error: Wrong Hash!");
-				response.add(CryptoTools.makeHash("Error: Wrong Hash!"));
-				return response;
+				throw new RuntimeException("Error: Possible tampering from differing hashes");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			throw new RuntimeException(e.getMessage());
 		}
 		
 		if (number < 0) throw new InvalidNumberException("Invalid number");

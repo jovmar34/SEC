@@ -37,7 +37,7 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 		List<String> res = null;
 		
 		try {
-			res =  AnnouncementServer.getInstance().register(publicKey, signature);
+			res = AnnouncementServer.getInstance().register(publicKey, signature);
 		} catch (UserAlreadyRegisteredException e) {
 			throwUserAlreadyRegisteredFault(e.getMessage());
 		} catch (Exception e) {
