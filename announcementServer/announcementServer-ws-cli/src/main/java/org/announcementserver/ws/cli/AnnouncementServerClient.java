@@ -41,7 +41,6 @@ public class AnnouncementServerClient {
 		if (verbose)
 			System.out.println("Creating stub ...");
 		service = new AnnouncementServerService();
-		service.setHandlerResolver(new MyHandlerResolver());
 		port = service.getAnnouncementServerPort();
 
 		if (wsURL != null) {
@@ -55,28 +54,28 @@ public class AnnouncementServerClient {
 	
 	// remote invocation methods ------------------------------------------------------------
 
-	public String register(String publicKey) throws UserAlreadyRegisteredFault_Exception {
-		return port.register(publicKey);
+	public List<String> register(String publicKey, String signature) throws UserAlreadyRegisteredFault_Exception {
+		return port.register(publicKey, signature);
 	}
 	
-	public String post(String publicKey, String message, List<String> announcementList) 
+	public List<String> post(String publicKey, String message, List<String> announcementList, String signature) 
 			throws MessageSizeFault_Exception, PostTypeFault_Exception, ReferredAnnouncementFault_Exception, ReferredUserFault_Exception, UserNotRegisteredFault_Exception {
-		return port.post(publicKey, message, announcementList);
+		return port.post(publicKey, message, announcementList, signature);
 	}
 	
-	public String postGeneral(String publicKey, String message, List<String> announcementList) 
+	public List<String> postGeneral(String publicKey, String message, List<String> announcementList, String signature) 
 			throws MessageSizeFault_Exception, PostTypeFault_Exception, ReferredAnnouncementFault_Exception, ReferredUserFault_Exception, UserNotRegisteredFault_Exception {
-		return port.postGeneral(publicKey, message, announcementList);
+		return port.postGeneral(publicKey, message, announcementList, signature);
 	}
 	
-	public String read(String publicKey, Long number) 
+	public List<String> read(String publicKey, Long number, String signature) 
 			throws EmptyBoardFault_Exception, InvalidNumberFault_Exception, NumberPostsFault_Exception, ReferredUserFault_Exception {
-		return port.read(publicKey, number);
+		return port.read(publicKey, number, signature);
 	}
 	
-	public String readGeneral(Long number) 
+	public List<String> readGeneral(Long number, String signature) 
 			throws EmptyBoardFault_Exception, InvalidNumberFault_Exception, NumberPostsFault_Exception {
-		return port.readGeneral(number);
+		return port.readGeneral(number, signature);
 	}
 	
 }

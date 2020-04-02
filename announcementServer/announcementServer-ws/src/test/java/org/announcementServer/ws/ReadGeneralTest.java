@@ -23,7 +23,7 @@ public class ReadGeneralTest {
 		// nothing bad should happen
 		instance.putGeneral(a1);
 		
-		instance.readGeneral(new Long(1));
+		instance.readGeneral(new Long(1), "");
 	}
 	
 	@Test
@@ -32,13 +32,13 @@ public class ReadGeneralTest {
 		instance.putGeneral(a1);
 		instance.putGeneral(a2);
 		
-		System.out.print(instance.readGeneral(new Long(2)));
+		System.out.print(instance.readGeneral(new Long(2), ""));
 	}
 	
 	@Test
 	public void noPosts() throws InvalidNumberException, EmptyBoardException, NumberPostsException {
 		// user is not known
-		Assert.assertEquals("No posts", instance.readGeneral(new Long(1)));
+		Assert.assertEquals("No posts", instance.readGeneral(new Long(1), ""));
 	}
 	
 	@Test
@@ -47,13 +47,13 @@ public class ReadGeneralTest {
 		instance.putGeneral(a1);
 		instance.putGeneral(a2);
 		
-		Assert.assertEquals("Not enough posts", instance.readGeneral(new Long(3)));
+		Assert.assertEquals("Not enough posts", instance.readGeneral(new Long(3), ""));
 	}
 	
 	@Test
 	public void invalidRead() throws InvalidNumberException, EmptyBoardException, NumberPostsException {
 		// user is not known
-		Assert.assertEquals("Invalid number", instance.readGeneral(new Long(-1)));
+		Assert.assertEquals("Invalid number", instance.readGeneral(new Long(-1), ""));
 	}
 	
 	@After

@@ -1,6 +1,8 @@
 package org.announcementserver.ws;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.io.File;
@@ -9,8 +11,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.security.KeyStoreException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableEntryException;
+import java.security.cert.CertificateException;
 import java.util.Scanner;
 import org.announcementserver.utils.*;
+import org.announcementserver.common.CryptoTools;
 
 import org.announcementserver.exceptions.EmptyBoardException;
 import org.announcementserver.exceptions.InvalidNumberException;
@@ -61,29 +69,58 @@ public class AnnouncementServer implements Serializable {
 	}
 	
 	/* Register */
-	public String register(String publicKey) throws UserAlreadyRegisteredException {
+	public List<String> register(String publicKey, String signature) throws UserAlreadyRegisteredException {
 		
 		// TODO: assign association on file (client - pk)
+		List<String> response = new ArrayList<>();
+		
+		try{
+			if (!CryptoTools.checkHash(publicKey, signature)) { 
+				response.add("Error: Wrong Hash!");
+				response.add(CryptoTools.makeHash("Error: Wrong Hash!"));
+				return response;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 		if (!personalBoards.containsKey(publicKey)) {
 			personalBoards.put(publicKey, new ArrayList<>());
-			/*int clientID = personalBoards.size();
-			clients.put(publicKey, clientID );
-			pks.put(clientID, publicKey);*/
+			
 			PersistenceUtils.serialize(instance);
-			return "Welcome new user!";
-		
+			try {
+				response.add("Welcome new user!");
+				response.add(CryptoTools.makeHash("Welcome new user!"));
+			} catch (IOException | NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException | CertificateException e) {
+				e.printStackTrace();
+			}
 		} else {
 			throw new UserAlreadyRegisteredException("User is already registered");
 		}
 		
+		return response;
 	}
 	
 	/* Post */
-	public String post(String publicKey, String message, List<String> announcementList) 
+	public List<String> post(String publicKey, String message, List<String> announcementList, String signature) 
 			throws UserNotRegisteredException, MessageSizeException, ReferredUserException, PostTypeException, ReferredAnnouncementException {
 		
-		String result;
+		List<String> response = new ArrayList<>();
+		List<String> forHash = new ArrayList<>();
+		forHash.add(publicKey);
+		forHash.add(message);
+		forHash.addAll(announcementList);
+		forHash.add(signature);
+		
+		try{
+			if (!CryptoTools.checkHash(forHash.toArray(new String[0]))) { 
+				response.add("Error: Wrong Hash!");
+				response.add(CryptoTools.makeHash("Error: Wrong Hash!"));
+				return response;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 		/* Verify existence of publicKey */
 		if (!personalBoards.containsKey(publicKey))  {
@@ -129,15 +166,37 @@ public class AnnouncementServer implements Serializable {
 		
 		board.add(post);
 		PersistenceUtils.serialize(instance);
-		result = "Success your post was posted!";
-		return result;
+		
+		try {
+			response.add("Success your post was posted!");
+			response.add(CryptoTools.makeHash(response.get(0)));
+		} catch (IOException | NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException | CertificateException e) {
+			e.printStackTrace();
+		}
+		
+		return response;
 	}
 	
 	/* Post General */
-	public String postGeneral(String publicKey, String message, List<String> announcementList) 
+	public List<String> postGeneral(String publicKey, String message, List<String> announcementList, String signature) 
 			throws UserNotRegisteredException, MessageSizeException, ReferredUserException, ReferredAnnouncementException, PostTypeException {
 		
-		String result = "";
+		List<String> response = new ArrayList<>();
+		List<String> forHash = new ArrayList<>();
+		forHash.add(publicKey);
+		forHash.add(message);
+		forHash.addAll(announcementList);
+		forHash.add(signature);
+		
+		try{
+			if (!CryptoTools.checkHash(forHash.toArray(new String[0]))) { 
+				response.add("Error: Wrong Hash!");
+				response.add(CryptoTools.makeHash("Error: Wrong Hash!"));
+				return response;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 		/* Verify existence of publicKey */
 		if (!personalBoards.containsKey(publicKey)) {
@@ -183,13 +242,33 @@ public class AnnouncementServer implements Serializable {
 		generalBoard.add(post);
 		
 		PersistenceUtils.serialize(instance);
-		result= "Success";
-		return result;
+		
+		try {
+			response.add("Success");
+			response.add(CryptoTools.makeHash(response.get(0)));
+		} catch (IOException | NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException | CertificateException e) {
+			e.printStackTrace();
+		}
+		
+		return response;
 	}
 	
 	/* Read */
-	public String read(String publicKey, Long number) throws InvalidNumberException, ReferredUserException, EmptyBoardException, NumberPostsException {
+	public List<String> read(String publicKey, Long number, String signature) 
+			throws InvalidNumberException, ReferredUserException, EmptyBoardException, NumberPostsException {
 		//number and PublicKey enough to find a post in PersonalBoards
+		List<String> response = new ArrayList<>();
+		
+		try{
+			if (!CryptoTools.checkHash(publicKey, String.valueOf(number), signature)) { 
+				response.add("Error: Wrong Hash!");
+				response.add(CryptoTools.makeHash("Error: Wrong Hash!"));
+				return response;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 		if (number < 0) throw new InvalidNumberException("Invalid number");
 		
 		if (!personalBoards.containsKey(publicKey)) throw new ReferredUserException("Referred user doesn't exist");
@@ -209,12 +288,32 @@ public class AnnouncementServer implements Serializable {
 			res += board.get(end - i).toString();
 		}
 		
-		return res;
+		try {
+			response.add(res);
+			response.add(CryptoTools.makeHash(res));
+		} catch (IOException | NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException | CertificateException e) {
+			e.printStackTrace();
+		}
+		
+		return response;
 	}
 	
 	/* Read General */
-	public String readGeneral(Long number) throws InvalidNumberException, EmptyBoardException, NumberPostsException {
+	public List<String> readGeneral(Long number, String signature) 
+			throws InvalidNumberException, EmptyBoardException, NumberPostsException {
 		//number and PublicKey enough to find a post in GeneralBoard
+		List<String> response = new ArrayList<>();
+		
+		try{
+			if (!CryptoTools.checkHash(String.valueOf(number), signature)) { 
+				response.add("Error: Wrong Hash!");
+				response.add(CryptoTools.makeHash("Error: Wrong Hash!"));
+				return response;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 		if (number < 0) throw new InvalidNumberException("Invalid number");
 		
 		if (generalBoard.isEmpty()) throw new EmptyBoardException("The board has no posts");
@@ -230,8 +329,14 @@ public class AnnouncementServer implements Serializable {
 			res += generalBoard.get(end - i).toString();
 		}
 		
+		try {
+			response.add(res);
+			response.add(CryptoTools.makeHash(res));
+		} catch (IOException | NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException | CertificateException e) {
+			e.printStackTrace();
+		}		
 		
-		return res;
+		return response;
 	}
 	
 	/* For testing purposes */
@@ -247,4 +352,5 @@ public class AnnouncementServer implements Serializable {
 		personalBoards.clear();
 		generalBoard.clear();
 	}
+		
 }

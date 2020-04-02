@@ -53,11 +53,12 @@
   	<xs:complexType name="register">
   		<xs:sequence>
   			<xs:element minOccurs="0" name="publicKey" type="xs:string" />
+			<xs:element minOccurs="0" name="signature" type="xs:string" />
   		</xs:sequence>
   	</xs:complexType>
   	<xs:complexType name="registerResponse">
   		<xs:sequence>
-  			<xs:element minOccurs="0" name="return" type="xs:string" />
+  			<xs:element minOccurs="2" name="return" type="xs:string" maxOccurs="2"/>
   		</xs:sequence>
   	</xs:complexType>
   	
@@ -67,11 +68,12 @@
   		  	<xs:element minOccurs="0" name="publicKey" type="xs:string" />
   			<xs:element minOccurs="0" name="message" type="xs:string" />
   			<xs:element minOccurs="0" name="announcementList" type="xs:string" maxOccurs="unbounded" />
+			<xs:element minOccurs="0" name="signature" type="xs:string" />
   		</xs:sequence>
   	</xs:complexType>
   	<xs:complexType name="postResponse">
   		<xs:sequence>
-  			<xs:element minOccurs="0" name="return" type="xs:string" />
+  			<xs:element minOccurs="2" name="return" type="xs:string" maxOccurs="2"/>
   		</xs:sequence>
   	</xs:complexType>
   	
@@ -81,11 +83,12 @@
   		  	<xs:element minOccurs="0" name="publicKey" type="xs:string" />
   			<xs:element minOccurs="0" name="message" type="xs:string" />
   			<xs:element minOccurs="0" name="announcementList" type="xs:string" maxOccurs="unbounded" />
+			<xs:element minOccurs="0" name="signature" type="xs:string" />
   		</xs:sequence>
   	</xs:complexType>
   	<xs:complexType name="postGeneralResponse">
   		<xs:sequence>
-  			<xs:element minOccurs="0" name="return" type="xs:string" />
+  			<xs:element minOccurs="2" name="return" type="xs:string" maxOccurs="2"/>
   		</xs:sequence>
   	</xs:complexType>
   	
@@ -94,11 +97,12 @@
   		<xs:sequence>
   			<xs:element minOccurs="0" name="publicKey" type="xs:string" />
   			<xs:element minOccurs="0" name="number" type="xs:long" />
+			<xs:element minOccurs="0" name="signature" type="xs:string" />
   		</xs:sequence>
   	</xs:complexType>
   	<xs:complexType name="readResponse">
   		<xs:sequence>
-  			<xs:element minOccurs="0" name="return" type="xs:string" />
+  			<xs:element minOccurs="2" name="return" type="xs:string" maxOccurs="2"/>
   		</xs:sequence>
   	</xs:complexType>
   	
@@ -106,11 +110,12 @@
   	<xs:complexType name="readGeneral">
   		<xs:sequence>
   			<xs:element minOccurs="0" name="number" type="xs:long" />
+			<xs:element minOccurs="0" name="signature" type="xs:string" />
   		</xs:sequence>
   	</xs:complexType>
   	<xs:complexType name="readGeneralResponse">
   		<xs:sequence>
-  			<xs:element minOccurs="0" name="return" type="xs:string" />
+  			<xs:element minOccurs="2" name="return" type="xs:string" maxOccurs="2"/>
   		</xs:sequence>
   	</xs:complexType>
 

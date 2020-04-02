@@ -1,4 +1,4 @@
-package org.announcementserver.utils;
+package org.announcementserver.common;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,6 +13,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.security.KeyFactory;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -20,6 +21,7 @@ import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Properties;
 
@@ -76,6 +78,54 @@ public class CryptoTools {
 	
 	public static String privateKeyAsString(PrivateKey privateKey) {
 		return Base64.getEncoder().encodeToString(privateKey.getEncoded());
+	}
+	
+	/* Auxiliary functions */
+	public static String makeHash(String... args) throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
+		//PrivateKey privKey = CryptoTools.getPrivateKey(username);
+		MessageDigest hashFunc = MessageDigest.getInstance("SHA-256");
+		
+		for (String arg: args) {
+			hashFunc.update(arg.getBytes());
+		}
+		
+		byte[] hash = hashFunc.digest();
+		
+		return byteToString(hash);
+	}
+	
+	public static String makeHash(String[] list, String... args) throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
+		//PrivateKey privKey = CryptoTools.getPrivateKey(username);
+		MessageDigest hashFunc = MessageDigest.getInstance("SHA-256");
+		
+		for (String arg: args) {
+			hashFunc.update(arg.getBytes());
+		}
+		
+		for (String arg: list) {
+			hashFunc.update(arg.getBytes());
+		}
+		
+		byte[] hash = hashFunc.digest();
+		
+		return byteToString(hash);
+	}
+	
+	public static boolean checkHash(String... ret) throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
+		String[] response = Arrays.copyOfRange(ret, 0, ret.length - 1);
+		String signature = ret[ret.length - 1];
+		
+		String test = makeHash(response);
+		
+		if (test.equals(signature)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	private static String byteToString(byte[] bytes) {
+		return Base64.getEncoder().encodeToString(bytes);
 	}
 	
 	// ---- Old Stuff --------------------------------------------------------------------------------------
