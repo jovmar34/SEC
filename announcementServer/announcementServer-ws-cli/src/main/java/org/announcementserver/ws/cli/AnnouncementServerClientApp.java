@@ -1,6 +1,9 @@
 package org.announcementserver.ws.cli;
 
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -48,6 +51,7 @@ public class AnnouncementServerClientApp {
 	
 	private static Menus menu = new Menus();
 	private static AnnouncementServerClient client = null;
+	private static Integer sn = 0;
 	
     public static void main(String[] args ) throws AnnouncementServerClientException, NoSuchAlgorithmException, InvalidKeySpecException, IOException, UnrecoverableEntryException, KeyStoreException, CertificateException {
     	
@@ -114,6 +118,15 @@ public class AnnouncementServerClientApp {
     	System.out.println(GREEN_BOLD_BRIGHT);
     	System.out.println("Sucessfull authentication! Welcome!");
     	System.out.println(RESET);
+    	
+    	try {
+    		Scanner reader = new Scanner(new File(String.format("src/main/resources/%s.sn", username)));
+    		sn = Integer.parseInt(reader.nextLine());
+    		reader.close();
+    	} catch (FileNotFoundException e) {
+    		sn = 0;
+    		updateSn();
+    	}
     	    	
     	mainMenu();
     }
@@ -234,6 +247,7 @@ public class AnnouncementServerClientApp {
     	List<String> toHash = new ArrayList<>();
     	toHash.add(username);
     	toHash.add("server");
+    	toHash.add(String.valueOf(sn));
     	toHash.add(publicKey);
     	toHash.add(message);
     	toHash.addAll(announcementList);
@@ -248,11 +262,15 @@ public class AnnouncementServerClientApp {
     	
     	try {
     		List<String> ret = client.post(publicKey, message, announcementList, signature);
+    		
     		String hash = CryptoTools.decryptSignature("server", ret.get(1));
     		
-    		if (CryptoTools.checkHash("server", username, ret.get(0), hash)) {
+    		if (CryptoTools.checkHash("server", username, String.valueOf(sn), ret.get(0), hash)) {
     			printSuccess(ret.get(0));
     		}
+    		
+    		sn++;
+    		updateSn();
     	} catch ( Exception e) {
     		printError(e.getMessage() + "\nTry again");
     	} 
@@ -308,11 +326,15 @@ public class AnnouncementServerClientApp {
     
 		try {
 			List<String> ret = client.postGeneral(publicKey, message, announcementList, signature);
+			
 			String hash = CryptoTools.decryptSignature("server", ret.get(1));
     		
-    		if (CryptoTools.checkHash("server", username, ret.get(0), hash)) {
+    		if (CryptoTools.checkHash("server", username, String.valueOf(sn), ret.get(0), hash)) {
     			printSuccess(ret.get(0));
     		}
+    		
+    		sn++;
+    		updateSn();
 		} catch (Exception e) {
 			printError(e.getMessage() + "\nPlease repeat!");
 		}
@@ -399,6 +421,16 @@ public class AnnouncementServerClientApp {
 		System.out.println(RED_BOLD_BRIGHT);
 		System.out.println(message);
 		System.out.println(RESET);
+	}
+	
+	private static void updateSn() {
+		try {
+			FileWriter writer = new FileWriter(new File(String.format("src/main/resources/%s.sn", username)));
+			writer.write(String.valueOf(sn));
+			writer.close();
+		} catch (IOException e) {
+			System.out.println("Could not persist sequence number");
+		}
 	}
 }
 
