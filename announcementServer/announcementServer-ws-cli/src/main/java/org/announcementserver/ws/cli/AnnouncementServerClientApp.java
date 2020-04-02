@@ -171,15 +171,24 @@ public class AnnouncementServerClientApp {
     	/* Get PublicKey */
     	//String publicKey = CryptoTools.pubKeyAsString("src/main/resources/"+username+"pub.der");
     	String publicKey = CryptoTools.publicKeyAsString(CryptoTools.getPublicKey(username));
-    	String signature = CryptoTools.makeHash(publicKey);
+    	String signature = "";
+    	try {
+    		signature = CryptoTools.makeSignature(username, "server", CryptoTools.makeHash(username, "server", publicKey));
+    	} catch (Exception e) {
+    		printError(e.getMessage());
+    		mainMenu();
+    	}
     			
     	try {
     		List<String> ret = client.register(publicKey, signature);
-    		if (CryptoTools.checkHash(ret.toArray(new String[0]))) {
+    		List<String> retList = CryptoTools.decryptSignature("server", ret.get(1));
+    		
+    		if (CryptoTools.checkHash("server", username, ret.get(0), retList.get(2))) {
     			printSuccess(ret.get(0));
     		}
-    	} catch (UserAlreadyRegisteredFault_Exception e) {
+    	} catch (Exception e) {
     		printError(e.getMessage());
+    		mainMenu();
     	}
     	
     	mainMenu();

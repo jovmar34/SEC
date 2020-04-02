@@ -19,7 +19,7 @@ import java.security.cert.CertificateException;
 import java.util.Scanner;
 import org.announcementserver.utils.*;
 import org.announcementserver.common.CryptoTools;
-
+import org.announcementserver.common.PossibleTamperingException;
 import org.announcementserver.exceptions.EmptyBoardException;
 import org.announcementserver.exceptions.InvalidNumberException;
 import org.announcementserver.exceptions.MessageSizeException;
@@ -73,9 +73,17 @@ public class AnnouncementServer implements Serializable {
 		
 		// TODO: assign association on file (client - pk)
 		List<String> response = new ArrayList<>();
+		List<String> list = null;
+		String clientID = String.format("client%d", clients.get(publicKey));
+
+		try {
+			list = CryptoTools.decryptSignature(clientID, signature);
+		} catch (Exception e) {
+			throw new RuntimeException(e.getMessage());
+		}
 		
-		try{
-			if (!CryptoTools.checkHash(publicKey, signature)) { 
+		try {
+			if (!CryptoTools.checkHash(clientID, "server", publicKey, list.get(2))) { 
 				response.add("Error: Wrong Hash!");
 				response.add(CryptoTools.makeHash("Error: Wrong Hash!"));
 				return response;
@@ -88,11 +96,13 @@ public class AnnouncementServer implements Serializable {
 			personalBoards.put(publicKey, new ArrayList<>());
 			
 			PersistenceUtils.serialize(instance);
+			
 			try {
 				response.add("Welcome new user!");
-				response.add(CryptoTools.makeHash("Welcome new user!"));
-			} catch (IOException | NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException | CertificateException e) {
-				e.printStackTrace();
+				response.add(CryptoTools.makeSignature("server", clientID, CryptoTools.makeHash("server", clientID, response.get(0))));
+				//response.add(CryptoTools.makeHash(response.get(0)));
+			} catch (Exception e) {
+				throw new RuntimeException(e.getMessage());
 			}
 		} else {
 			throw new UserAlreadyRegisteredException("User is already registered");

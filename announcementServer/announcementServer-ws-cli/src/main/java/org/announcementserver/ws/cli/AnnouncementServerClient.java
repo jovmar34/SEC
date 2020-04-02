@@ -4,6 +4,8 @@ import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
 import java.util.Map;
 import java.util.List;
 import javax.xml.ws.BindingProvider;
+
+import org.announcementserver.common.PossibleTamperingException;
 import org.announcementserver.ws.*;
 
 /** */

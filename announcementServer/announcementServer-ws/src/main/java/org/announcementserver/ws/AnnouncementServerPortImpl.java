@@ -5,6 +5,8 @@ import java.util.List;
 import javax.annotation.Resource;
 import javax.jws.WebService;
 import javax.xml.ws.WebServiceContext;
+
+import org.announcementserver.common.PossibleTamperingException;
 import org.announcementserver.exceptions.*;
 
 @WebService(endpointInterface = "org.announcementserver.ws.AnnouncementServerPortType",
@@ -33,11 +35,15 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 	/* Register */
 	public List<String> register(String publicKey, String signature) throws UserAlreadyRegisteredFault_Exception {
 		List<String> res = null;
+		
 		try {
 			res =  AnnouncementServer.getInstance().register(publicKey, signature);
 		} catch (UserAlreadyRegisteredException e) {
 			throwUserAlreadyRegisteredFault(e.getMessage());
+		} catch (Exception e) {
+			throw new RuntimeException(e.getMessage());
 		}
+		
 		return res;
 	}
 	
@@ -57,6 +63,8 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 			throwPostTypeFault(e.getMessage());
 		} catch (ReferredAnnouncementException e) {
 			throwReferredAnnouncementFault(e.getMessage());
+		} catch (Exception e) {
+			throw new RuntimeException(e.getMessage());
 		}
 		return res;
 	}
@@ -77,6 +85,8 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 			throwPostTypeFault(e.getMessage());
 		} catch (ReferredAnnouncementException e) {
 			throwReferredAnnouncementFault(e.getMessage());
+		} catch (Exception e) {
+			throw new RuntimeException(e.getMessage());
 		}
 		return res;
 	}
@@ -95,6 +105,8 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 			throwEmptyBoardFault(e.getMessage());
 		} catch (NumberPostsException e) {
 			throwNumberPostsFault(e.getMessage());
+		} catch (Exception e) {
+			throw new RuntimeException(e.getMessage());
 		}
 		return res;
 	}
@@ -111,6 +123,8 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 			throwEmptyBoardFault(e.getMessage());
 		} catch (NumberPostsException e) {
 			throwNumberPostsFault(e.getMessage());
+		} catch (Exception e) {
+			throw new RuntimeException(e.getMessage());
 		}
 		return res;
 	}
