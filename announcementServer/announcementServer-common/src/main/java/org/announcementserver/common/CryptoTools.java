@@ -94,7 +94,24 @@ public class CryptoTools {
 		return byteToString(hash);
 	}
 	
-	public static boolean checkSignature(String... ret) throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
+	public static String makeHash(String[] list, String... args) throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
+		//PrivateKey privKey = CryptoTools.getPrivateKey(username);
+		MessageDigest hashFunc = MessageDigest.getInstance("SHA-256");
+		
+		for (String arg: args) {
+			hashFunc.update(arg.getBytes());
+		}
+		
+		for (String arg: list) {
+			hashFunc.update(arg.getBytes());
+		}
+		
+		byte[] hash = hashFunc.digest();
+		
+		return byteToString(hash);
+	}
+	
+	public static boolean checkHash(String... ret) throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
 		String[] response = Arrays.copyOfRange(ret, 0, ret.length - 1);
 		String signature = ret[ret.length - 1];
 		

@@ -42,11 +42,11 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 	}
 	
 	/* Post */
-	public String post(String publicKey, String message, List<String> announcementList) 
+	public List<String> post(String publicKey, String message, List<String> announcementList, String signature) 
 			throws UserNotRegisteredFault_Exception, MessageSizeFault_Exception, ReferredUserFault_Exception, PostTypeFault_Exception, ReferredAnnouncementFault_Exception {
-		String res = "";
+		List<String> res = null;
 		try {
-			res = AnnouncementServer.getInstance().post(publicKey, message, announcementList);
+			res = AnnouncementServer.getInstance().post(publicKey, message, announcementList, signature);
 		} catch (UserNotRegisteredException e) {
 			throwUserNotRegisteredFault(e.getMessage());
 		} catch (MessageSizeException e) {
@@ -62,11 +62,11 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 	}
 	
 	/* Post General */
-	public String postGeneral(String publicKey, String message, List<String> announcementList) 
+	public List<String> postGeneral(String publicKey, String message, List<String> announcementList, String signature) 
 			throws UserNotRegisteredFault_Exception, MessageSizeFault_Exception, ReferredUserFault_Exception, PostTypeFault_Exception, ReferredAnnouncementFault_Exception {
-		String res = "";
+		List<String> res = null;
 		try {
-			res = AnnouncementServer.getInstance().postGeneral(publicKey, message, announcementList);
+			res = AnnouncementServer.getInstance().postGeneral(publicKey, message, announcementList, signature);
 		} catch (UserNotRegisteredException e) {
 			throwUserNotRegisteredFault(e.getMessage());
 		} catch (MessageSizeException e) {
@@ -82,11 +82,11 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 	}
 	
 	/* Read */
-	public String read(String publicKey, Long number) 
+	public List<String> read(String publicKey, Long number, String signature) 
 			throws InvalidNumberFault_Exception, ReferredUserFault_Exception, EmptyBoardFault_Exception, NumberPostsFault_Exception {
-		String res = "";
+		List<String> res = null;
 		try {
-			res = AnnouncementServer.getInstance().read(publicKey, number);
+			res = AnnouncementServer.getInstance().read(publicKey, number, signature);
 		} catch (InvalidNumberException e) {
 			throwInvalidNumberFault(e.getMessage());
 		} catch (ReferredUserException e) {
@@ -100,11 +100,11 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 	}
 	
 	/* Read General */
-	public String readGeneral(Long number) 
+	public List<String> readGeneral(Long number, String signature) 
 			throws InvalidNumberFault_Exception, EmptyBoardFault_Exception, NumberPostsFault_Exception {
-		String res = "";
+		List<String> res = null;
 		try {
-			res = AnnouncementServer.getInstance().readGeneral(number);
+			res = AnnouncementServer.getInstance().readGeneral(number, signature);
 		} catch (InvalidNumberException e) {
 			throwInvalidNumberFault(e.getMessage());
 		} catch (EmptyBoardException e) {

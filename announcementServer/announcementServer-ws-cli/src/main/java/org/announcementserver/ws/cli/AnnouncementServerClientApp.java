@@ -175,7 +175,7 @@ public class AnnouncementServerClientApp {
     			
     	try {
     		List<String> ret = client.register(publicKey, signature);
-    		if (CryptoTools.checkSignature(ret.toArray(new String[0]))) {
+    		if (CryptoTools.checkHash(ret.toArray(new String[0]))) {
     			printSuccess(ret.get(0));
     		}
     	} catch (UserAlreadyRegisteredFault_Exception e) {
@@ -200,8 +200,9 @@ public class AnnouncementServerClientApp {
     	
     	/* Get AnnouncementList */
     	List<String> announcementList = new ArrayList<String>();
+    	/*
     	boolean ok = true;
-    	while (!ok) {
+    	while (ok) {
     		System.out.print("Do you want to make references? (Use 'y' for yes and 'n' for no): ");
         	String ans = userStringInput();
         	if (ans.equals("y") || ans.equals("n")) {
@@ -209,7 +210,7 @@ public class AnnouncementServerClientApp {
         	} else {
         		printError("Error: Either use 'y' or 'n'");
         	}
-    	}
+    	}*/
     	
     	System.out.print("How many references would you like to make? (Use 0 for none): ");
     	int nrefs = userIntInput();
@@ -226,8 +227,18 @@ public class AnnouncementServerClientApp {
     		announcementList.add(reference);
     	}
     	
+    	List<String> toHash = new ArrayList<>();
+    	toHash.add(publicKey);
+    	toHash.add(message);
+    	toHash.addAll(announcementList);
+    	
+    	String signature = CryptoTools.makeHash(toHash.toArray(new String[0]));
+    	
     	try {
-    		printSuccess(client.post(publicKey, message, announcementList));
+    		List<String> ret = client.post(publicKey, message, announcementList, signature);
+    		if (CryptoTools.checkHash(ret.toArray(new String[0]))) {
+    			printSuccess(ret.get(0));
+    		}
     	} catch ( MessageSizeFault_Exception | PostTypeFault_Exception | ReferredAnnouncementFault_Exception
     			| ReferredUserFault_Exception | UserNotRegisteredFault_Exception e) {
     		printError(e.getMessage() + "\nTry again");
@@ -251,8 +262,9 @@ public class AnnouncementServerClientApp {
     	
     	/* Get AnnouncementList */
     	List<String> announcementList = new ArrayList<String>();
+    	/*
     	boolean ok = true;
-    	while (!ok) {
+    	while (ok) {
     		System.out.print("Do you want to make references? (Use 'y' for yes and 'n' for no): ");
         	String ans = userStringInput();
         	if (ans.equals("y") || ans.equals("n")) {
@@ -260,7 +272,7 @@ public class AnnouncementServerClientApp {
         	} else {
         		printError("Error: Either use 'y' or 'n'");
         	}
-    	}
+    	}*/
     	
     	System.out.print("How many references would you like to make? (Use 0 for none): ");
     	int nrefs = userIntInput();
@@ -276,9 +288,19 @@ public class AnnouncementServerClientApp {
     		String reference = String.format("%sc%sa%s", boardType, userId, announcementId);
     		announcementList.add(reference);
     	}
+    	
+    	List<String> toHash = new ArrayList<>();
+    	toHash.add(publicKey);
+    	toHash.add(message);
+    	toHash.addAll(announcementList);
+    	
+    	String signature = CryptoTools.makeHash(toHash.toArray(new String[0]));
     
 		try {
-			printSuccess(client.postGeneral(publicKey, message, announcementList));
+			List<String> ret = client.postGeneral(publicKey, message, announcementList, signature);
+    		if (CryptoTools.checkHash(ret.toArray(new String[0]))) {
+    			printSuccess(ret.get(0));
+    		}
 		} catch (MessageSizeFault_Exception | PostTypeFault_Exception | ReferredAnnouncementFault_Exception
 				| ReferredUserFault_Exception | UserNotRegisteredFault_Exception e) {
 			printError(e.getMessage() + "\nPlease repeat!");
@@ -301,8 +323,13 @@ public class AnnouncementServerClientApp {
     	System.out.print("Number of posts to read (use 0 for all): ");
     	int number = userIntInput();
     	
+    	String signature = CryptoTools.makeHash(publicKey, String.valueOf(number));
+    	
 		try {
-			printSuccess(client.read(publicKey, Long.valueOf(number)));
+			List<String> ret = client.read(publicKey, Long.valueOf(number), signature);
+    		if (CryptoTools.checkHash(ret.toArray(new String[0]))) {
+    			printSuccess(ret.get(0));
+    		}
 		} catch (EmptyBoardFault_Exception | InvalidNumberFault_Exception | NumberPostsFault_Exception
 				| ReferredUserFault_Exception e) {
 			printError(e.getMessage());
@@ -318,8 +345,14 @@ public class AnnouncementServerClientApp {
     	System.out.print("Number of posts to read (use 0 for all): ");
     	int number = userIntInput();
     	
+    	String signature = CryptoTools.makeHash(String.valueOf(number));
+    	
 		try {
-			printSuccess(client.readGeneral(Long.valueOf(number)));
+			List<String> ret = client.readGeneral(Long.valueOf(number), signature);
+    		if (CryptoTools.checkHash(ret.toArray(new String[0]))) {
+    			printSuccess(ret.get(0));
+    		}
+			//printSuccess(client.readGeneral(Long.valueOf(number)));
 		} catch (EmptyBoardFault_Exception | InvalidNumberFault_Exception | NumberPostsFault_Exception e) {
 			printError(e.getMessage());
 		}
