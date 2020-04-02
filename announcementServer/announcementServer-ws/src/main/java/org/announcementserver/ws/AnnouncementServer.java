@@ -85,7 +85,7 @@ public class AnnouncementServer implements Serializable {
 		try {
 			hash = CryptoTools.decryptSignature(clientID, signature);
 		} catch (Exception e) {
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException("Error: Possible tampering detected on Signature");
 		}
 		
 		try {
@@ -279,7 +279,7 @@ public class AnnouncementServer implements Serializable {
 			String pk = pks.get(Integer.parseInt(parts[1]));
 			
 			if (!personalBoards.containsKey(pk)) {
-				throw new ReferredUserException("Referred user does't exist");
+				throw new ReferredUserException("Referred user doesn't exist");
 			}
 			
 			if (parts[0].equals("p")) {								
