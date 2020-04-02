@@ -37,6 +37,8 @@ public class AnnouncementServer implements Serializable {
 	private HashMap<String, ArrayList<Announcement>> personalBoards;
 	private static AnnouncementServer instance = null; //Singleton, maybe unnecessary
 	
+	private HashMap<Integer, Integer> sns; // sequence numbers
+	
 	public static AnnouncementServer getInstance() {
 		if (instance == null) {
 			instance = new AnnouncementServer();
@@ -53,6 +55,7 @@ public class AnnouncementServer implements Serializable {
 		this.personalBoards = new HashMap<>();
 		this.clients = new HashMap<>();
 		this.pks = new HashMap<>();
+		this.sns = new HashMap<>();
 		
 		try {
 			Scanner reader = new Scanner(new File("src/main/resources/clients.txt"));
@@ -71,6 +74,10 @@ public class AnnouncementServer implements Serializable {
 	
 	/* Register */
 	public List<String> register(String publicKey, String signature) throws UserAlreadyRegisteredException {
+		if (!clients.containsKey(publicKey)) {
+			throw new RuntimeException("Untrusted user registering");
+		}
+		
 		List<String> response = new ArrayList<>();
 		String hash = null;
 		String clientID = String.format("client%d", clients.get(publicKey));
@@ -91,8 +98,11 @@ public class AnnouncementServer implements Serializable {
 			throw new RuntimeException(e.getMessage());
 		}
 		
+		
 		if (!personalBoards.containsKey(publicKey)) {
 			personalBoards.put(publicKey, new ArrayList<>());
+			
+			sns.put(clients.get(publicKey), 0);
 			PersistenceUtils.serialize(instance);
 			
 			List<String> toHash = new ArrayList<>();
@@ -110,6 +120,7 @@ public class AnnouncementServer implements Serializable {
 			throw new UserAlreadyRegisteredException("User is already registered");
 		}
 		
+		
 		return response;
 	}
 	
@@ -125,6 +136,8 @@ public class AnnouncementServer implements Serializable {
 			
 		}
 		
+		Integer sn = sns.get(clients.get(publicKey));
+		
 		String clientID = String.format("client%d", clients.get(publicKey));
 		String hash = null;
 		
@@ -137,6 +150,7 @@ public class AnnouncementServer implements Serializable {
 		List<String> inHash = new ArrayList<>();
 		inHash.add(clientID);
 		inHash.add("server");
+		inHash.add(String.valueOf(sn));
 		inHash.add(publicKey);
 		inHash.add(message);
 		inHash.addAll(announcementList);
@@ -148,6 +162,7 @@ public class AnnouncementServer implements Serializable {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			throw new RuntimeException(e.getMessage());
 		}
 		
 		
@@ -190,15 +205,18 @@ public class AnnouncementServer implements Serializable {
 		post.setAuthor(String.format("client%d", clients.get(publicKey)));
 		
 		board.add(post);
+		
+		sns.put(clients.get(publicKey), sn + 1);
 		PersistenceUtils.serialize(instance);
 		
 		List<String> outHash = new ArrayList<>();
 		outHash.add("server");
 		outHash.add(clientID);
+		outHash.add(String.valueOf(sn));
 		outHash.add("Success your post was posted!");
 		
 		try {
-			response.add(outHash.get(2));
+			response.add(outHash.get(3));
 			response.add(CryptoTools.makeSignature(outHash.toArray(new String[0])));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -213,6 +231,7 @@ public class AnnouncementServer implements Serializable {
 			throws UserNotRegisteredException, MessageSizeException, ReferredUserException, ReferredAnnouncementException, PostTypeException {
 		
 		List<String> response = new ArrayList<>();
+		Integer sn = sns.get(clients.get(publicKey));
 		
 		/* Verify existence of publicKey */
 		if (!personalBoards.containsKey(publicKey))  {
@@ -232,6 +251,7 @@ public class AnnouncementServer implements Serializable {
 		List<String> inHash = new ArrayList<>();
 		inHash.add(clientID);
 		inHash.add("server");
+		inHash.add(String.valueOf(sn));
 		inHash.add(publicKey);
 		inHash.add(message);
 		inHash.addAll(announcementList);
@@ -288,10 +308,11 @@ public class AnnouncementServer implements Serializable {
 		List<String> outHash = new ArrayList<>();
 		outHash.add("server");
 		outHash.add(clientID);
+		outHash.add(String.valueOf(sn));
 		outHash.add("Success your post was posted!");
 		
 		try {
-			response.add(outHash.get(2));
+			response.add(outHash.get(3));
 			response.add(CryptoTools.makeSignature(outHash.toArray(new String[0])));
 		} catch (Exception e) {
 			e.printStackTrace();
