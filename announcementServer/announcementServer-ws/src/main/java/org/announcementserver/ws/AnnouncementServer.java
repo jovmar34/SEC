@@ -438,6 +438,7 @@ public class AnnouncementServer implements Serializable {
 	public void clean() {
 		personalBoards.clear();
 		generalBoard.clear();
+		sns.clear();
 	}
 		
 }
