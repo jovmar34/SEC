@@ -38,6 +38,14 @@ public class CryptoTest {
 	@Rule
 	public ExpectedException exceptionRule = ExpectedException.none();
 	
+	/**
+	 * -- Test Description -- 
+	 * This test aims to prove that our system can
+	 * detect a tampered message. It works by intentionally
+	 * passing wrong arguments to hash (in order to break the hash)
+	 * and expects to get a RunTimeException
+	 */
+	
 	@Test
 	public void testWithBadHashGoodSignature() throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, UserAlreadyRegisteredException {
 		
@@ -56,6 +64,14 @@ public class CryptoTest {
 		instance.register(publicKey, signature);
 	}
 	
+	/**
+	 * -- Test Description -- 
+	 * This test aims to prove that our system can
+	 * detect a tampered message. It works by intentionally
+	 * passing a message with a wrong signature (in order to break the signature)
+	 * and expects to get a RunTimeException
+	 */
+	
 	@Test
 	public void testWithGoodHashBadSignature() throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, UserAlreadyRegisteredException  {
 		
@@ -70,6 +86,13 @@ public class CryptoTest {
 		
 		instance.register(publicKey, signature);
 	}
+	
+	/**
+	 * -- Test Description -- 
+	 * This test aims to prove that our system is
+	 * working, hash and signature wise, when
+	 * we pass correct arguments.
+	 */
 	
 	@Test
 	public void testWithGoodHashGoodSignature() throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, UserAlreadyRegisteredException {
@@ -96,9 +119,16 @@ public class CryptoTest {
 		
 		Assert.assertEquals(response, instance.register(publicKey, signature));
 	}
+
+	/**
+	 * -- Test Description -- 
+	 * This test aims to prove that our system is
+	 * working, sequence number wise, when
+	 * we pass correct arguments.
+	 */
 	
 	@Test
-	public void testPostSimple() 
+	public void testGoodSequenceNumber() 
 		throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, UserAlreadyRegisteredException, UserNotRegisteredException, MessageSizeException, ReferredUserException, PostTypeException, ReferredAnnouncementException {
 		
 		// Get publicKey of client1 from keystore
@@ -111,17 +141,7 @@ public class CryptoTest {
 		toHash1.add(publicKey);
 		String signature = CryptoTools.makeSignature(toHash1.toArray(new String[0]));
 		
-		// Getting the response given in the correct case
-		List<String> toHash2 = new ArrayList<>();
-		toHash2.add("server");
-		toHash2.add("client1");
-		toHash2.add("Welcome new user!");
-
-		List<String> response = new ArrayList<>();
-		response.add("Welcome new user!");
-		response.add(CryptoTools.makeSignature(toHash2.toArray(new String[0])));
-		
-		Assert.assertEquals(response, instance.register(publicKey, signature));
+		instance.register(publicKey, signature);
 		
 		// The hash for the post request
 		List<String> toHash3 = new ArrayList<>();
@@ -140,11 +160,52 @@ public class CryptoTest {
 		toHash4.add(String.valueOf(0));
 		toHash4.add("Success your post was posted!");
 		
-		response = new ArrayList<>();
+		List<String> response = new ArrayList<>();
 		response.add("Success your post was posted!");
 		response.add(CryptoTools.makeSignature(toHash4.toArray(new String[0])));
 		
 		Assert.assertEquals(response, instance.post(publicKey, "Hello World", new ArrayList<>(), signature));
+	}
+	
+	/**
+	 * -- Test Description -- 
+	 * This test aims to prove that our system can
+	 * detect a replayed message. It works by intentionally
+	 * passing the same message twice (with the same sequence number)
+	 * and expects to get a RunTimeException
+	 */
+	
+	@Test
+	public void testBadSequenceNumber() throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, UserAlreadyRegisteredException, UserNotRegisteredException, MessageSizeException, ReferredUserException, PostTypeException, ReferredAnnouncementException {
+		
+		exceptionRule.expect(RuntimeException.class);
+		exceptionRule.expectMessage("Error: Possible drop/replay detected");
+		
+		// Get publicKey of client1 from keystore
+		String publicKey = CryptoTools.publicKeyAsString(CryptoTools.getPublicKey("client1"));
+		
+		// Get a correct signature with a good hash
+		List<String> toHash1 = new ArrayList<>();
+		toHash1.add("client1");
+		toHash1.add("server");
+		toHash1.add(publicKey);
+		String signature = CryptoTools.makeSignature(toHash1.toArray(new String[0]));
+		
+		instance.register(publicKey, signature);
+		
+		// The hash for the post request
+		List<String> toHash3 = new ArrayList<>();
+		toHash3.add("client1");
+		toHash3.add("server");
+		toHash3.add(String.valueOf(0));
+		toHash3.add(publicKey);
+		toHash3.add("Hello World");
+		toHash3.addAll(new ArrayList<>());
+		signature = CryptoTools.makeSignature(toHash3.toArray(new String[0]));
+		
+		// Intentionally passing the same message
+		instance.post(publicKey, "Hello World", new ArrayList<>(), signature);
+		instance.post(publicKey, "Hello World", new ArrayList<>(), signature);
 	}
 	
 	@After

@@ -291,7 +291,7 @@ public class AnnouncementServerClientApp {
     		sn++;
     		updateSn();
     	} catch ( Exception e) {
-    		if (e.getMessage().contains("Possible drop detected")) {
+    		if (e.getMessage().contains("Possible drop/replay detected")) {
     			sn++;
     			updateSn();
     		}
