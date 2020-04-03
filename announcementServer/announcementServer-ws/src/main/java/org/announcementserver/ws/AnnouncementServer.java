@@ -138,8 +138,6 @@ public class AnnouncementServer implements Serializable {
 		
 		Integer sn = sns.get(clients.get(publicKey));
 		
-		System.out.println("SN: " + sn.toString());
-		
 		String clientID = String.format("client%d", clients.get(publicKey));
 		String hash = null;
 		
@@ -221,7 +219,7 @@ public class AnnouncementServer implements Serializable {
 		List<String> outHash = new ArrayList<>();
 		outHash.add("server");
 		outHash.add(clientID);
-		outHash.add(String.valueOf(sn));
+		outHash.add(sn.toString());
 		outHash.add("Success your post was posted!");
 		
 		try {
@@ -256,8 +254,6 @@ public class AnnouncementServer implements Serializable {
 		} catch (Exception e) {
 			throw new RuntimeException(e.getMessage());
 		}
-		
-		System.out.println("SN: " + sn.toString());
 		
 		List<String> inHash = new ArrayList<>();
 		inHash.add(clientID);
@@ -327,7 +323,7 @@ public class AnnouncementServer implements Serializable {
 		List<String> outHash = new ArrayList<>();
 		outHash.add("server");
 		outHash.add(clientID);
-		outHash.add(String.valueOf(sn));
+		outHash.add(sn.toString());
 		outHash.add("Success your post was posted!");
 		
 		try {
