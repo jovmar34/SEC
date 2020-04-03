@@ -19,9 +19,9 @@ In order to build and run this project you will need:
 ## Compiling
 In order to compile the whole project execute the following command on **/announcementServer/** to install all dependencies:
 
-    mvn clean install -DskipTests
+    mvn clean install
     
-**Note:** use -DskipTests in order to skip all the integration tests 
+**Note:** append -DskipTests to the above command in order to skip all tests 
 
 ## Running
 In order to run the system..
