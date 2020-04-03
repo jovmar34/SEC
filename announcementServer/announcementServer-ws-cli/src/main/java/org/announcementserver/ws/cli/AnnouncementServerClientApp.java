@@ -261,8 +261,6 @@ public class AnnouncementServerClientApp {
     		announcementList.add(reference);
     	}
     	
-    	System.out.println("SN: " + sn.toString());
-    	
     	List<String> toHash = new ArrayList<>();
     	toHash.add(username);
     	toHash.add("server");
