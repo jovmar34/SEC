@@ -119,10 +119,27 @@ public class AnnouncementServerClientApp {
     	System.out.println("Sucessfull authentication! Welcome!");
     	System.out.println(RESET);
     	
+    	String answer = "";
+    	boolean incorrectAnswer = true;
+		while (incorrectAnswer) {
+			System.out.print("Want to recover client session? (Use 'y' for Yes and 'n' for No): ");
+			answer = userStringInput();
+			if (answer.equals("y") || answer.equals("n")) {
+				incorrectAnswer = false;
+			} else {
+				System.out.println("ERROR: Use either 'y' or 'n'");
+			}
+		}
+		
     	try {
-    		Scanner reader = new Scanner(new File(String.format("src/main/resources/%s.sn", username)));
-    		sn = Integer.parseInt(reader.nextLine());
-    		reader.close();
+    		if (answer.equals("y")) {
+    			Scanner reader = new Scanner(new File(String.format("src/main/resources/%s.sn", username)));
+        		sn = Integer.parseInt(reader.nextLine());
+        		reader.close();
+    		} else {
+    			sn = 0;
+    			updateSn();
+    		}
     	} catch (FileNotFoundException e) {
     		sn = 0;
     		updateSn();
@@ -244,13 +261,15 @@ public class AnnouncementServerClientApp {
     		announcementList.add(reference);
     	}
     	
+    	System.out.println("SN: " + sn.toString());
+    	
     	List<String> toHash = new ArrayList<>();
     	toHash.add(username);
     	toHash.add("server");
-    	toHash.add(String.valueOf(sn));
+    	toHash.add(sn.toString());
     	toHash.add(publicKey);
     	toHash.add(message);
-    	toHash.addAll(announcementList);
+    	toHash.addAll(announcementList); 
     	
     	String signature = "";
     	try {
@@ -272,6 +291,10 @@ public class AnnouncementServerClientApp {
     		sn++;
     		updateSn();
     	} catch ( Exception e) {
+    		if (e.getMessage().contains("Possible drop detected")) {
+    			sn++;
+    			updateSn();
+    		}
     		printError(e.getMessage() + "\nTry again");
     	} 
     	
@@ -312,6 +335,7 @@ public class AnnouncementServerClientApp {
     	List<String> toHash = new ArrayList<>();
     	toHash.add(username); // src
     	toHash.add("server"); //dest
+    	toHash.add(sn.toString());
     	toHash.add(publicKey);
     	toHash.add(message);
     	toHash.addAll(announcementList);
@@ -336,6 +360,10 @@ public class AnnouncementServerClientApp {
     		sn++;
     		updateSn();
 		} catch (Exception e) {
+			if (e.getMessage().contains("Possible drop detected")) {
+    			sn++;
+    			updateSn();
+    		}
 			printError(e.getMessage() + "\nPlease repeat!");
 		}
     	

@@ -138,6 +138,8 @@ public class AnnouncementServer implements Serializable {
 		
 		Integer sn = sns.get(clients.get(publicKey));
 		
+		System.out.println("SN: " + sn.toString());
+		
 		String clientID = String.format("client%d", clients.get(publicKey));
 		String hash = null;
 		
@@ -150,7 +152,7 @@ public class AnnouncementServer implements Serializable {
 		List<String> inHash = new ArrayList<>();
 		inHash.add(clientID);
 		inHash.add("server");
-		inHash.add(String.valueOf(sn));
+		inHash.add(sn.toString());
 		inHash.add(publicKey);
 		inHash.add(message);
 		inHash.addAll(announcementList);
@@ -158,7 +160,14 @@ public class AnnouncementServer implements Serializable {
 		
 		try{
 			if (!CryptoTools.checkHash(inHash.toArray(new String[0]))) { 
-				throw new RuntimeException("Error: Possible tampering detected on Hash");
+				inHash.set(2, (new Integer(sn - 1)).toString());
+				
+				if (CryptoTools.checkHash(inHash.toArray(new String[0]))) {
+					throw new RuntimeException("Error: Possible drop detected");
+				}
+				else {
+					throw new RuntimeException("Error: Possible tampering detected");
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -248,10 +257,12 @@ public class AnnouncementServer implements Serializable {
 			throw new RuntimeException(e.getMessage());
 		}
 		
+		System.out.println("SN: " + sn.toString());
+		
 		List<String> inHash = new ArrayList<>();
 		inHash.add(clientID);
 		inHash.add("server");
-		inHash.add(String.valueOf(sn));
+		inHash.add(sn.toString());
 		inHash.add(publicKey);
 		inHash.add(message);
 		inHash.addAll(announcementList);
@@ -259,7 +270,14 @@ public class AnnouncementServer implements Serializable {
 		
 		try{
 			if (!CryptoTools.checkHash(inHash.toArray(new String[0]))) { 
-				throw new RuntimeException("Error: Possible tampering detected on Hash");
+				inHash.set(2, (new Integer(sn - 1)).toString());
+				
+				if (CryptoTools.checkHash(inHash.toArray(new String[0]))) {
+					throw new RuntimeException("Error: Possible drop detected");
+				}
+				else {
+					throw new RuntimeException("Error: Possible tampering detected");
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -303,6 +321,7 @@ public class AnnouncementServer implements Serializable {
 		
 		generalBoard.add(post);
 		
+		sns.put(clients.get(publicKey), sn + 1);
 		PersistenceUtils.serialize(instance);
 		
 		List<String> outHash = new ArrayList<>();
