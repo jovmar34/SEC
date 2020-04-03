@@ -168,7 +168,9 @@ public class AnnouncementServer implements Serializable {
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			if (!e.getMessage().equals("Error: Possible drop/replay detected")) {
+				e.printStackTrace();
+			}
 			throw new RuntimeException(e.getMessage());
 		}
 		
@@ -269,14 +271,17 @@ public class AnnouncementServer implements Serializable {
 				inHash.set(2, (new Integer(sn - 1)).toString());
 				
 				if (CryptoTools.checkHash(inHash.toArray(new String[0]))) {
-					throw new RuntimeException("Error: Possible drop detected");
+					throw new RuntimeException("Error: Possible drop/replay detected");
 				}
 				else {
 					throw new RuntimeException("Error: Possible tampering detected");
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			if (!e.getMessage().equals("Error: Possible drop/replay detected")) {
+				e.printStackTrace();
+			}
+			throw new RuntimeException(e.getMessage());
 		}
 		
 		/* Verify correct size of message */
