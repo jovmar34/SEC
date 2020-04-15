@@ -28,7 +28,6 @@ import org.announcementserver.exceptions.PostTypeException;
 import org.announcementserver.exceptions.ReferredAnnouncementException;
 import org.announcementserver.exceptions.ReferredUserException;
 import org.announcementserver.exceptions.UserNotRegisteredException;
-import org.announcementserver.exceptions.UserAlreadyRegisteredException;
 
 public class AnnouncementServer implements Serializable {
 	private HashMap<Integer, String> pks; // client id => public key association
@@ -73,14 +72,15 @@ public class AnnouncementServer implements Serializable {
 	}
 	
 	/* Register */
-	public List<String> register(String publicKey, String signature) throws UserAlreadyRegisteredException {
+	public List<String> register(String publicKey, String signature) {
 		if (!clients.containsKey(publicKey)) {
 			throw new RuntimeException("Untrusted user registering");
 		}
 		
 		List<String> response = new ArrayList<>();
 		String hash = null;
-		String clientID = String.format("client%d", clients.get(publicKey));
+		Integer clientN = clients.get(publicKey);
+		String clientID = String.format("client%d", clientN);
 
 		try {
 			hash = CryptoTools.decryptSignature(clientID, signature);
@@ -98,14 +98,20 @@ public class AnnouncementServer implements Serializable {
 			throw new RuntimeException(e.getMessage());
 		}
 		
-		
-		if (!personalBoards.containsKey(publicKey)) {
-			personalBoards.put(publicKey, new ArrayList<>());
-			
-			sns.put(clients.get(publicKey), 0);
+		List<String> toHash = new ArrayList<>();
+		boolean new_user = false;
+
+		synchronized(personalBoards) {
+			if (!personalBoards.containsKey(publicKey)) {
+				personalBoards.put(publicKey, new ArrayList<>());
+				new_user = true;
+			}
+		}
+
+		if (new_user) {
+			sns.put(clientN, 0);
 			PersistenceUtils.serialize(instance);
 			
-			List<String> toHash = new ArrayList<>();
 			toHash.add("server");
 			toHash.add(clientID);
 			toHash.add("Welcome new user!");
@@ -117,7 +123,18 @@ public class AnnouncementServer implements Serializable {
 				throw new RuntimeException(e.getMessage());
 			}
 		} else {
-			throw new UserAlreadyRegisteredException("User is already registered");
+			toHash.add("server");
+			toHash.add(clientID);
+			toHash.add(String.format("Welcome back %s", clientID));
+			toHash.add(sns.get(clientN).toString());
+
+			try {
+				response.add(String.format("Welcome back %s", clientID));
+				response.add(sns.get(clientN).toString());
+				response.add(CryptoTools.makeSignature(toHash.toArray(new String[0])));
+			} catch (Exception e) {
+				throw new RuntimeException(e.getMessage());
+			}
 		}
 		
 		
@@ -158,19 +175,9 @@ public class AnnouncementServer implements Serializable {
 		
 		try{
 			if (!CryptoTools.checkHash(inHash.toArray(new String[0]))) { 
-				inHash.set(2, (new Integer(sn - 1)).toString());
-				
-				if (CryptoTools.checkHash(inHash.toArray(new String[0]))) {
-					throw new RuntimeException("Error: Possible drop/replay detected");
-				}
-				else {
-					throw new RuntimeException("Error: Possible tampering detected");
-				}
+				throw new RuntimeException("Error: Possible tampering detected");
 			}
 		} catch (Exception e) {
-			if (!e.getMessage().equals("Error: Possible drop/replay detected")) {
-				e.printStackTrace();
-			}
 			throw new RuntimeException(e.getMessage());
 		}
 		
@@ -245,7 +252,6 @@ public class AnnouncementServer implements Serializable {
 		/* Verify existence of publicKey */
 		if (!personalBoards.containsKey(publicKey))  {
 			throw new UserNotRegisteredException("User is not registered yet");
-			
 		}
 		
 		String clientID = String.format("client%d", clients.get(publicKey));
@@ -268,19 +274,9 @@ public class AnnouncementServer implements Serializable {
 		
 		try{
 			if (!CryptoTools.checkHash(inHash.toArray(new String[0]))) { 
-				inHash.set(2, (new Integer(sn - 1)).toString());
-				
-				if (CryptoTools.checkHash(inHash.toArray(new String[0]))) {
-					throw new RuntimeException("Error: Possible drop/replay detected");
-				}
-				else {
-					throw new RuntimeException("Error: Possible tampering detected");
-				}
+				throw new RuntimeException("Error: Possible tampering detected");
 			}
 		} catch (Exception e) {
-			if (!e.getMessage().equals("Error: Possible drop/replay detected")) {
-				e.printStackTrace();
-			}
 			throw new RuntimeException(e.getMessage());
 		}
 		

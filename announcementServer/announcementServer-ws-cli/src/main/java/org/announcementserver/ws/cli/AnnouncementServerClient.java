@@ -56,7 +56,7 @@ public class AnnouncementServerClient {
 	
 	// remote invocation methods ------------------------------------------------------------
 
-	public List<String> register(String publicKey, String signature) throws UserAlreadyRegisteredFault_Exception {
+	public List<String> register(String publicKey, String signature) {
 		return port.register(publicKey, signature);
 	}
 	

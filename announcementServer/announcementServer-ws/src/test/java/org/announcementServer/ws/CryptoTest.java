@@ -21,7 +21,6 @@ import org.announcementserver.exceptions.MessageSizeException;
 import org.announcementserver.exceptions.PostTypeException;
 import org.announcementserver.exceptions.ReferredAnnouncementException;
 import org.announcementserver.exceptions.ReferredUserException;
-import org.announcementserver.exceptions.UserAlreadyRegisteredException;
 import org.announcementserver.exceptions.UserNotRegisteredException;
 
 import javax.crypto.NoSuchPaddingException;
@@ -47,7 +46,7 @@ public class CryptoTest {
 	 */
 	
 	@Test
-	public void testWithBadHashGoodSignature() throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, UserAlreadyRegisteredException {
+	public void testWithBadHashGoodSignature() throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException {
 		
 		exceptionRule.expect(RuntimeException.class);
 		exceptionRule.expectMessage("Error: Possible tampering detected on Hash");
@@ -73,7 +72,7 @@ public class CryptoTest {
 	 */
 	
 	@Test
-	public void testWithGoodHashBadSignature() throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, UserAlreadyRegisteredException  {
+	public void testWithGoodHashBadSignature() throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException {
 		
 		exceptionRule.expect(RuntimeException.class);
 		exceptionRule.expectMessage("Error: Possible tampering detected on Signature");
@@ -95,7 +94,7 @@ public class CryptoTest {
 	 */
 	
 	@Test
-	public void testWithGoodHashGoodSignature() throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, UserAlreadyRegisteredException {
+	public void testWithGoodHashGoodSignature() throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException {
 		
 		// Get publicKey of client1 from keystore
 		String publicKey = CryptoTools.publicKeyAsString(CryptoTools.getPublicKey("client1"));
@@ -129,7 +128,7 @@ public class CryptoTest {
 	
 	@Test
 	public void testGoodSequenceNumber() 
-		throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, UserAlreadyRegisteredException, UserNotRegisteredException, MessageSizeException, ReferredUserException, PostTypeException, ReferredAnnouncementException {
+		throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, UserNotRegisteredException, MessageSizeException, ReferredUserException, PostTypeException, ReferredAnnouncementException {
 		
 		// Get publicKey of client1 from keystore
 		String publicKey = CryptoTools.publicKeyAsString(CryptoTools.getPublicKey("client1"));
@@ -176,7 +175,7 @@ public class CryptoTest {
 	 */
 	
 	@Test
-	public void testBadSequenceNumber() throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, UserAlreadyRegisteredException, UserNotRegisteredException, MessageSizeException, ReferredUserException, PostTypeException, ReferredAnnouncementException {
+	public void testBadSequenceNumber() throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, UserNotRegisteredException, MessageSizeException, ReferredUserException, PostTypeException, ReferredAnnouncementException {
 		
 		exceptionRule.expect(RuntimeException.class);
 		exceptionRule.expectMessage("Error: Possible drop/replay detected");

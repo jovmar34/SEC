@@ -33,13 +33,11 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 	// Main operations -----------------------------------------------
 	
 	/* Register */
-	public List<String> register(String publicKey, String signature) throws UserAlreadyRegisteredFault_Exception {
+	public List<String> register(String publicKey, String signature) {
 		List<String> res = null;
 		
 		try {
 			res = AnnouncementServer.getInstance().register(publicKey, signature);
-		} catch (UserAlreadyRegisteredException e) {
-			throwUserAlreadyRegisteredFault(e.getMessage());
 		} catch (Exception e) {
 			throw new RuntimeException(e.getMessage());
 		}
@@ -130,11 +128,6 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 	}
 	
 	/* Exceptions handlers */
-	private void throwUserAlreadyRegisteredFault(final String message) throws UserAlreadyRegisteredFault_Exception {
-		UserAlreadyRegisteredFault faultInfo = new UserAlreadyRegisteredFault();
-		faultInfo.message = message;
-		throw new UserAlreadyRegisteredFault_Exception(message, faultInfo);
-	}
 	private void throwUserNotRegisteredFault(final String message) throws UserNotRegisteredFault_Exception {
 		UserNotRegisteredFault faultInfo = new UserNotRegisteredFault();
 		faultInfo.message = message;

@@ -23,7 +23,6 @@
   <types>
   	<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://ws.announcementserver.org/" version="1.0">
   	
-	<xs:element name="UserAlreadyRegisteredFault" type="tns:UserAlreadyRegisteredFault" />
 	<xs:element name="UserNotRegisteredFault" type="tns:UserNotRegisteredFault" />
 	<xs:element name="MessageSizeFault" type="tns:MessageSizeFault" />
 	<xs:element name="ReferredUserFault" type="tns:ReferredUserFault" />
@@ -58,7 +57,7 @@
   	</xs:complexType>
   	<xs:complexType name="registerResponse">
   		<xs:sequence>
-  			<xs:element minOccurs="2" name="return" type="xs:string" maxOccurs="2"/>
+  			<xs:element minOccurs="2" name="return" type="xs:string" maxOccurs="3"/>
   		</xs:sequence>
   	</xs:complexType>
   	
@@ -121,12 +120,6 @@
 
 
 	<!-- EXCEPTIONS -->
-	<xs:complexType name="UserAlreadyRegisteredFault">
-        <xs:sequence>
-          <xs:element minOccurs="0" name="message" type="xs:string" />
-        </xs:sequence>
-    </xs:complexType>
-
 	<xs:complexType name="UserNotRegisteredFault">
         <xs:sequence>
           <xs:element minOccurs="0" name="message" type="xs:string" />
@@ -214,10 +207,6 @@
   	<part element="tns:readGeneralResponse" name="parameters" />
   </message>
 
-  <message name="UserAlreadyRegisteredFault">
-    <part name="fault" element="tns:UserAlreadyRegisteredFault" /> 
-  </message>
-
   <message name="UserNotRegisteredFault">
   	<part element="tns:UserNotRegisteredFault" name="fault" />
   </message>
@@ -256,7 +245,6 @@
   	<operation name="register">
   		<input message="tns:register" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/register" />
   		<output message="tns:registerResponse" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/registerResponse" />
-		<fault message="tns:UserAlreadyRegisteredFault" name="UserAlreadyRegisteredFault" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/register/Fault/UserAlreadyRegisteredFault" />
 	</operation>
   	
   	<operation name="post">
@@ -310,9 +298,6 @@
   		<output>
   			<soap:body use="literal" />
   		</output>
-		<fault name="UserAlreadyRegisteredFault">
-			<soap:fault name="UserAlreadyRegisteredFault" use="literal" /> 
-		</fault>
   	</operation>
   	
   	<operation name="post">

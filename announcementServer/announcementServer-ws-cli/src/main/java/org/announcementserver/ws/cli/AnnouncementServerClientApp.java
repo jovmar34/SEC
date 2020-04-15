@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-import org.announcementserver.common.*;
+import org.announcementserver.common.CryptoTools;
 import org.announcementserver.utils.*;
 import org.announcementserver.ws.*;
 
@@ -50,7 +50,7 @@ public class AnnouncementServerClientApp {
 	public static String username = "";
 	
 	private static Menus menu = new Menus();
-	private static AnnouncementServerClient client = null;
+	private static FrontEnd client = null;
 	private static Integer sn = 0;
 	
     public static void main(String[] args ) throws AnnouncementServerClientException, NoSuchAlgorithmException, InvalidKeySpecException, IOException, UnrecoverableEntryException, KeyStoreException, CertificateException {
@@ -65,7 +65,7 @@ public class AnnouncementServerClientApp {
     	String wsURL = args[0];
     	
     	System.out.printf("Creating client for server at %s%n", wsURL);
-        client = new AnnouncementServerClient(wsURL);
+        client = new FrontEnd(wsURL);
     	
         // Start of Interaction
     	authenticationMenu();
@@ -117,39 +117,15 @@ public class AnnouncementServerClientApp {
     	
     	System.out.println(GREEN_BOLD_BRIGHT);
     	System.out.println("Sucessfull authentication! Welcome!");
-    	System.out.println(RESET);
-    	
-    	String answer = "";
-    	boolean incorrectAnswer = true;
-		while (incorrectAnswer) {
-			System.out.print("Want to recover client session? (Use 'y' for Yes and 'n' for No): ");
-			answer = userStringInput();
-			if (answer.equals("y") || answer.equals("n")) {
-				incorrectAnswer = false;
-			} else {
-				System.out.println("ERROR: Use either 'y' or 'n'");
-			}
-		}
+		System.out.println(RESET);
 		
-    	try {
-    		if (answer.equals("y")) {
-    			Scanner reader = new Scanner(new File(String.format("src/main/resources/%s.sn", username)));
-        		sn = Integer.parseInt(reader.nextLine());
-        		reader.close();
-    		} else {
-    			sn = 0;
-    			updateSn();
-    		}
-    	} catch (FileNotFoundException e) {
-    		sn = 0;
-    		updateSn();
-    	}
+		client.init(username);
     	    	
     	mainMenu();
     }
     
     /* Main Menu */
-    private static void mainMenu() throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, UnrecoverableEntryException, KeyStoreException, CertificateException {
+    private static void mainMenu() {
     	
     	final int NCHOICES = 6;
     	int menuItem = -1;
@@ -196,48 +172,21 @@ public class AnnouncementServerClientApp {
     }
     
     /* Register Menu */
-    public static void registerMenu() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, UnrecoverableEntryException, KeyStoreException, CertificateException {
-    	
-    	/* Get PublicKey */
-    	String publicKey = CryptoTools.publicKeyAsString(CryptoTools.getPublicKey(username));
-    	
-    	String signature = "";
-    	List<String> toHash = new ArrayList<>();
-    	toHash.add(username);
-    	toHash.add("server");
-    	toHash.add(publicKey);
+    public static void registerMenu() {
     	
     	try {
-    		signature = CryptoTools.makeSignature(toHash.toArray(new String[0]));
-    	} catch (Exception e) {
-    		printError(e.getMessage());
-    		mainMenu();
-    	}
-    			
-    	try {
-    		List<String> ret = client.register(publicKey, signature);
-    		
-    		String hash = CryptoTools.decryptSignature("server", ret.get(1));
-    		
-    		if (CryptoTools.checkHash("server", username, ret.get(0), hash)) {
-    			printSuccess(ret.get(0));
-    		}
-    	} catch (Exception e) {
-    		printError(e.getMessage());
-    		mainMenu();
-    	}
+			printSuccess(client.register());
+		} catch (Exception e) {
+			printError(e.getMessage());
+		}
     	
     	mainMenu();
     }
     
     /* Post Menu */
-    public static void postMenu() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, UnrecoverableEntryException, KeyStoreException, CertificateException {
+    public static void postMenu() {
     	
     	menu.displayPostMenu();
-    	 
-    	/* Get PublicKey */
-    	//String publicKey = CryptoTools.pubKeyAsString("src/main/resources/"+username+"pub.der");
-    	String publicKey = CryptoTools.publicKeyAsString(CryptoTools.getPublicKey(username));
     	
     	/* Get Message */
     	System.out.print("Message to send: ");
@@ -248,7 +197,8 @@ public class AnnouncementServerClientApp {
     	    	
     	System.out.print("How many references would you like to make? (Use 0 for none): ");
     	int nrefs = userIntInput();
-    	
+		
+		/* Collectiong announcement ids */ 
     	for (; nrefs>0; nrefs--) {
     		System.out.print("Board Type (Use 'p' for personal and 'g' for general): ");
     		String boardType = userStringInput();
@@ -259,54 +209,21 @@ public class AnnouncementServerClientApp {
     		
     		String reference = String.format("%sc%sa%s", boardType, userId, announcementId);
     		announcementList.add(reference);
-    	}
-    	
-    	List<String> toHash = new ArrayList<>();
-    	toHash.add(username);
-    	toHash.add("server");
-    	toHash.add(sn.toString());
-    	toHash.add(publicKey);
-    	toHash.add(message);
-    	toHash.addAll(announcementList); 
-    	
-    	String signature = "";
-    	try {
-    		signature = CryptoTools.makeSignature(toHash.toArray(new String[0]));
-    	} catch (Exception e) {
-    		printError(e.getMessage());
-    		mainMenu();
-    	}
-    	
-    	try {
-    		List<String> ret = client.post(publicKey, message, announcementList, signature);
-    		
-    		String hash = CryptoTools.decryptSignature("server", ret.get(1));
-    		
-    		if (CryptoTools.checkHash("server", username, String.valueOf(sn), ret.get(0), hash)) {
-    			printSuccess(ret.get(0));
-    		}
-    		
-    		sn++;
-    		updateSn();
-    	} catch ( Exception e) {
-    		if (e.getMessage().contains("Possible drop/replay detected")) {
-    			sn++;
-    			updateSn();
-    		}
-    		printError(e.getMessage() + "\nTry again");
-    	} 
+		}
+		
+		try {
+			printSuccess(client.post(message, announcementList));
+		} catch (Exception e) {
+			printError(e.getMessage());
+		}
     	
     	mainMenu();
     }
     
     /* Post General Menu */
-    public static void postGeneralMenu() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, UnrecoverableEntryException, KeyStoreException, CertificateException {
+    public static void postGeneralMenu() {
     	
     	menu.displayPostGeneralMenu();
-    	
-    	/* Get PublicKey */
-    	//String publicKey = CryptoTools.getPublicKeyAsString("src/main/resources/"+username+"pub.der");
-    	String publicKey = CryptoTools.publicKeyAsString(CryptoTools.getPublicKey(username));
     	
     	/* Get Message */
     	System.out.print("Message to send: ");
@@ -330,66 +247,28 @@ public class AnnouncementServerClientApp {
     		announcementList.add(reference);
     	}
     	
-    	List<String> toHash = new ArrayList<>();
-    	toHash.add(username); // src
-    	toHash.add("server"); //dest
-    	toHash.add(sn.toString());
-    	toHash.add(publicKey);
-    	toHash.add(message);
-    	toHash.addAll(announcementList);
-    	
-    	String signature = ""; 
-    	try {
-    		signature = CryptoTools.makeSignature(toHash.toArray(new String[0]));
-    	} catch (Exception e) {
-    		printError(e.getMessage());
-    		mainMenu();
-    	}
-    
 		try {
-			List<String> ret = client.postGeneral(publicKey, message, announcementList, signature);
-			
-			String hash = CryptoTools.decryptSignature("server", ret.get(1));
-    		
-    		if (CryptoTools.checkHash("server", username, String.valueOf(sn), ret.get(0), hash)) {
-    			printSuccess(ret.get(0));
-    		}
-    		
-    		sn++;
-    		updateSn();
+			printSuccess(client.postGeneral(message, announcementList));
 		} catch (Exception e) {
-			if (e.getMessage().contains("Possible drop detected")) {
-    			sn++;
-    			updateSn();
-    		}
-			printError(e.getMessage() + "\nPlease repeat!");
+			printError(e.getMessage());
 		}
-    	
+
     	mainMenu();
     }
     
     /* Read Menu */
-    public static void readMenu() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, UnrecoverableEntryException, KeyStoreException, CertificateException {
+    public static void readMenu() {
     	menu.displayReadMenu();
     	
     	System.out.print("Client whose posts you want to see: ");
     	String clientID = userStringInput();
     	
-    	/* Get PublicKey */
-    	// String publicKey = CryptoTools.publicKeyAsString("src/main/resources/"+clientID+"pub.der");
-    	String publicKey = CryptoTools.publicKeyAsString(CryptoTools.getPublicKey(clientID));
-    	
     	System.out.print("Number of posts to read (use 0 for all): ");
     	int number = userIntInput();
-    	
-    	String signature = CryptoTools.makeHash(publicKey, String.valueOf(number));
-    	
+    	/* Get PublicKey */
+		
 		try {
-			List<String> ret = client.read(publicKey, Long.valueOf(number), signature);
-			
-    		if (CryptoTools.checkHash(ret.toArray(new String[0]))) {
-    			printSuccess(ret.get(0));
-    		}
+			printSuccess(client.read(clientID, number));
 		} catch (Exception e) {
 			printError(e.getMessage());
 		}
@@ -398,21 +277,15 @@ public class AnnouncementServerClientApp {
     }
     
     /* Read General Menu */
-    public static void readGeneralMenu() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, UnrecoverableEntryException, KeyStoreException, CertificateException {
+    public static void readGeneralMenu() {
     	menu.displayReadGeneralMenu();
     	
     	System.out.print("Number of posts to read (use 0 for all): ");
     	int number = userIntInput();
     	
-    	String signature = CryptoTools.makeHash(String.valueOf(number));
-    	
-		try {
-			List<String> ret = client.readGeneral(Long.valueOf(number), signature);
-    		if (CryptoTools.checkHash(ret.toArray(new String[0]))) {
-    			printSuccess(ret.get(0));
-    		}
-			//printSuccess(client.readGeneral(Long.valueOf(number)));
-		} catch (EmptyBoardFault_Exception | InvalidNumberFault_Exception | NumberPostsFault_Exception e) {
+    	try {
+			printSuccess(client.readGeneral(number));
+		} catch (Exception e) {
 			printError(e.getMessage());
 		}
     	    	
