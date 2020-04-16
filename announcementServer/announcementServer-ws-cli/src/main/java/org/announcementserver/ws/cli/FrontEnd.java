@@ -14,6 +14,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
 import org.announcementserver.common.CryptoTools;
+import org.announcementserver.common.Constants;
 import org.announcementserver.ws.EmptyBoardFault_Exception;
 import org.announcementserver.ws.InvalidNumberFault_Exception;
 import org.announcementserver.ws.MessageSizeFault_Exception;
@@ -24,13 +25,22 @@ import org.announcementserver.ws.ReferredUserFault_Exception;
 import org.announcementserver.ws.UserNotRegisteredFault_Exception;
 
 public class FrontEnd {
+    List<AnnouncementServerClient> clients = null;
     AnnouncementServerClient client = null;
     String username = null;
     Integer sn;
     String publicKey;
 
-    public FrontEnd(String wsUrl) throws AnnouncementServerClientException {
-        client = new AnnouncementServerClient(wsUrl);
+    public FrontEnd(String host, String numServers) throws AnnouncementServerClientException {
+        String wsUrl;
+        Integer nServ = Integer.valueOf(numServers);
+
+        clients = new ArrayList<>();
+        for (Integer i = 1; i <= nServ; i++) {
+            wsUrl = String.format(Constants.WS_NAME_FORMAT, host, Constants.PORT_START + i);
+            clients.add(new AnnouncementServerClient(wsUrl));
+        }
+        client = clients.get(0); // FIXME temporary for 1 server only
     }
 
     public void init(String username) throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException,
@@ -82,6 +92,8 @@ public class FrontEnd {
 
         if (ret.size() == 3) {
             sn = Integer.valueOf(ret.get(1));
+        } else {
+            sn = 0;
         }
 
         return response;

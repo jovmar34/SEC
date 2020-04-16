@@ -19,7 +19,11 @@
     <mainclass>org.announcementserver.ws.AnnouncementServerApp</mainclass>
     <wsdl.dir>${basedir}/../announcementServer-contract/</wsdl.dir>
     <ws.name>announcementserver-ws</ws.name>
-    <ws.url>http://localhost:8090/${ws.name}/endpoint/</ws.url>
+	<ws.host>localhost</ws.host>
+	<ws.id>1</ws.id>
+    <!--
+		<ws.url>http://localhost:8091/${ws.name}/endpoint/</ws.url>
+	-->
   </properties>
   
   <dependencies>
@@ -121,7 +125,8 @@
 				<killAfter>-1</killAfter>
 				<mainClass>${mainclass}</mainClass>
 				<arguments>
-						<argument>${ws.url}</argument>
+					<argument>${ws.host}</argument>
+					<argument>${ws.id}</argument>
 				</arguments>
 			</configuration>
 		</plugin>

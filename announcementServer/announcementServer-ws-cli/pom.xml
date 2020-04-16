@@ -20,8 +20,11 @@
 	<wsdl.dir>${basedir}/../announcementServer-contract/</wsdl.dir>
 	<ws.name>announcementserver-ws</ws.name>
 	<ws.host>localhost</ws.host>
-	<ws.port>8090</ws.port>
-	<ws.url>http://${ws.host}:${ws.port}/${ws.name}/endpoint/</ws.url>
+	<ws.num>1</ws.num>
+	<!--
+		<ws.port>8090</ws.port>
+		<ws.url>http://${ws.host}:${ws.port}/${ws.name}/endpoint/</ws.url>
+	-->
   </properties>
   
   <dependencies>
@@ -139,7 +142,8 @@
 				<killAfter>-1</killAfter>
 				<mainClass>${mainclass}</mainClass>
 				<arguments>
-					<argument>${ws.url}</argument>
+					<argument>${ws.host}</argument>
+					<argument>${ws.num}</argument>
 				</arguments>
 			</configuration>
 		</plugin>

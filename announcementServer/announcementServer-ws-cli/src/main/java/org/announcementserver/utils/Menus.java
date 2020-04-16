@@ -12,12 +12,11 @@ public class Menus {
 		System.out.println("|                    MAIN MENU                  |");
 		System.out.println("|                                               |");
 		System.out.println("+-----------------------------------------------+");
-		System.out.println("| 1 - Register                                  |");
-		System.out.println("| 2 - Post                                      |");
-		System.out.println("| 3 - Post General                              |");
-		System.out.println("| 4 - Read                                      |");
-		System.out.println("| 5 - Read General                              |");
-		System.out.println("| 6 - Exit                                      |");
+		System.out.println("| 1 - Post                                      |");
+		System.out.println("| 2 - Post General                              |");
+		System.out.println("| 3 - Read                                      |");
+		System.out.println("| 4 - Read General                              |");
+		System.out.println("| 5 - Exit                                      |");
 		System.out.println("+-----------------------------------------------+");
 		System.out.println(RESET);
 	}

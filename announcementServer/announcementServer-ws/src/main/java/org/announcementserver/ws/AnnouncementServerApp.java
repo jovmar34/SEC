@@ -3,6 +3,7 @@ package org.announcementserver.ws;
 import java.util.Scanner;
 import javax.xml.ws.Endpoint;
 import org.announcementserver.utils.*;
+import org.announcementserver.common.Constants;
 
 /**
  * Server Side Application
@@ -17,12 +18,14 @@ public class AnnouncementServerApp {
     		return;
     	}
 
-    	String wsURL = null;
+		String host = null;
+		String id;
 
     	// Create server implementation object, according to options
     	AnnouncementServerEndpointManager endpoint = null;
-    	wsURL = args[0];
-    	endpoint = new AnnouncementServerEndpointManager(wsURL);
+		host = args[0];
+		id = args[1];
+    	endpoint = new AnnouncementServerEndpointManager(String.format(Constants.WS_NAME_FORMAT, host, Constants.PORT_START + Integer.valueOf(id)));
     	String answer = "";
 
     	try {

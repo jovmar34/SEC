@@ -56,16 +56,16 @@ public class AnnouncementServerClientApp {
     public static void main(String[] args ) throws AnnouncementServerClientException, NoSuchAlgorithmException, InvalidKeySpecException, IOException, UnrecoverableEntryException, KeyStoreException, CertificateException {
     	
     	// Check arguments.
-    	if (args.length == 0) {
+    	if (args.length != 2) {
     		System.err.println("Argument(s) missing!");
     		System.err.println("Usage: java " + AnnouncementServerClientApp.class.getName() + " wsURL OR uddiURL wsName");
     		return;
     	}
+		
+		String host = args[0];
+		String numServers = args[1];
     	
-    	String wsURL = args[0];
-    	
-    	System.out.printf("Creating client for server at %s%n", wsURL);
-        client = new FrontEnd(wsURL);
+        client = new FrontEnd(host, numServers);
     	
         // Start of Interaction
     	authenticationMenu();
@@ -120,6 +120,8 @@ public class AnnouncementServerClientApp {
 		System.out.println(RESET);
 		
 		client.init(username);
+
+		registerMenu();
     	    	
     	mainMenu();
     }
@@ -141,27 +143,28 @@ public class AnnouncementServerClientApp {
     	}
     	
     	switch (menuItem) {
-    	case 1:
+    	/*case 1:
     		// Register Menu
     		registerMenu();
-    		System.exit(0);
-    	case 2:
+			System.exit(0);
+		*/
+    	case 1:
     		// Post Menu
     		postMenu();
     		System.exit(0);
-    	case 3:
+    	case 2:
     		// Post General Menu
     		postGeneralMenu();
     		System.exit(0);
-    	case 4:
+    	case 3:
     		// Read Menu
     		readMenu();
     		System.exit(0);
-    	case 5:
+    	case 4:
     		// Read General Menu
     		readGeneralMenu();
     		System.exit(0);
-    	case 6:
+    	case 5:
     		// Exit
     		menu.displayExitMenu();
     		System.exit(0);
@@ -214,6 +217,7 @@ public class AnnouncementServerClientApp {
 		try {
 			printSuccess(client.post(message, announcementList));
 		} catch (Exception e) {
+			e.printStackTrace();
 			printError(e.getMessage());
 		}
     	
