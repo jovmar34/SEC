@@ -18,8 +18,8 @@ import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.util.Scanner;
 import org.announcementserver.utils.*;
+import org.announcementserver.common.Constants;
 import org.announcementserver.common.CryptoTools;
-import org.announcementserver.common.PossibleTamperingException;
 import org.announcementserver.exceptions.EmptyBoardException;
 import org.announcementserver.exceptions.InvalidNumberException;
 import org.announcementserver.exceptions.MessageSizeException;
@@ -30,6 +30,8 @@ import org.announcementserver.exceptions.ReferredUserException;
 import org.announcementserver.exceptions.UserNotRegisteredException;
 
 public class AnnouncementServer implements Serializable {
+	
+	private static final long serialVersionUID = 8208757326477388685L;
 	private HashMap<Integer, String> pks; // client id => public key association
 	private HashMap<String, Integer> clients; // public key => client id association (OVERKILL?) FIXME
 	private ArrayList<Announcement> generalBoard;
@@ -247,12 +249,9 @@ public class AnnouncementServer implements Serializable {
 			throws UserNotRegisteredException, MessageSizeException, ReferredUserException, ReferredAnnouncementException, PostTypeException {
 		
 		List<String> response = new ArrayList<>();
-		Integer sn = sns.get(clients.get(publicKey));
 		
 		/* Verify existence of publicKey */
-		if (!personalBoards.containsKey(publicKey))  {
-			throw new UserNotRegisteredException("User is not registered yet");
-		}
+		Integer sn = sns.get(clients.get(publicKey));
 		
 		String clientID = String.format("client%d", clients.get(publicKey));
 		String hash = null;
@@ -278,6 +277,10 @@ public class AnnouncementServer implements Serializable {
 			}
 		} catch (Exception e) {
 			throw new RuntimeException(e.getMessage());
+		}
+
+		if (!personalBoards.containsKey(publicKey))  {
+			throw new UserNotRegisteredException("User is not registered yet");
 		}
 		
 		/* Verify correct size of message */
@@ -339,30 +342,47 @@ public class AnnouncementServer implements Serializable {
 	}
 	
 	/* Read */
-	public List<String> read(String publicKey, Long number, String signature) 
+	public List<String> read(String readerKey, String publicKey, Long number, String signature) 
 			throws InvalidNumberException, ReferredUserException, EmptyBoardException, NumberPostsException {
 		//number and PublicKey enough to find a post in PersonalBoards
+		
 		List<String> response = new ArrayList<>();
+
+		Integer sn = sns.get(clients.get(readerKey));
+		String readerID = String.format("client%d", clients.get(readerKey));
+		
+		String hash = null;
+
+		try {
+			hash = CryptoTools.decryptSignature(readerID, signature);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(e.getMessage());
+		}
+
+		List<String> inHash = new ArrayList<>();
+		inHash.add(readerID);
+		inHash.add(Constants.SERVER_NAME);
+		inHash.add(sn.toString());
+		inHash.add(publicKey);
+		inHash.add(number.toString());
+		inHash.add(hash);
 		
 		try{
-			if (!CryptoTools.checkHash(publicKey, String.valueOf(number), signature)) { 
-				throw new RuntimeException("Error: Possible tampering from differing hashes");
+			if (!CryptoTools.checkHash(inHash.toArray(new String[0]))) { 
+				throw new RuntimeException("Error: Possible tampering detected");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException(e.getMessage());
 		}
 		
-		if (number < 0) throw new InvalidNumberException("Invalid number");
-		
-		if (!personalBoards.containsKey(publicKey)) throw new ReferredUserException("Referred user doesn't exist");
-		
 		ArrayList<Announcement> board = personalBoards.get(publicKey); //get the personal board
 		
 		if (board.isEmpty()) throw new EmptyBoardException("The board has no posts");
 		
 		if (number > board.size()) throw new NumberPostsException("The board doesn't have that many posts");
-	
+
 		String res = "";      //save the posts you want to see
 		int end = board.size() - 1;
 		
@@ -371,10 +391,19 @@ public class AnnouncementServer implements Serializable {
 		for(int i = 0; i < limit; i++) {
 			res += board.get(end - i).toString();
 		}
+
+		sns.put(clients.get(publicKey), sn + 1);
+		PersistenceUtils.serialize(instance);
+
+		List<String> outHash = new ArrayList<>();
+		outHash.add(Constants.SERVER_NAME);
+		outHash.add(readerID);
+		outHash.add(sn.toString());
+		outHash.add(res);
 		
 		try {
 			response.add(res);
-			response.add(CryptoTools.makeHash(res));
+			response.add(CryptoTools.makeSignature(outHash.toArray(new String[0])));
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException(e.getMessage());
@@ -384,20 +413,39 @@ public class AnnouncementServer implements Serializable {
 	}
 	
 	/* Read General */
-	public List<String> readGeneral(Long number, String signature) 
+	public List<String> readGeneral(String readerKey, Long number, String signature) 
 			throws InvalidNumberException, EmptyBoardException, NumberPostsException {
 		//number and PublicKey enough to find a post in GeneralBoard
 		List<String> response = new ArrayList<>();
+
+		Integer sn = sns.get(clients.get(readerKey));
+		String readerID = String.format("client%d", clients.get(readerKey));
 		
-		try{
-			if (!CryptoTools.checkHash(String.valueOf(number), signature)) { 
-				throw new RuntimeException("Error: Possible tampering from differing hashes");
-			}
+		String hash = null;
+
+		try {
+			hash = CryptoTools.decryptSignature(readerID, signature);
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException(e.getMessage());
 		}
 		
+		List<String> inHash = new ArrayList<>();
+		inHash.add(readerID);
+		inHash.add(Constants.SERVER_NAME);
+		inHash.add(sn.toString());
+		inHash.add(number.toString());
+		inHash.add(hash);
+		
+		try{
+			if (!CryptoTools.checkHash(inHash.toArray(new String[0]))) { 
+				throw new RuntimeException("Error: Possible tampering detected");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(e.getMessage());
+		}
+
 		if (number < 0) throw new InvalidNumberException("Invalid number");
 		
 		if (generalBoard.isEmpty()) throw new EmptyBoardException("The board has no posts");
@@ -412,13 +460,23 @@ public class AnnouncementServer implements Serializable {
 		for(int i = 0; i < limit; i++) {
 			res += generalBoard.get(end - i).toString();
 		}
+
+		sns.put(clients.get(readerKey), sn + 1);
+		PersistenceUtils.serialize(instance);
+
+		List<String> outHash = new ArrayList<>();
+		outHash.add(Constants.SERVER_NAME);
+		outHash.add(readerID);
+		outHash.add(sn.toString());
+		outHash.add(res);
 		
 		try {
 			response.add(res);
-			response.add(CryptoTools.makeHash(res));
-		} catch (IOException | NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException | CertificateException e) {
+			response.add(CryptoTools.makeSignature(outHash.toArray(new String[0])));
+		} catch (Exception e) {
 			e.printStackTrace();
-		}		
+			throw new RuntimeException(e.getMessage());
+		}
 		
 		return response;
 	}

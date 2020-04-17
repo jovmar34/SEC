@@ -70,14 +70,14 @@ public class AnnouncementServerClient {
 		return port.postGeneral(publicKey, message, announcementList, signature);
 	}
 	
-	public List<String> read(String publicKey, Long number, String signature) 
+	public List<String> read(String readerKey, String publicKey, Long number, String signature) 
 			throws EmptyBoardFault_Exception, InvalidNumberFault_Exception, NumberPostsFault_Exception, ReferredUserFault_Exception {
-		return port.read(publicKey, number, signature);
+		return port.read(readerKey, publicKey, number, signature);
 	}
 	
-	public List<String> readGeneral(Long number, String signature) 
+	public List<String> readGeneral(String readerKey, Long number, String signature) 
 			throws EmptyBoardFault_Exception, InvalidNumberFault_Exception, NumberPostsFault_Exception {
-		return port.readGeneral(number, signature);
+		return port.readGeneral(readerKey, number, signature);
 	}
 	
 }

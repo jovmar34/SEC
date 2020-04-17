@@ -65,7 +65,7 @@ public class FrontEnd {
         String signature = "";
         List<String> toHash = new ArrayList<>();
         toHash.add(username);
-        toHash.add("server");
+        toHash.add(Constants.SERVER_NAME);
         toHash.add(publicKey);
 
         signature = CryptoTools.makeSignature(toHash.toArray(new String[0]));
@@ -172,43 +172,69 @@ public class FrontEnd {
 
     public String read(String clientID, Integer number) throws NoSuchAlgorithmException, UnrecoverableEntryException,
             KeyStoreException, CertificateException, IOException, EmptyBoardFault_Exception,
-            InvalidNumberFault_Exception, NumberPostsFault_Exception, ReferredUserFault_Exception {
+            InvalidNumberFault_Exception, NumberPostsFault_Exception, ReferredUserFault_Exception, InvalidKeyException,
+            NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
 
         checkInit();
 
         //ADD SIGNATURE AND SN
         String response;
         String readKey = CryptoTools.publicKeyAsString(CryptoTools.getPublicKey(clientID));
+
+        List<String> toHash = new ArrayList<>();
+
+        toHash.add(username);
+        toHash.add(Constants.SERVER_NAME);
+        toHash.add(sn.toString());
+        toHash.add(readKey);
+        toHash.add(number.toString());
     	
-    	String signature = CryptoTools.makeHash(publicKey, String.valueOf(number));
+    	String signature = CryptoTools.makeSignature(toHash.toArray(new String[0]));
     	
-        List<String> ret = client.read(readKey, Long.valueOf(number), signature);
+        List<String> ret = client.read(readKey, publicKey, Long.valueOf(number), signature);
         
-        if (CryptoTools.checkHash(ret.toArray(new String[0]))) {
+        String hash = CryptoTools.decryptSignature(Constants.SERVER_NAME, ret.get(1));
+
+        if (CryptoTools.checkHash(Constants.SERVER_NAME, username, String.valueOf(sn), ret.get(0), hash)) {
             response = ret.get(0);
         } else {
             throw new RuntimeException("Hashes don't match");
         }
+
+        sn++;
 
         return response;
     }
 
     public String readGeneral(Integer number) throws NoSuchAlgorithmException, UnrecoverableEntryException,
             KeyStoreException, CertificateException, IOException, EmptyBoardFault_Exception,
-            InvalidNumberFault_Exception, NumberPostsFault_Exception {
+            InvalidNumberFault_Exception, NumberPostsFault_Exception, InvalidKeyException, NoSuchPaddingException,
+            IllegalBlockSizeException, BadPaddingException {
 
         checkInit();
 
         String response;
-        String signature = CryptoTools.makeHash(String.valueOf(number));
-    	
-        List<String> ret = client.readGeneral(Long.valueOf(number), signature);
 
-        if (CryptoTools.checkHash(ret.toArray(new String[0]))) {
+        List<String> toHash = new ArrayList<>();
+
+        toHash.add(username);
+        toHash.add(Constants.SERVER_NAME);
+        toHash.add(sn.toString());
+        toHash.add(number.toString());
+    	
+    	String signature = CryptoTools.makeSignature(toHash.toArray(new String[0]));
+    	
+        List<String> ret = client.readGeneral(publicKey, Long.valueOf(number), signature);
+
+        String hash = CryptoTools.decryptSignature(Constants.SERVER_NAME, ret.get(1));
+
+        if (CryptoTools.checkHash(Constants.SERVER_NAME, username, String.valueOf(sn), ret.get(0), hash)) {
             response = ret.get(0);
         } else {
             throw new RuntimeException("Hashes don't match");
         }
+
+        sn++;
 
         return response;
     }

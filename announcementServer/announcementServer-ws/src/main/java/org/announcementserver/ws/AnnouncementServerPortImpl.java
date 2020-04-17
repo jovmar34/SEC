@@ -7,7 +7,14 @@ import javax.jws.WebService;
 import javax.xml.ws.WebServiceContext;
 
 import org.announcementserver.common.PossibleTamperingException;
-import org.announcementserver.exceptions.*;
+import org.announcementserver.exceptions.EmptyBoardException;
+import org.announcementserver.exceptions.InvalidNumberException;
+import org.announcementserver.exceptions.MessageSizeException;
+import org.announcementserver.exceptions.NumberPostsException;
+import org.announcementserver.exceptions.PostTypeException;
+import org.announcementserver.exceptions.ReferredAnnouncementException;
+import org.announcementserver.exceptions.ReferredUserException;
+import org.announcementserver.exceptions.UserNotRegisteredException;
 
 @WebService(endpointInterface = "org.announcementserver.ws.AnnouncementServerPortType",
 		wsdlLocation = "",
@@ -90,11 +97,11 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 	}
 	
 	/* Read */
-	public List<String> read(String publicKey, Long number, String signature) 
+	public List<String> read(String readerKey, String publicKey, Long number, String signature) 
 			throws InvalidNumberFault_Exception, ReferredUserFault_Exception, EmptyBoardFault_Exception, NumberPostsFault_Exception {
 		List<String> res = null;
 		try {
-			res = AnnouncementServer.getInstance().read(publicKey, number, signature);
+			res = AnnouncementServer.getInstance().read(readerKey, publicKey, number, signature);
 		} catch (InvalidNumberException e) {
 			throwInvalidNumberFault(e.getMessage());
 		} catch (ReferredUserException e) {
@@ -110,11 +117,11 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 	}
 	
 	/* Read General */
-	public List<String> readGeneral(Long number, String signature) 
+	public List<String> readGeneral(String readerKey, Long number, String signature) 
 			throws InvalidNumberFault_Exception, EmptyBoardFault_Exception, NumberPostsFault_Exception {
 		List<String> res = null;
 		try {
-			res = AnnouncementServer.getInstance().readGeneral(number, signature);
+			res = AnnouncementServer.getInstance().readGeneral(readerKey, number, signature);
 		} catch (InvalidNumberException e) {
 			throwInvalidNumberFault(e.getMessage());
 		} catch (EmptyBoardException e) {
