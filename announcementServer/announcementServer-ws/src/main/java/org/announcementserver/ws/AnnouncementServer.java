@@ -17,6 +17,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.util.Scanner;
+
+import javax.management.RuntimeErrorException;
+
 import org.announcementserver.utils.*;
 import org.announcementserver.common.Constants;
 import org.announcementserver.common.CryptoTools;
@@ -103,11 +106,9 @@ public class AnnouncementServer implements Serializable {
 		List<String> toHash = new ArrayList<>();
 		boolean new_user = false;
 
-		synchronized(personalBoards) {
-			if (!personalBoards.containsKey(publicKey)) {
-				personalBoards.put(publicKey, new ArrayList<>());
-				new_user = true;
-			}
+		if (!personalBoards.containsKey(publicKey)) {
+			personalBoards.put(publicKey, new ArrayList<>());
+			new_user = true;
 		}
 
 		if (new_user) {
@@ -147,14 +148,8 @@ public class AnnouncementServer implements Serializable {
 	public List<String> post(String publicKey, String message, List<String> announcementList, String signature) 
 			throws UserNotRegisteredException, MessageSizeException, ReferredUserException, PostTypeException, ReferredAnnouncementException {
 		
-		List<String> response = new ArrayList<>();
-		
-		/* Verify existence of publicKey */
-		if (!personalBoards.containsKey(publicKey))  {
-			throw new UserNotRegisteredException("User is not registered yet");
-			
-		}
-		
+		/* ---------------------------- Verify signature ----------------------------------*/
+
 		Integer sn = sns.get(clients.get(publicKey));
 		
 		String clientID = String.format("client%d", clients.get(publicKey));
@@ -182,7 +177,15 @@ public class AnnouncementServer implements Serializable {
 		} catch (Exception e) {
 			throw new RuntimeException(e.getMessage());
 		}
-		
+
+		/* -----------------------------------------------------------------------------------*/
+
+		/* ---------------------------- Application Behavior ----------------------------------*/
+
+		/* Verify existence of publicKey */
+		if (!personalBoards.containsKey(publicKey))  {
+			throw new UserNotRegisteredException("User is not registered yet");
+		}
 		
 		/* Verify correct size of message */
 		if (message.length() > 255) {
@@ -227,6 +230,12 @@ public class AnnouncementServer implements Serializable {
 		sns.put(clients.get(publicKey), sn + 1);
 		PersistenceUtils.serialize(instance);
 		
+
+		/* -----------------------------------------------------------------------------------*/
+
+		/* ---------------------------- Create Own Signature ---------------------------------*/
+
+		List<String> response = new ArrayList<>();
 		List<String> outHash = new ArrayList<>();
 		outHash.add("server");
 		outHash.add(clientID);
@@ -241,6 +250,8 @@ public class AnnouncementServer implements Serializable {
 			throw new RuntimeException(e.getMessage());
 		}
 		
+		/* -----------------------------------------------------------------------------------*/
+
 		return response;
 	}
 	
@@ -248,7 +259,7 @@ public class AnnouncementServer implements Serializable {
 	public List<String> postGeneral(String publicKey, String message, List<String> announcementList, String signature) 
 			throws UserNotRegisteredException, MessageSizeException, ReferredUserException, ReferredAnnouncementException, PostTypeException {
 		
-		List<String> response = new ArrayList<>();
+		/* ---------------------------- Verify signature ----------------------------------*/
 		
 		/* Verify existence of publicKey */
 		Integer sn = sns.get(clients.get(publicKey));
@@ -278,6 +289,10 @@ public class AnnouncementServer implements Serializable {
 		} catch (Exception e) {
 			throw new RuntimeException(e.getMessage());
 		}
+		
+		/* -----------------------------------------------------------------------------------*/
+
+		/* ---------------------------- Application Behavior ----------------------------------*/
 
 		if (!personalBoards.containsKey(publicKey))  {
 			throw new UserNotRegisteredException("User is not registered yet");
@@ -287,9 +302,8 @@ public class AnnouncementServer implements Serializable {
 		if (message.length() > 255) {
 			throw new MessageSizeException("Too many characters in the message (max:255)");
 		}
-		
+
 		Announcement post = new Announcement();
-		post.setContent(message);
 		
 		/* Verify structure of announcementList */
 		for (String reference : announcementList) {
@@ -315,7 +329,8 @@ public class AnnouncementServer implements Serializable {
 			
 			post.addReference(reference);
 		}
-		
+
+		post.setContent(message);
 		post.setId(String.format("gc%da%d", clients.get(publicKey), generalBoard.size()));
 		post.setAuthor(String.format("client%d", clients.get(publicKey)));
 		
@@ -324,6 +339,11 @@ public class AnnouncementServer implements Serializable {
 		sns.put(clients.get(publicKey), sn + 1);
 		PersistenceUtils.serialize(instance);
 		
+		/* -----------------------------------------------------------------------------------*/
+
+		/* ---------------------------- Create Own Signature ---------------------------------*/
+		
+		List<String> response = new ArrayList<>();
 		List<String> outHash = new ArrayList<>();
 		outHash.add("server");
 		outHash.add(clientID);
@@ -338,15 +358,18 @@ public class AnnouncementServer implements Serializable {
 			throw new RuntimeException(e.getMessage());
 		}
 		
+		/* -----------------------------------------------------------------------------------*/
+
 		return response;
 	}
 	
 	/* Read */
 	public List<String> read(String readerKey, String publicKey, Long number, String signature) 
-			throws InvalidNumberException, ReferredUserException, EmptyBoardException, NumberPostsException {
+			throws InvalidNumberException, ReferredUserException, EmptyBoardException, NumberPostsException,
+			UserNotRegisteredException {
 		//number and PublicKey enough to find a post in PersonalBoards
 		
-		List<String> response = new ArrayList<>();
+		/* ---------------------------- Verify signature ----------------------------------*/
 
 		Integer sn = sns.get(clients.get(readerKey));
 		String readerID = String.format("client%d", clients.get(readerKey));
@@ -376,7 +399,15 @@ public class AnnouncementServer implements Serializable {
 			e.printStackTrace();
 			throw new RuntimeException(e.getMessage());
 		}
-		
+
+		/* -----------------------------------------------------------------------------------*/
+
+		/* ---------------------------- Application Behavior ----------------------------------*/
+
+		if (!personalBoards.containsKey(publicKey))  {
+			throw new RuntimeException("User is not registered yet");
+		}
+				
 		ArrayList<Announcement> board = personalBoards.get(publicKey); //get the personal board
 		
 		if (board.isEmpty()) throw new EmptyBoardException("The board has no posts");
@@ -395,6 +426,11 @@ public class AnnouncementServer implements Serializable {
 		sns.put(clients.get(publicKey), sn + 1);
 		PersistenceUtils.serialize(instance);
 
+		/* -----------------------------------------------------------------------------------*/
+
+		/* ---------------------------- Create Own Signature ---------------------------------*/
+		
+		List<String> response = new ArrayList<>();
 		List<String> outHash = new ArrayList<>();
 		outHash.add(Constants.SERVER_NAME);
 		outHash.add(readerID);
@@ -409,6 +445,8 @@ public class AnnouncementServer implements Serializable {
 			throw new RuntimeException(e.getMessage());
 		}
 		
+		/* -----------------------------------------------------------------------------------*/
+
 		return response;
 	}
 	
@@ -416,8 +454,9 @@ public class AnnouncementServer implements Serializable {
 	public List<String> readGeneral(String readerKey, Long number, String signature) 
 			throws InvalidNumberException, EmptyBoardException, NumberPostsException {
 		//number and PublicKey enough to find a post in GeneralBoard
-		List<String> response = new ArrayList<>();
 
+		/* ---------------------------- Verify signature ----------------------------------*/
+		
 		Integer sn = sns.get(clients.get(readerKey));
 		String readerID = String.format("client%d", clients.get(readerKey));
 		
@@ -446,6 +485,10 @@ public class AnnouncementServer implements Serializable {
 			throw new RuntimeException(e.getMessage());
 		}
 
+		/* -----------------------------------------------------------------------------------*/
+
+		/* ---------------------------- Application Behavior ----------------------------------*/
+
 		if (number < 0) throw new InvalidNumberException("Invalid number");
 		
 		if (generalBoard.isEmpty()) throw new EmptyBoardException("The board has no posts");
@@ -464,6 +507,11 @@ public class AnnouncementServer implements Serializable {
 		sns.put(clients.get(readerKey), sn + 1);
 		PersistenceUtils.serialize(instance);
 
+		/* -----------------------------------------------------------------------------------*/
+
+		/* ---------------------------- Create Own Signature ---------------------------------*/
+
+		List<String> response = new ArrayList<>();
 		List<String> outHash = new ArrayList<>();
 		outHash.add(Constants.SERVER_NAME);
 		outHash.add(readerID);
@@ -478,6 +526,8 @@ public class AnnouncementServer implements Serializable {
 			throw new RuntimeException(e.getMessage());
 		}
 		
+		/* -----------------------------------------------------------------------------------*/
+
 		return response;
 	}
 	

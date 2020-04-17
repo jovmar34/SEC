@@ -32,9 +32,12 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 	@SuppressWarnings("unused")
 	private final AnnouncementServerEndpointManager endpointManager;
 
+	private AnnouncementServerProxy proxy;
+
 	/** Constructor receives a reference to the endpoint manager. */
 	public AnnouncementServerPortImpl(AnnouncementServerEndpointManager endpointManager) {
 		this.endpointManager = endpointManager;
+		this.proxy = new AnnouncementServerProxy();
 	}
 	
 	// Main operations -----------------------------------------------
@@ -57,7 +60,7 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 			throws UserNotRegisteredFault_Exception, MessageSizeFault_Exception, ReferredUserFault_Exception, PostTypeFault_Exception, ReferredAnnouncementFault_Exception {
 		List<String> res = null;
 		try {
-			res = AnnouncementServer.getInstance().post(publicKey, message, announcementList, signature);
+			res = this.proxy.post(publicKey, message, announcementList, signature);
 		} catch (UserNotRegisteredException e) {
 			throwUserNotRegisteredFault(e.getMessage());
 		} catch (MessageSizeException e) {
@@ -79,7 +82,7 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 			throws UserNotRegisteredFault_Exception, MessageSizeFault_Exception, ReferredUserFault_Exception, PostTypeFault_Exception, ReferredAnnouncementFault_Exception {
 		List<String> res = null;
 		try {
-			res = AnnouncementServer.getInstance().postGeneral(publicKey, message, announcementList, signature);
+			res = this.proxy.postGeneral(publicKey, message, announcementList, signature);
 		} catch (UserNotRegisteredException e) {
 			throwUserNotRegisteredFault(e.getMessage());
 		} catch (MessageSizeException e) {
@@ -101,7 +104,7 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 			throws InvalidNumberFault_Exception, ReferredUserFault_Exception, EmptyBoardFault_Exception, NumberPostsFault_Exception {
 		List<String> res = null;
 		try {
-			res = AnnouncementServer.getInstance().read(readerKey, publicKey, number, signature);
+			res = this.proxy.read(readerKey, publicKey, number, signature);
 		} catch (InvalidNumberException e) {
 			throwInvalidNumberFault(e.getMessage());
 		} catch (ReferredUserException e) {
@@ -121,7 +124,7 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 			throws InvalidNumberFault_Exception, EmptyBoardFault_Exception, NumberPostsFault_Exception {
 		List<String> res = null;
 		try {
-			res = AnnouncementServer.getInstance().readGeneral(readerKey, number, signature);
+			res = this.proxy.readGeneral(readerKey, number, signature);
 		} catch (InvalidNumberException e) {
 			throwInvalidNumberFault(e.getMessage());
 		} catch (EmptyBoardException e) {
