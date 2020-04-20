@@ -261,7 +261,7 @@ public class FrontEnd {
             if (verbose)
                 System.out.println("Creating stub ...");
             service = new AnnouncementServerService();
-            port = service.getAnnouncementServerPort());
+            port = service.getAnnouncementServerPort();
 
             if (verbose)
                 System.out.println("Setting endpoint address ...");
