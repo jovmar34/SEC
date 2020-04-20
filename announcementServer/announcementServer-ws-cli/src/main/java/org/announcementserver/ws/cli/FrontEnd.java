@@ -8,6 +8,7 @@ import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -15,6 +16,8 @@ import javax.crypto.NoSuchPaddingException;
 
 import org.announcementserver.common.CryptoTools;
 import org.announcementserver.common.Constants;
+import org.announcementserver.ws.AnnouncementServerPortType;
+import org.announcementserver.ws.AnnouncementServerService;
 import org.announcementserver.ws.EmptyBoardFault_Exception;
 import org.announcementserver.ws.InvalidNumberFault_Exception;
 import org.announcementserver.ws.MessageSizeFault_Exception;
@@ -24,23 +27,35 @@ import org.announcementserver.ws.ReferredAnnouncementFault_Exception;
 import org.announcementserver.ws.ReferredUserFault_Exception;
 import org.announcementserver.ws.UserNotRegisteredFault_Exception;
 
+import javax.xml.ws.BindingProvider;
+import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
+
 public class FrontEnd {
-    List<AnnouncementServerClient> clients = null;
-    AnnouncementServerClient client = null;
+    List<AnnouncementServerPortType> ports = null;
+    List<String> wsUrls = null;
+    AnnouncementServerPortType client = null;
     String username = null;
     Integer sn;
     String publicKey;
 
+    boolean verbose = false;
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
     public FrontEnd(String host, String numServers) throws AnnouncementServerClientException {
-        String wsUrl;
+        wsUrls = new ArrayList<>();
+        ports = new ArrayList<>();
         Integer nServ = Integer.valueOf(numServers);
 
-        clients = new ArrayList<>();
         for (Integer i = 1; i <= nServ; i++) {
-            wsUrl = String.format(Constants.WS_NAME_FORMAT, host, Constants.PORT_START + i);
-            clients.add(new AnnouncementServerClient(wsUrl));
+            wsUrls.add(String.format(Constants.WS_NAME_FORMAT, host, Constants.PORT_START + i));
         }
-        client = clients.get(0); // FIXME temporary for 1 server only
+        
+        createStub();
+
+        if (nServ == 1) client = ports.get(0);
     }
 
     public void init(String username) throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException,
@@ -237,5 +252,28 @@ public class FrontEnd {
         sn++;
 
         return response;
+    }
+
+    private void createStub() {
+        AnnouncementServerPortType port;
+        AnnouncementServerService service;
+        for (String wsUrl: wsUrls) {
+            if (verbose)
+                System.out.println("Creating stub ...");
+            service = new AnnouncementServerService();
+            port = service.getAnnouncementServerPort());
+
+            if (verbose)
+                System.out.println("Setting endpoint address ...");
+            BindingProvider bindingProvider = (BindingProvider) port;
+            Map<String, Object> requestContext = bindingProvider.getRequestContext();
+            requestContext.put(ENDPOINT_ADDRESS_PROPERTY, wsUrl);
+
+            ports.add(port);
+            if (verbose) {
+                System.out.print("Added client for:");
+                System.out.println(wsUrl);    
+            }
+        }
     }
 }
