@@ -3,6 +3,8 @@
 	<name>announcementServer</name>
 	<comment></comment>
 	<projects>
+		<project>announcementServer-ws</project>
+		<project>announcementServer-ws-cli</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
