@@ -94,7 +94,7 @@ public class AnnouncementServer implements Serializable {
 		}
 		
 		try {
-			if (!CryptoTools.checkHash(clientID, "server", publicKey, hash)) { 
+			if (!CryptoTools.checkHash(clientID, Constants.SERVER_NAME, publicKey, hash)) { 
 				throw new RuntimeException("Error: Possible tampering detected on Hash");
 			}
 		} catch (RuntimeException e) {
@@ -115,7 +115,7 @@ public class AnnouncementServer implements Serializable {
 			sns.put(clientN, 0);
 			PersistenceUtils.serialize(instance);
 			
-			toHash.add("server");
+			toHash.add(Constants.SERVER_NAME);
 			toHash.add(clientID);
 			toHash.add("Welcome new user!");
 			
@@ -126,7 +126,7 @@ public class AnnouncementServer implements Serializable {
 				throw new RuntimeException(e.getMessage());
 			}
 		} else {
-			toHash.add("server");
+			toHash.add(Constants.SERVER_NAME);
 			toHash.add(clientID);
 			toHash.add(String.format("Welcome back %s", clientID));
 			toHash.add(sns.get(clientN).toString());
@@ -163,7 +163,7 @@ public class AnnouncementServer implements Serializable {
 		
 		List<String> inHash = new ArrayList<>();
 		inHash.add(clientID);
-		inHash.add("server");
+		inHash.add(Constants.SERVER_NAME);
 		inHash.add(sn.toString());
 		inHash.add(publicKey);
 		inHash.add(message);
@@ -237,7 +237,7 @@ public class AnnouncementServer implements Serializable {
 
 		List<String> response = new ArrayList<>();
 		List<String> outHash = new ArrayList<>();
-		outHash.add("server");
+		outHash.add(Constants.SERVER_NAME);
 		outHash.add(clientID);
 		outHash.add(sn.toString());
 		outHash.add("Success your post was posted!");
@@ -275,7 +275,7 @@ public class AnnouncementServer implements Serializable {
 		
 		List<String> inHash = new ArrayList<>();
 		inHash.add(clientID);
-		inHash.add("server");
+		inHash.add(Constants.SERVER_NAME);
 		inHash.add(sn.toString());
 		inHash.add(publicKey);
 		inHash.add(message);
@@ -345,7 +345,7 @@ public class AnnouncementServer implements Serializable {
 		
 		List<String> response = new ArrayList<>();
 		List<String> outHash = new ArrayList<>();
-		outHash.add("server");
+		outHash.add(Constants.SERVER_NAME);
 		outHash.add(clientID);
 		outHash.add(sn.toString());
 		outHash.add("Success your post was posted!");

@@ -87,7 +87,7 @@ public class FrontEnd {
 
         List<String> ret = client.register(publicKey, signature);
         toHash = new ArrayList<>();
-        toHash.add("server");
+        toHash.add(Constants.SERVER_NAME);
         toHash.add(username);
         toHash.add(ret.get(0));
 
@@ -136,9 +136,9 @@ public class FrontEnd {
 
         List<String> ret = client.post(publicKey, message, announcementList, signature);
 
-        String hash = CryptoTools.decryptSignature("server", ret.get(1));
+        String hash = CryptoTools.decryptSignature(Constants.SERVER_NAME, ret.get(1));
 
-        if (CryptoTools.checkHash("server", username, String.valueOf(sn), ret.get(0), hash)) {
+        if (CryptoTools.checkHash(Constants.SERVER_NAME, username, String.valueOf(sn), ret.get(0), hash)) {
             response = ret.get(0);
         } else {
             throw new RuntimeException("Hashes are not equal");

@@ -36,14 +36,11 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Properties;
+import java.util.Scanner;
 import java.util.List;
 import java.util.ArrayList;
 
 import javax.crypto.Cipher;
-
-
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
 
 /*
 * Cryptographic tools
@@ -52,11 +49,10 @@ import java.io.DataInputStream;
 public class CryptoTools {
 	
 	private static final String KEYSTORE_FILE_PATH = "src/main/resources/";
-	private static final String KEYSTORE_FILENAME = "announcement.jks";
 	private static final String PASSWORD_FILENAME = "announcement.properties";
 	
-	public static KeyStore getKeystore(String password) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
-		File keystoreResource = new File(KEYSTORE_FILE_PATH + KEYSTORE_FILENAME);
+	public static KeyStore getKeystore(String id, String password) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+		File keystoreResource = new File(KEYSTORE_FILE_PATH + "keystores/" + id + ".p12");
 		InputStream keyStoreIS = new FileInputStream(keystoreResource);
 		KeyStore keyStore = KeyStore.getInstance("PKCS12");
 		keyStore.load(keyStoreIS, password.toCharArray());
@@ -66,15 +62,6 @@ public class CryptoTools {
 	private static String getPassword(String id) throws IOException {
 		Properties passwordProps = new Properties();
 		File passwordResource = new File(KEYSTORE_FILE_PATH + PASSWORD_FILENAME);
-		
-		//FileInputStream fis = new FileInputStream(passwordResource);
-		//BufferedInputStream bis = new BufferedInputStream(fis);
-		//DataInputStream dis = new DataInputStream(bis);
-		
-		//while (dis.available() != 0) {
-		//	System.out.println(dis.readLine());
-		//}
-		
 		InputStream passwordIS = new FileInputStream(passwordResource);
 		passwordProps.load(passwordIS);
 		String password = passwordProps.getProperty(id + "-password");
@@ -84,9 +71,7 @@ public class CryptoTools {
 	public static PublicKey getPublicKey(String clientId) throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, IOException, CertificateException {
 		
 		String password = getPassword(clientId);
-		System.out.println(clientId);
-		System.out.println(password);
-		KeyStore keyStore = getKeystore(getPassword("keystore"));
+		KeyStore keyStore = getKeystore(clientId, password);
 		KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(clientId, new KeyStore.PasswordProtection(password.toCharArray()));
 		
 		RSAPublicKey publicKey = (RSAPublicKey) privateKeyEntry.getCertificate().getPublicKey();
@@ -96,7 +81,7 @@ public class CryptoTools {
 	public static PrivateKey getPrivateKey(String clientId) throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, IOException, CertificateException {
 		
 		String password = getPassword(clientId);
-		KeyStore keyStore = getKeystore(getPassword("keystore"));
+		KeyStore keyStore = getKeystore(clientId, password);
 		KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(clientId, new KeyStore.PasswordProtection(password.toCharArray()));
 		
 		RSAPrivateKey privateKey = (RSAPrivateKey) privateKeyEntry.getPrivateKey();
