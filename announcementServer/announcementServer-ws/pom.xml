@@ -21,6 +21,7 @@
     <ws.name>announcementserver-ws</ws.name>
 	<ws.host>localhost</ws.host>
 	<ws.id>1</ws.id>
+	<ws.faults>0</ws.faults>
     <!--
 		<ws.url>http://localhost:8091/${ws.name}/endpoint/</ws.url>
 	-->
@@ -127,6 +128,7 @@
 				<arguments>
 					<argument>${ws.host}</argument>
 					<argument>${ws.id}</argument>
+					<argument>${ws.faults}</argument>
 				</arguments>
 			</configuration>
 		</plugin>

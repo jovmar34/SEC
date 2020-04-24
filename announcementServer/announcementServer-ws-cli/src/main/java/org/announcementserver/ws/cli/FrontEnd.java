@@ -37,6 +37,8 @@ public class FrontEnd {
     String username = null;
     Integer sn;
     String publicKey;
+    List<String> response;
+    Integer nServ;
 
     boolean verbose = false;
 
@@ -44,18 +46,21 @@ public class FrontEnd {
         this.verbose = verbose;
     }
 
-    public FrontEnd(String host, String numServers) throws AnnouncementServerClientException {
+    public FrontEnd(String host, String faults) throws AnnouncementServerClientException {
         wsUrls = new ArrayList<>();
         ports = new ArrayList<>();
-        Integer nServ = Integer.valueOf(numServers);
+        Integer f = Integer.valueOf(faults);
+        nServ = 3 * f + 1;
+        System.out.println(String.format("NServ: %d", nServ));
 
         for (Integer i = 1; i <= nServ; i++) {
             wsUrls.add(String.format(Constants.WS_NAME_FORMAT, host, Constants.PORT_START + i));
         }
-        
+
         createStub();
 
-        if (nServ == 1) client = ports.get(0);
+        if (nServ == 1)
+            client = ports.get(0); // TODO: FOR SIMPLICTY
     }
 
     public void init(String username) throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException,
@@ -74,44 +79,29 @@ public class FrontEnd {
             UnrecoverableEntryException, IOException {
 
         checkInit();
+        Client cli;
 
-        String response = null;
+        response = null;
 
-        String signature = "";
-        List<String> toHash = new ArrayList<>();
-        toHash.add(username);
-        toHash.add(Constants.SERVER_NAME);
-        toHash.add(publicKey);
-
-        signature = CryptoTools.makeSignature(toHash.toArray(new String[0]));
-
-        List<String> ret = client.register(publicKey, signature);
-        toHash = new ArrayList<>();
-        toHash.add(Constants.SERVER_NAME);
-        toHash.add(username);
-        toHash.add(ret.get(0));
-
-        if (ret.size() == 3) { // Not a new user
-            toHash.add(ret.get(1));
+        for (int i = 1; i <= nServ; i++) {
+            cli = new Client(this, Operation.REGISTER, i, Thread.currentThread());
+            cli.start();
         }
 
-        String hash = CryptoTools.decryptSignature(Constants.SERVER_NAME, ret.get(ret.size() - 1));
-
-        toHash.add(hash);
-
-        if (CryptoTools.checkHash(toHash.toArray(new String[0]))) {
-            response = ret.get(0);
-        } else {
-            throw new RuntimeException("Hashes are not equal");
+        try {
+            Thread.currentThread().wait();
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
 
-        if (ret.size() == 3) {
-            sn = Integer.valueOf(ret.get(1));
+        if (response.size() == 3) {
+            sn = Integer.valueOf(response.get(1));
         } else {
             sn = 0;
         }
 
-        return response;
+        return response.get(0);
     }
 
     public String post(String message, List<String> announcementList)
@@ -271,7 +261,7 @@ public class FrontEnd {
 
             ports.add(port);
             if (verbose) {
-                System.out.print("Added client for:");
+                System.out.print("Added client for: ");
                 System.out.println(wsUrl);    
             }
         }

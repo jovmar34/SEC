@@ -25,7 +25,10 @@ public class AnnouncementServerApp {
     	AnnouncementServerEndpointManager endpoint = null;
 		host = args[0];
 		id = args[1];
-    	endpoint = new AnnouncementServerEndpointManager(String.format(Constants.WS_NAME_FORMAT, host, Constants.PORT_START + Integer.valueOf(id)));
+		endpoint = new AnnouncementServerEndpointManager(String.format(Constants.WS_NAME_FORMAT, host, Constants.PORT_START + Integer.valueOf(id)));
+		
+		AnnouncementServer.getInstance().myId = Constants.SERVER_NAME + id;
+		
     	String answer = "";
 
     	try {

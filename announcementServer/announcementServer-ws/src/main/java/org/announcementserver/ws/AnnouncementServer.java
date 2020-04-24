@@ -42,6 +42,8 @@ public class AnnouncementServer implements Serializable {
 	private static AnnouncementServer instance = null; //Singleton, maybe unnecessary
 	
 	private HashMap<Integer, Integer> sns; // sequence numbers
+
+	protected String myId;
 	
 	public static AnnouncementServer getInstance() {
 		if (instance == null) {
@@ -78,6 +80,8 @@ public class AnnouncementServer implements Serializable {
 	
 	/* Register */
 	public List<String> register(String publicKey, String signature) {
+		System.out.println(myId);
+
 		if (!clients.containsKey(publicKey)) {
 			throw new RuntimeException("Untrusted user registering");
 		}
@@ -92,9 +96,17 @@ public class AnnouncementServer implements Serializable {
 		} catch (Exception e) {
 			throw new RuntimeException("Error: Possible tampering detected on Signature");
 		}
+
+		List<String> inHash = new ArrayList<>();
+		inHash.add(clientID);
+		inHash.add(myId);
+		inHash.add(publicKey);
+		inHash.add(hash);
+
+		System.out.println(inHash.toString());
 		
 		try {
-			if (!CryptoTools.checkHash(clientID, Constants.SERVER_NAME, publicKey, hash)) { 
+			if (!CryptoTools.checkHash(inHash.toArray(new String[0]))) { 
 				throw new RuntimeException("Error: Possible tampering detected on Hash");
 			}
 		} catch (RuntimeException e) {
@@ -115,7 +127,7 @@ public class AnnouncementServer implements Serializable {
 			sns.put(clientN, 0);
 			PersistenceUtils.serialize(instance);
 			
-			toHash.add(Constants.SERVER_NAME);
+			toHash.add(myId);
 			toHash.add(clientID);
 			toHash.add("Welcome new user!");
 			
@@ -126,7 +138,7 @@ public class AnnouncementServer implements Serializable {
 				throw new RuntimeException(e.getMessage());
 			}
 		} else {
-			toHash.add(Constants.SERVER_NAME);
+			toHash.add(myId);
 			toHash.add(clientID);
 			toHash.add(String.format("Welcome back %s", clientID));
 			toHash.add(sns.get(clientN).toString());

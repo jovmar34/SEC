@@ -63,9 +63,9 @@ public class AnnouncementServerClientApp {
     	}
 		
 		String host = args[0];
-		String numServers = args[1];
+		String faults = args[1];
     	
-        client = new FrontEnd(host, numServers);
+        client = new FrontEnd(host, faults);
     	
         // Start of Interaction
     	authenticationMenu();
@@ -123,7 +123,7 @@ public class AnnouncementServerClientApp {
 
 		registerMenu();
     	    	
-    	mainMenu();
+    	//mainMenu();
     }
     
     /* Main Menu */
@@ -183,7 +183,7 @@ public class AnnouncementServerClientApp {
 			printError(e.getMessage());
 		}
     	
-    	mainMenu();
+    	//mainMenu();
     }
     
     /* Post Menu */
