@@ -12,6 +12,7 @@ import java.util.List;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.xml.ws.WebServiceException;
 
 import org.announcementserver.common.Constants;
 import org.announcementserver.common.CryptoTools;
@@ -33,18 +34,16 @@ public class Client extends Thread {
     private FrontEnd parent;
     private Integer servId;
     private Operation op;
-    private Thread pThread;
 
     public String message;
     public List<String> references;
     public String boardKey;
     public Long number;
 
-    public Client(FrontEnd parent, Operation op, Integer id, Thread parentThread) {
+    public Client(FrontEnd parent, Operation op, Integer id) {
         this.parent = parent;
         this.op = op;
         this.servId = id;
-        this.pThread = parentThread;
     }
 
     @Override
@@ -54,6 +53,7 @@ public class Client extends Thread {
         String username = parent.username;
         String publicKey = parent.publicKey;
         String signature = "";
+        List<String> ret = null;
 
         switch (this.op) {
             case REGISTER:
@@ -71,10 +71,15 @@ public class Client extends Thread {
                         | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
                         | UnrecoverableEntryException | IOException e) {
                     e.printStackTrace();
-                    this.interrupt();
+                    return;
                 }
 
-                List<String> ret = port.register(publicKey, signature);
+                try {
+                    ret = port.register(publicKey, signature);
+                } catch (WebServiceException e) {
+                    System.out.println("Hey, dead");
+                    return;
+                }
 
                 toHash = new ArrayList<>();
                 toHash.add(servName);
@@ -93,31 +98,19 @@ public class Client extends Thread {
                         | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
                         | UnrecoverableEntryException | IOException e) {
                     e.printStackTrace();
-                    this.interrupt();
+                    return;
                 }
 
                 toHash.add(hash);
 
                 try {
-                    if (CryptoTools.checkHash(toHash.toArray(new String[0]))) {
-                        synchronized (parent) {
-                            if (parent.response == null)
-                                parent.response = ret;
-                        }
-                    } else {
+                    if (!CryptoTools.checkHash(toHash.toArray(new String[0]))) {
                         throw new RuntimeException("Hashes are not equal");
-                    }
+                    }                
                 } catch (NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException
                         | CertificateException | IOException e) {
                     e.printStackTrace();
-                    this.interrupt();
-                }
-
-                try {
-                    sleep(10000);
-                } catch (InterruptedException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
+                    return;
                 }
 
                 break;
@@ -158,6 +151,10 @@ public class Client extends Thread {
 				break;
         }
 
-        pThread.notify();
+        synchronized(parent) {
+            if (parent.response == null) parent.response = ret;
+            //else System.out.println("\n");
+            parent.notify();
+        }
     }
 }

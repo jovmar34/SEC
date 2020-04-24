@@ -74,7 +74,7 @@ public class FrontEnd {
             throw new RuntimeException("Username not Initialized");
     }
 
-    public String register() throws InvalidKeyException, CertificateException, KeyStoreException,
+    public synchronized String register() throws InvalidKeyException, CertificateException, KeyStoreException,
             NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException,
             UnrecoverableEntryException, IOException {
 
@@ -84,15 +84,17 @@ public class FrontEnd {
         response = null;
 
         for (int i = 1; i <= nServ; i++) {
-            cli = new Client(this, Operation.REGISTER, i, Thread.currentThread());
+            cli = new Client(this, Operation.REGISTER, i);
             cli.start();
         }
 
-        try {
-            Thread.currentThread().wait();
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        while (this.response == null) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
 
         if (response.size() == 3) {
