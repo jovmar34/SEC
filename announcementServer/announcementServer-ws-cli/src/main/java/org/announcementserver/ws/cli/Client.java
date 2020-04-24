@@ -103,6 +103,7 @@ public class Client extends Thread {
                         synchronized (parent) {
                             if (parent.response == null)
                                 parent.response = ret;
+                            parent.notify();
                         }
                     } else {
                         throw new RuntimeException("Hashes are not equal");
@@ -112,14 +113,6 @@ public class Client extends Thread {
                     e.printStackTrace();
                     this.interrupt();
                 }
-
-                try {
-                    sleep(10000);
-                } catch (InterruptedException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
-                }
-
                 break;
             case POST:
                 try {
@@ -157,7 +150,5 @@ public class Client extends Thread {
                 }
 				break;
         }
-
-        pThread.notify();
     }
 }
