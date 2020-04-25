@@ -290,6 +290,7 @@ public class AnnouncementServerClientApp {
     	try {
 			printSuccess(client.readGeneral(number));
 		} catch (Exception e) {
+			e.printStackTrace();
 			printError(e.getMessage());
 		}
     	    	

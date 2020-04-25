@@ -80,8 +80,6 @@ public class AnnouncementServer implements Serializable {
 	
 	/* Register */
 	public List<String> register(String publicKey, String signature) {
-		System.out.println(myId);
-
 		if (!clients.containsKey(publicKey)) {
 			throw new RuntimeException("Untrusted user registering");
 		}
@@ -102,8 +100,6 @@ public class AnnouncementServer implements Serializable {
 		inHash.add(myId);
 		inHash.add(publicKey);
 		inHash.add(hash);
-
-		System.out.println(inHash.toString());
 		
 		try {
 			if (!CryptoTools.checkHash(inHash.toArray(new String[0]))) { 
@@ -483,7 +479,7 @@ public class AnnouncementServer implements Serializable {
 		
 		List<String> inHash = new ArrayList<>();
 		inHash.add(readerID);
-		inHash.add(Constants.SERVER_NAME);
+		inHash.add(myId);
 		inHash.add(sn.toString());
 		inHash.add(number.toString());
 		inHash.add(hash);
@@ -525,7 +521,7 @@ public class AnnouncementServer implements Serializable {
 
 		List<String> response = new ArrayList<>();
 		List<String> outHash = new ArrayList<>();
-		outHash.add(Constants.SERVER_NAME);
+		outHash.add(myId);
 		outHash.add(readerID);
 		outHash.add(sn.toString());
 		outHash.add(res);
@@ -540,6 +536,7 @@ public class AnnouncementServer implements Serializable {
 		
 		/* -----------------------------------------------------------------------------------*/
 
+		System.out.println("READ GENERAL DONE");
 		return response;
 	}
 	

@@ -44,6 +44,6 @@ public class Announcement implements Serializable {
 	
 	@Override
 	public String toString() {
-		return String.format("auth: %s, id: %s\n  text: \"%s\"\n  references: %s\n\n", this.author, this.id, this.content, this.references);
+		return String.format("auth: %s, id: %s\n  text: \"%s\"\n  references: %s\n", this.author, this.id, this.content, this.references);
 	}
 }
