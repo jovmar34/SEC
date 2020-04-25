@@ -84,15 +84,17 @@ public class FrontEnd {
         response = null;
 
         for (int i = 1; i <= nServ; i++) {
-            cli = new Client(this, Operation.REGISTER, i, Thread.currentThread());
+            cli = new Client(this, Operation.REGISTER, i, null, null, null);
             cli.start();
         }
 
-        try {
-            wait();
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        while (this.response == null) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
 
         if (response.size() == 3) {
@@ -104,75 +106,64 @@ public class FrontEnd {
         return response.get(0);
     }
 
-    public String post(String message, List<String> announcementList)
+    public synchronized String post(String message, List<String> announcementList)
             throws InvalidKeyException, CertificateException, KeyStoreException, NoSuchAlgorithmException,
             NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, UnrecoverableEntryException,
             IOException, MessageSizeFault_Exception, PostTypeFault_Exception, ReferredAnnouncementFault_Exception,
             ReferredUserFault_Exception, UserNotRegisteredFault_Exception {
 
         checkInit();
-
-        String response;
-
-        List<String> toHash = new ArrayList<>();
-        toHash.add(username);
-        toHash.add(Constants.SERVER_NAME);
-        toHash.add(sn.toString());
-        toHash.add(publicKey);
-        toHash.add(message);
-        toHash.addAll(announcementList);
-
-        String signature = CryptoTools.makeSignature(toHash.toArray(new String[0]));
-
-        List<String> ret = client.post(publicKey, message, announcementList, signature);
-
-        String hash = CryptoTools.decryptSignature(Constants.SERVER_NAME, ret.get(1));
-
-        if (CryptoTools.checkHash(Constants.SERVER_NAME, username, String.valueOf(sn), ret.get(0), hash)) {
-            response = ret.get(0);
-        } else {
-            throw new RuntimeException("Hashes are not equal");
+        Client cli;
+        
+        response = null;
+        
+        for (int i = 1; i <= nServ; i++) {
+            cli = new Client(this, Operation.POST, i, message, announcementList, null);
+            cli.start();
         }
-
+        
+        while (this.response == null) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        
         sn++;
 
-        return response;
+        return response.get(0);
     }
 
-    public String postGeneral(String message, List<String> announcementList)
+    public synchronized String postGeneral(String message, List<String> announcementList)
             throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException,
             IOException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException,
             MessageSizeFault_Exception, PostTypeFault_Exception, ReferredAnnouncementFault_Exception,
             ReferredUserFault_Exception, UserNotRegisteredFault_Exception {
 
         checkInit();
-
-        List<String> toHash = new ArrayList<>();
-        toHash.add(username); // src
-        toHash.add(Constants.SERVER_NAME); // dest
-        toHash.add(sn.toString());
-        toHash.add(publicKey);
-        toHash.add(message);
-        toHash.addAll(announcementList);
-
-        String signature = "";
-        signature = CryptoTools.makeSignature(toHash.toArray(new String[0]));
-
-        List<String> ret = client.postGeneral(publicKey, message, announcementList, signature);
-
-        String hash = CryptoTools.decryptSignature(Constants.SERVER_NAME, ret.get(1));
-
-        String response;
-
-        if (CryptoTools.checkHash(Constants.SERVER_NAME, username, String.valueOf(sn), ret.get(0), hash)) {
-            response = ret.get(0);
-        } else {
-            throw new RuntimeException("Hashes are not equal");
+        Client cli;
+        
+        response = null;
+        
+        for (int i = 1; i <= nServ; i++) {
+            cli = new Client(this, Operation.POSTGENERAL, i, message, announcementList, null);
+            cli.start();
+        }
+        
+        while (this.response == null) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
 
         sn++;
 
-        return response;
+        return response.get(0);
     }
 
     public String read(String clientID, Integer number) throws NoSuchAlgorithmException, UnrecoverableEntryException,

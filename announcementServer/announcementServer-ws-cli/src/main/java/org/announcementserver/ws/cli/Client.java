@@ -12,6 +12,7 @@ import java.util.List;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.xml.ws.WebServiceException;
 
 import org.announcementserver.common.Constants;
 import org.announcementserver.common.CryptoTools;
@@ -33,18 +34,19 @@ public class Client extends Thread {
     private FrontEnd parent;
     private Integer servId;
     private Operation op;
-    private Thread pThread;
 
     public String message;
     public List<String> references;
     public String boardKey;
     public Long number;
 
-    public Client(FrontEnd parent, Operation op, Integer id, Thread parentThread) {
+    public Client(FrontEnd parent, Operation op, Integer id, String message, List<String> references, Long number) {
         this.parent = parent;
         this.op = op;
         this.servId = id;
-        this.pThread = parentThread;
+        if (message != null) this.message = message;
+        if (references != null) this.references = references;
+        if (number != null) this.number = number;
     }
 
     @Override
@@ -54,16 +56,15 @@ public class Client extends Thread {
         String username = parent.username;
         String publicKey = parent.publicKey;
         String signature = "";
+        String hash = null;
+        List<String> ret = null;
 
         switch (this.op) {
             case REGISTER:
-                System.out.print("I'm a thread");
                 List<String> toHash = new ArrayList<>();
                 toHash.add(username);
                 toHash.add(servName);
                 toHash.add(publicKey);
-
-                System.out.println(toHash.toString());
 
                 try {
                     signature = CryptoTools.makeSignature(toHash.toArray(new String[0]));
@@ -71,10 +72,15 @@ public class Client extends Thread {
                         | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
                         | UnrecoverableEntryException | IOException e) {
                     e.printStackTrace();
-                    this.interrupt();
+                    return;
                 }
 
-                List<String> ret = port.register(publicKey, signature);
+                try {
+                    ret = port.register(publicKey, signature);
+                } catch (WebServiceException e) {
+                    System.out.println("Hey, dead");
+                    return;
+                }
 
                 toHash = new ArrayList<>();
                 toHash.add(servName);
@@ -85,53 +91,137 @@ public class Client extends Thread {
                     toHash.add(ret.get(1));
                 }
 
-                String hash = null;
+                hash = null;
                 try {
-                    hash = CryptoTools.decryptSignature(Constants.SERVER_NAME + servId.toString(),
-                            ret.get(ret.size() - 1));
+                    hash = CryptoTools.decryptSignature(servName, ret.get(ret.size() - 1));
                 } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
                         | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
                         | UnrecoverableEntryException | IOException e) {
                     e.printStackTrace();
-                    this.interrupt();
+                    return;
                 }
 
                 toHash.add(hash);
 
                 try {
-                    if (CryptoTools.checkHash(toHash.toArray(new String[0]))) {
-                        synchronized (parent) {
-                            if (parent.response == null)
-                                parent.response = ret;
-                            parent.notify();
-                        }
-                    } else {
+                    if (!CryptoTools.checkHash(toHash.toArray(new String[0]))) {
                         throw new RuntimeException("Hashes are not equal");
-                    }
+                    }                
                 } catch (NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException
                         | CertificateException | IOException e) {
                     e.printStackTrace();
-                    this.interrupt();
+                    return;
                 }
+                
                 break;
+                
             case POST:
+                toHash = new ArrayList<>();
+                toHash.add(username);
+                toHash.add(servName);
+                toHash.add(parent.sn.toString());
+                toHash.add(publicKey);
+                toHash.add(message);
+                toHash.addAll(references);
+
                 try {
-                    port.post(publicKey, message, references, signature);
-                } catch (MessageSizeFault_Exception | PostTypeFault_Exception | ReferredAnnouncementFault_Exception
-                        | ReferredUserFault_Exception | UserNotRegisteredFault_Exception e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                	signature = CryptoTools.makeSignature(toHash.toArray(new String[0]));
+                } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
+                		| NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
+                		| UnrecoverableEntryException | IOException e2) {
+                	// TODO Auto-generated catch block
+                	e2.printStackTrace();
+                	return;
                 }
+
+                try {
+                	ret = port.post(publicKey, message, references, signature);
+                } catch (MessageSizeFault_Exception | PostTypeFault_Exception | ReferredAnnouncementFault_Exception
+                		| ReferredUserFault_Exception | UserNotRegisteredFault_Exception e2) {
+                	// TODO Auto-generated catch block
+                	e2.printStackTrace();
+                	return;
+                }
+
+                try {
+                	hash = CryptoTools.decryptSignature(servName, ret.get(1));
+                } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
+                		| NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
+                		| UnrecoverableEntryException | IOException e2) {
+                	// TODO Auto-generated catch block
+                	e2.printStackTrace();
+                	return;
+                }
+
+                //String response;
+                
+                try {
+                	if (CryptoTools.checkHash(servName, username, String.valueOf(parent.sn), ret.get(0), hash)) {
+                		//response = ret.get(0);
+                	} else {
+                		throw new RuntimeException("Hashes are not equal");
+                	}
+                } catch (NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException | CertificateException
+                		| IOException e2) {
+                	// TODO Auto-generated catch block
+                	e2.printStackTrace();
+                	return;
+                }
+                
                 break;
+                
             case POSTGENERAL:
+            	toHash = new ArrayList<>();
+                toHash.add(username);
+                toHash.add(servName);
+                toHash.add(parent.sn.toString());
+                toHash.add(publicKey);
+                toHash.add(message);
+                toHash.addAll(references);
+
                 try {
-                    port.postGeneral(publicKey, message, references, signature);
-                } catch (MessageSizeFault_Exception | PostTypeFault_Exception | ReferredAnnouncementFault_Exception
-                        | ReferredUserFault_Exception | UserNotRegisteredFault_Exception e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                	signature = CryptoTools.makeSignature(toHash.toArray(new String[0]));
+                } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
+                		| NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
+                		| UnrecoverableEntryException | IOException e1) {
+                	e1.printStackTrace();
+                	return;
                 }
+                
+                try {
+                	ret = port.postGeneral(publicKey, message, references, signature);
+                } catch (WebServiceException | MessageSizeFault_Exception | PostTypeFault_Exception | ReferredAnnouncementFault_Exception | ReferredUserFault_Exception | UserNotRegisteredFault_Exception e1) {
+                	System.out.println("Hey, dead");
+                	e1.printStackTrace();
+                	return;
+                }
+
+                try {
+                	hash = CryptoTools.decryptSignature(servName, ret.get(1));
+                } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
+                		| NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
+                		| UnrecoverableEntryException | IOException e1) {
+                	e1.printStackTrace();
+                	return;
+                }
+                
+                //String response;
+
+                try {
+                	if (CryptoTools.checkHash(servName, username, String.valueOf(parent.sn), ret.get(0), hash)) {
+                		//response = ret.get(0);
+                	} else {
+                		throw new RuntimeException("Hashes are not equal");
+                	}
+                } catch (NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException | CertificateException
+                		| IOException e1) {
+                	// TODO Auto-generated catch block
+                	e1.printStackTrace();
+                	return;
+                }
+            	
                 break;
+                
             case READ:
                 try {
                     port.read(publicKey, boardKey, number, signature);
@@ -149,6 +239,12 @@ public class Client extends Thread {
                     e.printStackTrace();
                 }
 				break;
+        }
+        
+        synchronized(parent) {
+            if (parent.response == null) parent.response = ret;
+            //else System.out.println("\n");
+            parent.notify();
         }
     }
 }

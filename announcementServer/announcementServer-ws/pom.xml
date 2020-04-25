@@ -20,8 +20,8 @@
     <wsdl.dir>${basedir}/../announcementServer-contract/</wsdl.dir>
     <ws.name>announcementserver-ws</ws.name>
 	<ws.host>localhost</ws.host>
-	<ws.id>1</ws.id>
-	<ws.faults>0</ws.faults>
+	<ws.i>1</ws.i>
+	<ws.f>0</ws.f>
     <!--
 		<ws.url>http://localhost:8091/${ws.name}/endpoint/</ws.url>
 	-->
@@ -127,8 +127,8 @@
 				<mainClass>${mainclass}</mainClass>
 				<arguments>
 					<argument>${ws.host}</argument>
-					<argument>${ws.id}</argument>
-					<argument>${ws.faults}</argument>
+					<argument>${ws.i}</argument>
+					<argument>${ws.f}</argument>
 				</arguments>
 			</configuration>
 		</plugin>

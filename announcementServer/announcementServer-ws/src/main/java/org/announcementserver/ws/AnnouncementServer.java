@@ -175,7 +175,7 @@ public class AnnouncementServer implements Serializable {
 		
 		List<String> inHash = new ArrayList<>();
 		inHash.add(clientID);
-		inHash.add(Constants.SERVER_NAME);
+		inHash.add(myId);
 		inHash.add(sn.toString());
 		inHash.add(publicKey);
 		inHash.add(message);
@@ -249,7 +249,7 @@ public class AnnouncementServer implements Serializable {
 
 		List<String> response = new ArrayList<>();
 		List<String> outHash = new ArrayList<>();
-		outHash.add(Constants.SERVER_NAME);
+		outHash.add(myId);
 		outHash.add(clientID);
 		outHash.add(sn.toString());
 		outHash.add("Success your post was posted!");
@@ -287,7 +287,7 @@ public class AnnouncementServer implements Serializable {
 		
 		List<String> inHash = new ArrayList<>();
 		inHash.add(clientID);
-		inHash.add(Constants.SERVER_NAME);
+		inHash.add(myId);
 		inHash.add(sn.toString());
 		inHash.add(publicKey);
 		inHash.add(message);
@@ -357,7 +357,7 @@ public class AnnouncementServer implements Serializable {
 		
 		List<String> response = new ArrayList<>();
 		List<String> outHash = new ArrayList<>();
-		outHash.add(Constants.SERVER_NAME);
+		outHash.add(myId);
 		outHash.add(clientID);
 		outHash.add(sn.toString());
 		outHash.add("Success your post was posted!");

@@ -123,7 +123,7 @@ public class AnnouncementServerClientApp {
 
 		registerMenu();
     	    	
-    	//mainMenu();
+    	mainMenu();
     }
     
     /* Main Menu */
