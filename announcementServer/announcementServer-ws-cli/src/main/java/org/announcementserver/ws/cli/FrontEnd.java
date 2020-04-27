@@ -177,14 +177,14 @@ public class FrontEnd {
 
         checkInit();
 
-        checkInit();
+        
 
         Client cli;
         
         this.response = null;
         
         for (int i = 1; i <= nServ; i++) {
-            cli = new Client(this, Operation.READGENERAL, i);
+            cli = new Client(this, Operation.READ, i);
             cli.number = number;
             cli.clientID=clientID;
             cli.start();

@@ -236,6 +236,7 @@ public class Client extends Thread {
                   toHash.add(parent.sn.toString());
                   toHash.add(readKey);
                   toHash.add(number.toString());
+                  System.out.println(toHash);
                 try {
                     signature = CryptoTools.makeSignature(toHash.toArray(new String[0]));
                 } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
@@ -247,7 +248,7 @@ public class Client extends Thread {
                 }
                 
                 try {
-                    ret = port.read(publicKey, clientID, Long.valueOf(number), signature);
+                    ret = port.read(publicKey, readKey, Long.valueOf(number), signature);
                 } catch (EmptyBoardFault_Exception | InvalidNumberFault_Exception | NumberPostsFault_Exception | ReferredUserFault_Exception e2) {
                     // TODO Auto-generated catch block
                     e2.printStackTrace();
@@ -267,7 +268,7 @@ public class Client extends Thread {
                 toHash = new ArrayList<>();
                 toHash.add(servName);
                 toHash.add(username);
-                toHash.add(String.valueOf(parent.sn));
+                toHash.add(parent.sn.toString());
                 toHash.add(ret.get(0));
                 toHash.add(hash);
 

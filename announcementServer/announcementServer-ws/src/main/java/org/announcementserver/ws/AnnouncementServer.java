@@ -398,7 +398,7 @@ public class AnnouncementServer implements Serializable {
 		inHash.add(publicKey);
 		inHash.add(number.toString());
 		inHash.add(hash);
-		
+		System.out.println(inHash);
 		try{
 			if (!CryptoTools.checkHash(inHash.toArray(new String[0]))) { 
 				throw new RuntimeException("Error: Possible tampering detected");
