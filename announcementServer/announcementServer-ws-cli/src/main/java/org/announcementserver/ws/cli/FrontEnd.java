@@ -170,40 +170,42 @@ public class FrontEnd {
         return response.get(0);
     }
 
-    public String read(String clientID, Integer number) throws NoSuchAlgorithmException, UnrecoverableEntryException,
+    public synchronized String read(String clientID, Integer number) throws NoSuchAlgorithmException, UnrecoverableEntryException,
             KeyStoreException, CertificateException, IOException, EmptyBoardFault_Exception,
             InvalidNumberFault_Exception, NumberPostsFault_Exception, ReferredUserFault_Exception, InvalidKeyException,
             NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
 
         checkInit();
 
-        //ADD SIGNATURE AND SN
-        String response;
-        String readKey = CryptoTools.publicKeyAsString(CryptoTools.getPublicKey(clientID));
-
-        List<String> toHash = new ArrayList<>();
-
-        toHash.add(username);
-        toHash.add(Constants.SERVER_NAME);
-        toHash.add(sn.toString());
-        toHash.add(readKey);
-        toHash.add(number.toString());
-    	
-    	String signature = CryptoTools.makeSignature(toHash.toArray(new String[0]));
-    	
-        List<String> ret = client.read(readKey, publicKey, Long.valueOf(number), signature);
         
-        String hash = CryptoTools.decryptSignature(Constants.SERVER_NAME, ret.get(1));
 
-        if (CryptoTools.checkHash(Constants.SERVER_NAME, username, String.valueOf(sn), ret.get(0), hash)) {
-            response = ret.get(0);
-        } else {
-            throw new RuntimeException("Hashes don't match");
+        Client cli;
+        
+        this.response = null;
+        
+        for (int i = 1; i <= nServ; i++) {
+            cli = new Client(this, Operation.READ, i);
+            cli.number = number;
+            cli.clientID=clientID;
+            cli.start();
         }
+        
+        while (this.response == null) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        
+        System.out.println(response);
 
         sn++;
 
-        return response;
+        
+
+        return response.get(0);
     }
 
     public synchronized String readGeneral(Integer number) throws NoSuchAlgorithmException, UnrecoverableEntryException,
