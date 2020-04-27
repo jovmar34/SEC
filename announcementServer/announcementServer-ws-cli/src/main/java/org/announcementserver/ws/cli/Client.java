@@ -34,11 +34,13 @@ public class Client extends Thread {
     private FrontEnd parent;
     private Integer servId;
     private Operation op;
-
+    
+    public String readKey;
     public String message;
     public List<String> references;
     public String boardKey;
     public Integer number;
+	public String clientID;
 
     public Client(FrontEnd parent, Operation op, Integer id) {
         this.parent = parent;
@@ -218,14 +220,70 @@ public class Client extends Thread {
                 break;
                 
             case READ:
+            	
+			
+			
+            	try {
+            		readKey = CryptoTools.publicKeyAsString(CryptoTools.getPublicKey(clientID));
+            	} catch (NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException | CertificateException
+            			| IOException e4) {
+            		// TODO Auto-generated catch block
+            		e4.printStackTrace();
+            	}
+			
+            	  toHash.add(username);
+                  toHash.add(servName);
+                  toHash.add(parent.sn.toString());
+                  toHash.add(readKey);
+                  toHash.add(number.toString());
                 try {
-                    port.read(publicKey, boardKey, Long.valueOf(number), signature);
-                } catch (EmptyBoardFault_Exception | InvalidNumberFault_Exception | NumberPostsFault_Exception
-                        | ReferredUserFault_Exception e) {
+                    signature = CryptoTools.makeSignature(toHash.toArray(new String[0]));
+                } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
+                        | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
+                        | UnrecoverableEntryException | IOException e3) {
+                    // TODO Auto-generated catch block
+                    e3.printStackTrace();
+                    return;
+                }
+                
+                try {
+                    ret = port.read(publicKey, clientID, Long.valueOf(number), signature);
+                } catch (EmptyBoardFault_Exception | InvalidNumberFault_Exception | NumberPostsFault_Exception | ReferredUserFault_Exception e2) {
+                    // TODO Auto-generated catch block
+                    e2.printStackTrace();
+                    return;
+                }
+        
+                try {
+                    hash = CryptoTools.decryptSignature(servName, ret.get(1));
+                } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
+                        | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
+                        | UnrecoverableEntryException | IOException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                    return;
+                }
+                
+                toHash = new ArrayList<>();
+                toHash.add(servName);
+                toHash.add(username);
+                toHash.add(String.valueOf(parent.sn));
+                toHash.add(ret.get(0));
+                toHash.add(hash);
+
+                try {
+                    if (!CryptoTools.checkHash(toHash.toArray(new String[0]))) {
+                        throw new RuntimeException("Hashes don't match");
+                    }
+                } catch (NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException
+                        | CertificateException | IOException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
+                    return;
                 }
+                
 				break;
+				
             case READGENERAL:
                 toHash.add(username);
                 toHash.add(servName);
