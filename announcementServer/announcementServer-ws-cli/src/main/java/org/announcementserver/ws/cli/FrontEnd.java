@@ -170,7 +170,7 @@ public class FrontEnd {
         return response.get(0);
     }
 
-    public String read(String clientID, Integer number) throws NoSuchAlgorithmException, UnrecoverableEntryException,
+    public synchronized String read(String clientID, Integer number) throws NoSuchAlgorithmException, UnrecoverableEntryException,
             KeyStoreException, CertificateException, IOException, EmptyBoardFault_Exception,
             InvalidNumberFault_Exception, NumberPostsFault_Exception, ReferredUserFault_Exception, InvalidKeyException,
             NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
