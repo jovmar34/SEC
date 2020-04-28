@@ -63,6 +63,8 @@ public class AnnouncementServerProxy {
         String hash = null;
         if (!request.getDestination().equals(myId)) throw new RuntimeException("Not me");
 
+        System.out.println(request.getSender());
+        System.out.println(request.getSignature());
         hash = decryptSignature(request.getSender(), request.getSignature());
 
         List<String> inHash = new ArrayList<>();
@@ -86,15 +88,14 @@ public class AnnouncementServerProxy {
         response.setSeqNum(sn);
         
         List<String> outHash = new ArrayList<>();
-		outHash.add(request.getSender());
-        inHash.add(request.getDestination());
-        inHash.add(String.valueOf(request.getSeqNum()));
-        inHash.addAll(strAnnouncement(request.getAnnouncement()));
-        inHash.add(request.getAnnouncement().getSignature());
-        inHash.add(hash);
-        
-        return response;
 
+		outHash.add(response.getSender());
+        outHash.add(response.getDestination());
+        outHash.add(String.valueOf(response.getSeqNum()));
+        
+        response.setSignature(makeSignature(outHash.toArray(new String[0])));
+
+        return response;
     }
 
     private String decryptSignature(String author, String signature) {

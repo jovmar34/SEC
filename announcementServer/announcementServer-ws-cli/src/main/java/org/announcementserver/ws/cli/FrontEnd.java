@@ -100,11 +100,7 @@ public class FrontEnd {
             }
         }
 
-        if (response.size() == 3) {
-            sn = Integer.valueOf(response.get(1));
-        } else {
-            sn = 0;
-        }
+        sn = Integer.valueOf(response.get(1));
 
         return response.get(0);
     }
@@ -117,17 +113,16 @@ public class FrontEnd {
 
         checkInit();
         Client cli;
-        // List<String> acks = new ArrayList<>();
+        responses = new ArrayList<String>(nServ);
         
         response = null;
-        /* FIXME new reality
         for (int i = 1; i <= nServ; i++) {
-            cli = new Client(this, Operation.POST, i);
+            cli = new Client(this, Operation.POST, i, responses);
             cli.message = message;
             cli.references = announcementList;
+            cli.seqNum = sn;
             cli.start();
         }
-        */
         
         while (this.response == null) {
             try {
