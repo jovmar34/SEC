@@ -16,6 +16,7 @@ import javax.xml.ws.WebServiceException;
 
 import org.announcementserver.common.Constants;
 import org.announcementserver.common.CryptoTools;
+import org.announcementserver.ws.AnnouncementMessage;
 import org.announcementserver.ws.AnnouncementServerPortType;
 import org.announcementserver.ws.EmptyBoardFault_Exception;
 import org.announcementserver.ws.InvalidNumberFault_Exception;
@@ -27,6 +28,8 @@ import org.announcementserver.ws.ReferredUserFault_Exception;
 import org.announcementserver.ws.RegisterReq;
 import org.announcementserver.ws.RegisterRet;
 import org.announcementserver.ws.UserNotRegisteredFault_Exception;
+import org.announcementserver.ws.WriteReq;
+import org.announcementserver.ws.WriteRet;
 
 enum Operation {
     REGISTER, POST, POSTGENERAL, READ, READGENERAL
@@ -43,6 +46,7 @@ public class Client extends Thread {
     public String boardKey;
     public Integer number;
     public String clientID;
+    public Integer seqNum;
     public List<?> responses;
 
     public Client(FrontEnd parent, Operation op, Integer id, List<?> responses) {
@@ -128,16 +132,53 @@ public class Client extends Thread {
                 }
 
                 ret.add("All good");
+                ret.add(String.valueOf(response.getSeqNumber()));
                 
                 break;
                 
             case POST:
+                WriteRet postRet = null;
+                WriteReq postReq = new WriteReq();
+                postReq.setSender(username);
+                postReq.setDestination(servName);
+                postReq.setSeqNum(seqNum);
+
+                AnnouncementMessage post = new AnnouncementMessage();
+                post.setMessage(message);
+                post.setWriter(username);
+                post.getAnnouncementList().addAll(this.references);
+                post.setAnnouncementId(String.format("pc%sa%d", username.replaceAll("client", ""), seqNum));
+
+                List<String> messHash = new ArrayList<>();
+                messHash.add(username);
+                messHash.add(message);
+                messHash.add(references.toString());
+                messHash.add(post.getAnnouncementId());
+
+                String messSig = null;
+
+                try {
+                    messSig = CryptoTools.makeSignature(messHash.toArray(new String[0]));
+                } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
+                        | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
+                        | UnrecoverableEntryException | IOException e) {
+                    e.printStackTrace();
+                    return;
+                }
+
+                post.setSignature(messSig);
+
+                postReq.setAnnouncement(post);
+
+                toHash = new ArrayList<>();
                 toHash.add(username);
                 toHash.add(servName);
-                toHash.add(parent.sn.toString());
-                toHash.add(publicKey);
+                toHash.add(String.valueOf(seqNum));
+                toHash.add(username);
                 toHash.add(message);
-                toHash.addAll(references);
+                toHash.add(references.toString());
+                toHash.add(post.getAnnouncementId());
+                toHash.add(messSig);
 
                 try {
                 	signature = CryptoTools.makeSignature(toHash.toArray(new String[0]));
@@ -149,41 +190,45 @@ public class Client extends Thread {
                 	return;
                 }
 
-                /* FIXME: ADAPT TO NEW REALITY
+                postReq.setSignature(signature);
+
+                System.out.println(post.getSignature());
+
                 try {
-                	ret = port.post(publicKey, message, references, signature);
+                	postRet = port.post(postReq);
                 } catch (MessageSizeFault_Exception | PostTypeFault_Exception | ReferredAnnouncementFault_Exception
                 		| ReferredUserFault_Exception | UserNotRegisteredFault_Exception e2) {
-                	// TODO Auto-generated catch block
                 	e2.printStackTrace();
                 	return;
                 }
-                */
 
                 try {
-                	hash = CryptoTools.decryptSignature(servName, ret.get(1));
+                	hash = CryptoTools.decryptSignature(servName, postRet.getSignature());
                 } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
                 		| NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
                 		| UnrecoverableEntryException | IOException e2) {
-                	// TODO Auto-generated catch block
                 	e2.printStackTrace();
                 	return;
                 }
+                
+                toHash = new ArrayList<>();
 
-                //String response;
+                toHash.add(servName);
+                toHash.add(username);
+                toHash.add(String.valueOf(postRet.getSeqNum()));
+                toHash.add(hash);
                 
                 try {
-                	if (CryptoTools.checkHash(servName, username, String.valueOf(parent.sn), ret.get(0), hash)) {
-                		//response = ret.get(0);
-                	} else {
+                	if (!CryptoTools.checkHash(toHash.toArray(new String[0]))) {
                 		throw new RuntimeException("Hashes are not equal");
                 	}
                 } catch (NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException | CertificateException
                 		| IOException e2) {
-                	// TODO Auto-generated catch block
                 	e2.printStackTrace();
                 	return;
                 }
+
+                ret.add("post all good");
                 
                 break;
                 
@@ -365,7 +410,9 @@ public class Client extends Thread {
         System.out.println("HELLO");
 
         synchronized(parent) {
-            if (parent.response == null) parent.response = ret;
+            if (parent.response == null) {
+                parent.response = ret;
+            } 
             //else System.out.println("\n");
             parent.notify();
         }
