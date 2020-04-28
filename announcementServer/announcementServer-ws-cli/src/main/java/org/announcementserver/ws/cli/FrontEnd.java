@@ -120,7 +120,7 @@ public class FrontEnd {
             cli = new Client(this, Operation.POST, i, responses);
             cli.message = message;
             cli.references = announcementList;
-            cli.seqNum = sn;
+            cli.seqNumber = sn;
             cli.start();
         }
         

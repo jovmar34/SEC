@@ -47,7 +47,7 @@ public class Client extends Thread {
     public String boardKey;
     public Integer number;
     public String clientID;
-    public Integer seqNum;
+    public Integer seqNumber;
     public List<?> responses;
 
     public Client(FrontEnd parent, Operation op, Integer id, List<?> responses) {
@@ -142,13 +142,13 @@ public class Client extends Thread {
                 WriteReq postReq = new WriteReq();
                 postReq.setSender(username);
                 postReq.setDestination(servName);
-                postReq.setSeqNum(seqNum);
+                postReq.setSeqNumber(seqNumber);
 
                 AnnouncementMessage post = new AnnouncementMessage();
                 post.setMessage(message);
                 post.setWriter(username);
                 post.getAnnouncementList().addAll(this.references);
-                post.setAnnouncementId(String.format("pc%sa%d", username.replaceAll("client", ""), seqNum));
+                post.setAnnouncementId(String.format("pc%sa%d", username.replaceAll("client", ""), seqNumber));
 
                 List<String> messHash = new ArrayList<>();
                 messHash.add(username);
@@ -174,7 +174,7 @@ public class Client extends Thread {
                 toHash = new ArrayList<>();
                 toHash.add(username);
                 toHash.add(servName);
-                toHash.add(String.valueOf(seqNum));
+                toHash.add(String.valueOf(seqNumber));
                 toHash.add(username);
                 toHash.add(message);
                 toHash.add(references.toString());
@@ -216,7 +216,7 @@ public class Client extends Thread {
 
                 toHash.add(servName);
                 toHash.add(username);
-                toHash.add(String.valueOf(postRet.getSeqNum()));
+                toHash.add(String.valueOf(postRet.getSeqNumber()));
                 toHash.add(hash);
                 
                 try {

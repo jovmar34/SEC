@@ -70,7 +70,7 @@ public class AnnouncementServerProxy {
         List<String> inHash = new ArrayList<>();
 		inHash.add(request.getSender());
         inHash.add(request.getDestination());
-        inHash.add(String.valueOf(request.getSeqNum()));
+        inHash.add(String.valueOf(request.getSeqNumber()));
         inHash.addAll(strAnnouncement(request.getAnnouncement()));
         inHash.add(request.getAnnouncement().getSignature());
         inHash.add(hash);
@@ -79,19 +79,19 @@ public class AnnouncementServerProxy {
             throw new RuntimeException("Possible Tampering in transport of post message");
 
         Announcement new_post = transformAnnouncement(request.getAnnouncement());
-        new_post.setSeqNumber(request.getSeqNum());
+        new_post.setSeqNumber(request.getSeqNumber());
         Integer sn = AnnouncementServer.getInstance().post(new_post);
 
         WriteRet response = new WriteRet();
         response.setSender(request.getDestination());
         response.setDestination(request.getSender());
-        response.setSeqNum(sn);
+        response.setSeqNumber(sn);
         
         List<String> outHash = new ArrayList<>();
 
 		outHash.add(response.getSender());
         outHash.add(response.getDestination());
-        outHash.add(String.valueOf(response.getSeqNum()));
+        outHash.add(String.valueOf(response.getSeqNumber()));
         
         response.setSignature(makeSignature(outHash.toArray(new String[0])));
 

@@ -83,7 +83,7 @@
 		<xs:sequence>
 			<xs:element minOccurs="1" maxOccurs="1" name="sender" type="xs:string" />
 			<xs:element minOccurs="1" maxOccurs="1" name="destination" type="xs:string" />
-			<xs:element minOccurs="1" maxOccurs="1" name="seqNum" type="xs:int" />
+			<xs:element minOccurs="1" maxOccurs="1" name="seqNumber" type="xs:int" />
 			<xs:element minOccurs="1" maxOccurs="1" name="announcement" type="tns:AnnouncementMessage" />
 			<xs:element minOccurs="1" maxOccurs="1" name="signature" type="xs:string" />
 		</xs:sequence>
@@ -93,7 +93,7 @@
 		<xs:sequence>
 			<xs:element minOccurs="1" maxOccurs="1" name="sender" type="xs:string" />
 			<xs:element minOccurs="1" maxOccurs="1" name="destination" type="xs:string" />
-			<xs:element minOccurs="1" maxOccurs="1" name="seqNum" type="xs:int" />
+			<xs:element minOccurs="1" maxOccurs="1" name="seqNumber" type="xs:int" />
 			<xs:element minOccurs="1" maxOccurs="1" name="signature" type="xs:string" />
 		</xs:sequence>
 	</xs:complexType>
@@ -103,7 +103,7 @@
 		<xs:sequence>
 			<xs:element minOccurs="1" maxOccurs="1" name="sender" type="xs:string" />
 			<xs:element minOccurs="1" maxOccurs="1" name="destination" type="xs:string" />
-			<xs:element minOccurs="1" maxOccurs="1" name="seqNum" type="xs:int" />
+			<xs:element minOccurs="1" maxOccurs="1" name="seqNumber" type="xs:int" />
 			<xs:element minOccurs="1" maxOccurs="1" name="owner" type="xs:string" />
 			<xs:element minOccurs="1" maxOccurs="1" name="number" type="xs:int" />
 			<xs:element minOccurs="1" maxOccurs="1" name="signature" type="xs:string" />
@@ -114,7 +114,7 @@
 		<xs:sequence>
 			<xs:element minOccurs="1" maxOccurs="1" name="sender" type="xs:string" />
 			<xs:element minOccurs="1" maxOccurs="1" name="destination" type="xs:string" />
-			<xs:element minOccurs="1" maxOccurs="1" name="seqNum" type="xs:int" />
+			<xs:element minOccurs="1" maxOccurs="1" name="seqNumber" type="xs:int" />
 			<xs:element minOccurs="1" maxOccurs="1" name="number" type="xs:int" />
 			<xs:element minOccurs="1" maxOccurs="1" name="signature" type="xs:string" />
 		</xs:sequence>
@@ -124,7 +124,7 @@
 		<xs:sequence>
 			<xs:element minOccurs="1" maxOccurs="1" name="sender" type="xs:string" />
 			<xs:element minOccurs="1" maxOccurs="1" name="destination" type="xs:string" />
-			<xs:element minOccurs="1" maxOccurs="1" name="seqNum" type="xs:int" />
+			<xs:element minOccurs="1" maxOccurs="1" name="seqNumber" type="xs:int" />
 			<xs:element minOccurs="0" maxOccurs="unbounded" name="announcements" type="tns:AnnouncementMessage" />
 			<xs:element minOccurs="1" maxOccurs="1" name="signature" type="xs:string" />
 		</xs:sequence>
