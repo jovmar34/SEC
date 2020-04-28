@@ -90,23 +90,16 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 	/* Read */
 	public ReadRet read(ReadReq request) 
 			throws InvalidNumberFault_Exception, ReferredUserFault_Exception, EmptyBoardFault_Exception, NumberPostsFault_Exception {
-		/* FIXME new reality
-		List<String> res = null;
+		ReadRet res = null;
+
 		try {
-			res = this.proxy.read(readerKey, publicKey, number, signature);
-		} catch (InvalidNumberException e) {
-			throwInvalidNumberFault(e.getMessage());
-		} catch (ReferredUserException e) {
-			throwReferredUserFault(e.getMessage());
-		} catch (EmptyBoardException e) {
-			throwEmptyBoardFault(e.getMessage());
-		} catch (NumberPostsException e) {
-			throwNumberPostsFault(e.getMessage());
+			res = proxy.read(request);
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new RuntimeException(e.getMessage());
 		}
-		*/
-		throw new RuntimeException("Not implemented");
+		
+		return res;
 	}
 	
 	/* Read General */

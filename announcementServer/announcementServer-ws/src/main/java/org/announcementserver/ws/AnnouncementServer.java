@@ -164,7 +164,7 @@ public class AnnouncementServer implements Serializable {
 	}
 	
 	/* Read */
-	public List<Announcement> read(String owner, Integer number, Integer sn) {
+	public List<Announcement> read(String reader, String owner, Integer number, Integer sn) {
 		if (!personalBoards.containsKey(owner))
 			throw new RuntimeException("Referred user doesn't exist");
 
@@ -173,21 +173,33 @@ public class AnnouncementServer implements Serializable {
 
 		if (number > board.size()) throw new RuntimeException("Not Enough Messages");
 
-		List<Announcement> res = new ArrayList<>();
+		if (sn != sns.get(reader)) throw new RuntimeException("Sequence numbers not in synch");
+
+		Integer end = board.size();
+		Integer start = (number == 0) ? 0 : end - number;
+
+		sns.put(reader, sn + 1);
+		PersistenceUtils.serialize(this);
+
+		return board.subList(start, end);
 	}
 
 	
 	/* Read General */
-	public List<Announcement> readGeneral(Integer number, Integer sn) {
-		if (!personalBoards.containsKey(owner))
-			throw new RuntimeException("Referred user doesn't exist");
+	public List<Announcement> readGeneral(String reader, Integer number, Integer sn) {
+		if (generalBoard.isEmpty()) throw new RuntimeException("Empty Board");
 
-		List<Announcement> board = personalBoards.get(owner);
-		if (board.isEmpty()) throw new RuntimeException("Empty Board");
+		if (number > generalBoard.size()) throw new RuntimeException("Not Enough Messages");
+		
+		if (sn != sns.get(reader)) throw new RuntimeException("Sequence numbers not in synch");
 
-		if (number > board.size()) throw new RuntimeException("Not Enough Messages");
+		Integer end = generalBoard.size();
+		Integer start = (number == 0) ? 0 : end - number;
 
-		List<Announcement> res = new ArrayList<>();
+		sns.put(reader, sn + 1);
+		PersistenceUtils.serialize(this);
+		
+		return generalBoard.subList(start, end);
 	}
 	
 	/* For testing purposes */
