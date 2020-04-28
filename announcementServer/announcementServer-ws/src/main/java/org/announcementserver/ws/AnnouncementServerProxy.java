@@ -92,6 +92,8 @@ public class AnnouncementServerProxy {
         inHash.addAll(strAnnouncement(request.getAnnouncement()));
         inHash.add(request.getAnnouncement().getSignature());
         inHash.add(hash);
+        
+        return response;
 
     }
 

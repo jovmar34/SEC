@@ -1,23 +1,25 @@
 package org.announcementserver.ws.cli;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.announcementserver.common.CryptoTools;
+import org.announcementserver.common.Constants;
+import org.announcementserver.ws.AnnouncementServerPortType;
+import org.announcementserver.ws.AnnouncementServerService;
+
+import org.announcementserver.ws.RegisterRet;
+
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-
-import org.announcementserver.common.CryptoTools;
-import org.announcementserver.common.Constants;
-import org.announcementserver.ws.AnnouncementServerPortType;
-import org.announcementserver.ws.AnnouncementServerService;
 import org.announcementserver.ws.EmptyBoardFault_Exception;
 import org.announcementserver.ws.InvalidNumberFault_Exception;
 import org.announcementserver.ws.MessageSizeFault_Exception;
@@ -25,7 +27,6 @@ import org.announcementserver.ws.NumberPostsFault_Exception;
 import org.announcementserver.ws.PostTypeFault_Exception;
 import org.announcementserver.ws.ReferredAnnouncementFault_Exception;
 import org.announcementserver.ws.ReferredUserFault_Exception;
-import org.announcementserver.ws.RegisterRet;
 import org.announcementserver.ws.UserNotRegisteredFault_Exception;
 
 import javax.xml.ws.BindingProvider;
