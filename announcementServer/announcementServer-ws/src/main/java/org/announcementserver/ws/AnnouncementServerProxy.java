@@ -158,8 +158,21 @@ public class AnnouncementServerProxy {
             throw new RuntimeException("Possible Tampering in transport of post message");
 
         List<Announcement> posts = AnnouncementServer.getInstance().read(
-            request.getOwner(), request.getNumber(), request.getSeqNumber()); 
-        ReadRet response;
+            request.getSender(), request.getOwner(), request.getNumber(), request.getSeqNumber());
+
+        ReadRet response = new ReadRet();
+        response.setSender(request.getDestination());
+        response.setDestination(request.getSender());
+        response.setSeqNumber(request.getSeqNumber());
+        response.getAnnouncements().addAll(transformAnnouncementList(posts));
+
+        List<String> outHash = new ArrayList<>();
+		outHash.add(response.getSender());
+        outHash.add(response.getDestination());
+        outHash.add(String.valueOf(response.getSeqNumber()));
+        outHash.add(announcementListToString(response.getAnnouncements()));
+
+        response.setSignature(makeSignature(outHash.toArray(new String[0])));
 
         return response;
     }
@@ -216,5 +229,35 @@ public class AnnouncementServerProxy {
         return String.format("Author: %s, Id: %s\n\"%s\"\nReferences: %s\n",
             post.getWriter(), post.getAnnouncementId(), post.getMessage(),
             post.getAnnouncementList().toString());
+    }
+
+    private List<AnnouncementMessage> transformAnnouncementList(List<Announcement> posts) {
+        List<AnnouncementMessage> res = new ArrayList<>();
+        AnnouncementMessage mess;
+
+        for (Announcement post: posts) {
+            mess = new AnnouncementMessage();
+            mess.setWriter(post.author);
+            mess.setMessage(post.content);
+            mess.setAnnouncementId(post.id);
+            mess.getAnnouncementList().addAll(post.references);
+            mess.setSignature(post.signature);
+            res.add(mess);
+        }
+
+        return res;
+    }
+
+    private String announcementListToString(List<AnnouncementMessage> posts) {
+        String res = "";
+
+        for (AnnouncementMessage post: posts) {
+            res += String.format("%s,%s,%s,%s,%s\n", 
+                post.getWriter(), post.getMessage(),
+                post.getAnnouncementId(), post.getAnnouncementList().toString(),
+                post.getSignature());
+        }
+
+        return res;
     }
 }

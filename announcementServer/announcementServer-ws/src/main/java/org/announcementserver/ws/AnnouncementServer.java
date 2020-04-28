@@ -164,7 +164,7 @@ public class AnnouncementServer implements Serializable {
 	}
 	
 	/* Read */
-	public List<Announcement> read(String owner, Integer number, Integer sn) {
+	public List<Announcement> read(String reader, String owner, Integer number, Integer sn) {
 		if (!personalBoards.containsKey(owner))
 			throw new RuntimeException("Referred user doesn't exist");
 
@@ -173,7 +173,15 @@ public class AnnouncementServer implements Serializable {
 
 		if (number > board.size()) throw new RuntimeException("Not Enough Messages");
 
-		List<Announcement> res = new ArrayList<>();
+		if (sn != sns.get(reader)) throw new RuntimeException("Sequence numbers not in synch");
+
+		Integer end = board.size();
+		Integer start = (number == 0) ? 0 : end - number;
+
+		sns.put(reader, sn + 1);
+		PersistenceUtils.serialize(this);
+
+		return board.subList(start, end);
 	}
 
 	
