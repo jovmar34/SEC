@@ -37,7 +37,6 @@ public class AnnouncementServerClientApp {
 	
 	private static Menus menu = new Menus();
 	private static FrontEnd client = null;
-	private static Integer sn = 0;
 	
     public static void main(String[] args ) throws AnnouncementServerClientException, NoSuchAlgorithmException, InvalidKeySpecException, IOException, UnrecoverableEntryException, KeyStoreException, CertificateException {
     	
@@ -149,7 +148,7 @@ public class AnnouncementServerClientApp {
     	System.out.print("How many references would you like to make? (Use 0 for none): ");
     	int nrefs = userIntInput();
 		
-		/* Collecting announcement ids */ 
+		/* Collecting announcement IDs */ 
     	for (; nrefs>0; nrefs--) {
     		System.out.print("Board Type (Use 'p' for personal and 'g' for general): ");
     		String boardType = userStringInput();
@@ -217,7 +216,6 @@ public class AnnouncementServerClientApp {
     	
     	System.out.print("Number of posts to read (use 0 for all): ");
     	int number = userIntInput();
-    	/* Get PublicKey */
 		
 		try {
 			printSuccess(client.read(clientID, number));
@@ -261,7 +259,7 @@ public class AnnouncementServerClientApp {
 		return i;
 	}
 	
-	// Auxiliary functions --------------------------------
+	// --- Auxiliary functions --------------------------------
 	
 	private static void printSuccess(String message) {
 		System.out.println(GREEN_BOLD_BRIGHT);
@@ -274,6 +272,5 @@ public class AnnouncementServerClientApp {
 		System.out.println(message);
 		System.out.println(RESET);
 	}
+	
 }
-
-
