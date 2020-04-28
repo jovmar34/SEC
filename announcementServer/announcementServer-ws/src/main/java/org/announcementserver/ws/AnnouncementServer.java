@@ -35,11 +35,10 @@ import org.announcementserver.exceptions.UserNotRegisteredException;
 public class AnnouncementServer implements Serializable {
 	
 	private static final long serialVersionUID = 8208757326477388685L;
-	//private HashMap<String, String> pks; // client id => public key association
-	//private HashMap<String, Integer> clients; // public key => client id association (OVERKILL?) FIXME
 	private ArrayList<Announcement> generalBoard;
 	private HashMap<String, ArrayList<Announcement>> personalBoards;
 	private static AnnouncementServer instance = null; //Singleton, maybe unnecessary
+	private List<String> clients;
 	
 	public HashMap<String, Integer> sns; // sequence numbers
 	
@@ -57,34 +56,26 @@ public class AnnouncementServer implements Serializable {
 	private AnnouncementServer () {
 		this.generalBoard = new ArrayList<>();
 		this.personalBoards = new HashMap<>();
-		//this.clients = new HashMap<>();
-		//this.pks = new HashMap<>();
 		this.sns = new HashMap<>();
+		this.clients = new ArrayList<>();
 		
-		/*
 		try {
 			Scanner reader = new Scanner(new File("src/main/resources/clients.txt"));
 			while (reader.hasNextLine()) {
-				String[] data = reader.nextLine().split(" ");
-				String clientID = data[0];
-				String publicKey = data[1];
-				clients.put(publicKey, clientID );
-				pks.put(clientID, publicKey);
+				String data = reader.nextLine();
+				clients.add(data);
 			}
 			reader.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		*/
 	}
 	
 	/* Register */
 	public Integer register(String client) {
-		/*
-		if (!clients.containsKey(publicKey)) {
-			throw new RuntimeException("Untrusted user registering");
-		}
-		*/
+		if (!clients.contains(client)) 
+			throw new RuntimeException("Unknown user registering");
+
 		if (!personalBoards.containsKey(client)) {
 			personalBoards.put(client, new ArrayList<>());
 			sns.put(client, 0);
@@ -92,37 +83,45 @@ public class AnnouncementServer implements Serializable {
 		}
 		
 		return sns.get(client);
-		/*if (new_user) {
-			
-			toHash.add(myId);
-			toHash.add(clientID);
-			toHash.add("Welcome new user!");
-			
-			try {
-				response.add("Welcome new user!");
-				response.add(CryptoTools.makeSignature(toHash.toArray(new String[0])));
-			} catch (Exception e) {
-				throw new RuntimeException(e.getMessage());
-			}
-		} else {
-			toHash.add(myId);
-			toHash.add(clientID);
-			toHash.add(String.format("Welcome back %s", clientID));
-			toHash.add(sns.get(clientN).toString());
-
-			try {
-				response.add(String.format("Welcome back %s", clientID));
-				response.add(sns.get(clientN).toString());
-				response.add(CryptoTools.makeSignature(toHash.toArray(new String[0])));
-			} catch (Exception e) {
-				throw new RuntimeException(e.getMessage());
-			}
-		}
-		
-		
-		return response;*/
 	}
 	
+	public Integer post(Announcement announcement) {
+		if (!personalBoards.containsKey(announcement.author)) 
+			throw new RuntimeException("The user who wants to post doesn't exist");
+			
+		if (announcement.content.length() > 255)
+			throw new RuntimeException("The message is too long");
+
+		for (String reference : announcement.references) {			
+			String[] parts = reference.split("a|c"); // [<p|g>, author_id, ctr_id]
+			String owner = String.format("client%s", parts[1]);
+			
+			if (!personalBoards.containsKey(owner)) {
+				throw new RuntimeException("Referred user doesn't exist");
+			}
+			
+			if (parts[0].equals("p")) {								
+				if (personalBoards.get(owner).size() < Integer.parseInt(parts[2])) { // FIXME size is not best comparison (wts instead?)
+					throw new RuntimeException("The referred announcement doesn’t exist");
+				}
+				
+			} else if (parts[0].equals("g")) {
+				if (generalBoard.size() < Integer.parseInt(parts[2])) { // FIXME size is not best comparison (wts instead?)
+					throw new RuntimeException("The referred announcement doesn’t exist");
+				}
+			} else {
+				throw new RuntimeException("The type of post in reference is incorrect");
+			}
+		}
+
+		if (sns.get(announcement.author) == announcement.seqNumber) {
+			personalBoards.get(announcement.author).add(announcement);
+			sns.put(announcement.author, announcement.seqNumber + 1);
+			PersistenceUtils.serialize(this);
+		}
+
+		return announcement.seqNumber;
+	}
 	
 	/* For testing purposes */
 	public void putGeneral(Announcement ann) {

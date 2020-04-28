@@ -5,11 +5,13 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 public class Announcement implements Serializable {
-	private String author;
-	private String content;
-	private String id;
-	private ArrayList<String> references; 
-	
+	private static final long serialVersionUID = -4546920147162956800L;
+	protected String author;
+	protected String content;
+	protected String id;
+	protected ArrayList<String> references;
+	protected String signature;
+	protected Integer seqNumber;
 	
 	public Announcement() {
 		this.references = new ArrayList<>();
@@ -40,6 +42,14 @@ public class Announcement implements Serializable {
 	
 	public void setAuthor(String authid) {
 		this.author = authid;
+	}
+
+	public void setSignature(String signature) {
+		this.signature = signature;
+	}
+
+	public void setSeqNumber(Integer seqNumber) {
+		this.seqNumber = seqNumber;
 	}
 	
 	@Override

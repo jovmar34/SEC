@@ -59,6 +59,42 @@ public class AnnouncementServerProxy {
         return response;
     }
 
+    public WriteRet post(WriteReq request) {
+        String hash = null;
+        if (!request.getDestination().equals(myId)) throw new RuntimeException("Not me");
+
+        hash = decryptSignature(request.getSender(), request.getSignature());
+
+        List<String> inHash = new ArrayList<>();
+		inHash.add(request.getSender());
+        inHash.add(request.getDestination());
+        inHash.add(String.valueOf(request.getSeqNum()));
+        inHash.addAll(strAnnouncement(request.getAnnouncement()));
+        inHash.add(request.getAnnouncement().getSignature());
+        inHash.add(hash);
+
+        if (!checkHash(inHash.toArray(new String[0]))) 
+            throw new RuntimeException("Possible Tampering in transport of post message");
+
+        Announcement new_post = transformAnnouncement(request.getAnnouncement());
+        new_post.setSeqNumber(request.getSeqNum());
+        Integer sn = AnnouncementServer.getInstance().post(new_post);
+
+        WriteRet response = new WriteRet();
+        response.setSender(request.getDestination());
+        response.setDestination(request.getSender());
+        response.setSeqNum(sn);
+        
+        List<String> outHash = new ArrayList<>();
+		outHash.add(request.getSender());
+        inHash.add(request.getDestination());
+        inHash.add(String.valueOf(request.getSeqNum()));
+        inHash.addAll(strAnnouncement(request.getAnnouncement()));
+        inHash.add(request.getAnnouncement().getSignature());
+        inHash.add(hash);
+
+    }
+
     private String decryptSignature(String author, String signature) {
         try {
 			return CryptoTools.decryptSignature(author, signature);
@@ -81,6 +117,25 @@ public class AnnouncementServerProxy {
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
+    }
+
+    private List<String> strAnnouncement(AnnouncementMessage announcement) {
+        List<String> total = new ArrayList<>();
+        total.add(announcement.getWriter());
+        total.add(announcement.getMessage());
+        total.add(announcement.getAnnouncementList().toString());
+        total.add(announcement.getAnnouncementId());
+        return total;
+    }
+
+    private Announcement transformAnnouncement(AnnouncementMessage announcement) {
+        Announcement res = new Announcement();
+        res.setAuthor(announcement.getWriter());
+        res.setContent(announcement.getMessage());
+        res.setReferences(announcement.getAnnouncementList());
+        res.setId(announcement.getAnnouncementId());
+        res.setSignature(announcement.getSignature());
+        return res;
     }
 
 }

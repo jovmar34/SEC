@@ -53,34 +53,22 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 			throw new RuntimeException(e.getMessage());
 		}
 		
-		System.out.println(String.format("Response: %s, %s, %d, %d, %d, %s", 
-			res.getSender(), res.getDestination(), res.getSeqNumber(), 
-			res.getWts(), res.getRid(), res.getSignature()));
 		return res;
 	}
 	
 	/* Post */
 	public WriteRet post(WriteReq request) 
 			throws UserNotRegisteredFault_Exception, MessageSizeFault_Exception, ReferredUserFault_Exception, PostTypeFault_Exception, ReferredAnnouncementFault_Exception {
-		/* FIXME new reality
-		List<String> res = null;
+		WriteRet res = null;
+
 		try {
-			res = this.proxy.post(publicKey, message, announcementList, signature);
-		} catch (UserNotRegisteredException e) {
-			throwUserNotRegisteredFault(e.getMessage());
-		} catch (MessageSizeException e) {
-			throwMessageSizeFault(e.getMessage());
-		} catch (ReferredUserException e) {
-			throwReferredUserFault(e.getMessage());
-		} catch (PostTypeException e) {
-			throwPostTypeFault(e.getMessage());
-		} catch (ReferredAnnouncementException e) {
-			throwReferredAnnouncementFault(e.getMessage());
+			res = proxy.post(request);
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new RuntimeException(e.getMessage());
 		}
-		*/
-		throw new RuntimeException("Not implemented");
+
+		return res;
 	}
 	
 	/* Post General */
