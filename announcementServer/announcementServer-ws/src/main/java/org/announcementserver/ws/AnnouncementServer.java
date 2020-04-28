@@ -164,6 +164,18 @@ public class AnnouncementServer implements Serializable {
 	}
 	
 	/* Read */
+	public List<Announcement> read(String owner, Integer number, Integer sn) {
+		if (!personalBoards.containsKey(owner))
+			throw new RuntimeException("Referred user doesn't exist");
+
+		List<Announcement> board = personalBoards.get(owner);
+		if (board.isEmpty()) throw new RuntimeException("Empty Board");
+
+		if (number > board.size()) throw new RuntimeException("Not Enough Messages");
+
+		List<Announcement> res = new ArrayList<>();
+	}
+
 	
 	/* Read General */
 	

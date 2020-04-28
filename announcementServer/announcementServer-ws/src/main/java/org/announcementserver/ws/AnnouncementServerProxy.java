@@ -139,6 +139,30 @@ public class AnnouncementServerProxy {
     }
     
     // --- READ ---------
+
+    public ReadRet read(ReadReq request) {
+        String hash = null;
+        if(!request.getDestination().equals(myId)) throw new RuntimeException("Not me");
+
+        hash = decryptSignature(request.getSender(), request.getSignature());
+
+        List<String> inHash = new ArrayList<>();
+		inHash.add(request.getSender());
+        inHash.add(request.getDestination());
+        inHash.add(String.valueOf(request.getSeqNumber()));
+        inHash.add(request.getOwner());
+        inHash.add(String.valueOf(request.getNumber()));
+        inHash.add(hash);
+
+        if (!checkHash(inHash.toArray(new String[0]))) 
+            throw new RuntimeException("Possible Tampering in transport of post message");
+
+        List<Announcement> posts = AnnouncementServer.getInstance().read(
+            request.getOwner(), request.getNumber(), request.getSeqNumber()); 
+        ReadRet response;
+
+        return response;
+    }
     
     // --- READ GENERAL ---------
     
@@ -168,6 +192,7 @@ public class AnnouncementServerProxy {
         }
     }
 
+    // FIXME replace by postToString 
     private List<String> strAnnouncement(AnnouncementMessage announcement) {
         List<String> total = new ArrayList<>();
         total.add(announcement.getWriter());
@@ -187,4 +212,9 @@ public class AnnouncementServerProxy {
         return res;
     }
 
+    private String postToString(AnnouncementMessage post) {
+        return String.format("Author: %s, Id: %s\n\"%s\"\nReferences: %s\n",
+            post.getWriter(), post.getAnnouncementId(), post.getMessage(),
+            post.getAnnouncementList().toString());
+    }
 }

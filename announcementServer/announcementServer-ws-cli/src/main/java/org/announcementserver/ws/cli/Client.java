@@ -31,6 +31,8 @@ import org.announcementserver.ws.InvalidNumberFault_Exception;
 import org.announcementserver.ws.MessageSizeFault_Exception;
 import org.announcementserver.ws.NumberPostsFault_Exception;
 import org.announcementserver.ws.PostTypeFault_Exception;
+import org.announcementserver.ws.ReadReq;
+import org.announcementserver.ws.ReadRet;
 import org.announcementserver.ws.ReferredAnnouncementFault_Exception;
 import org.announcementserver.ws.ReferredUserFault_Exception;
 import org.announcementserver.ws.UserNotRegisteredFault_Exception;
@@ -330,18 +332,20 @@ public class Client extends Thread {
                 break;
                 
             case READ:
-            	try {
-            		readKey = CryptoTools.publicKeyAsString(CryptoTools.getPublicKey(clientID));
-            	} catch (NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException | CertificateException
-            			| IOException e4) {
-            		// TODO Auto-generated catch block
-            		e4.printStackTrace();
-            	}
+                toHash = new ArrayList<>();
+                
+                ReadRet readRes;
+                ReadReq readReq = new ReadReq();
+                readReq.setSender(username);
+                readReq.setDestination(servName);
+                readReq.setSeqNumber(seqNumber);
+                readReq.setOwner(clientID);
+                readReq.setNumber(number);
 			
                 toHash.add(username);
                 toHash.add(servName);
-                toHash.add(parent.sn.toString());
-                toHash.add(readKey);
+                toHash.add(seqNumber.toString());
+                toHash.add(clientID);
                 toHash.add(number.toString());
 
                 try {
@@ -353,19 +357,29 @@ public class Client extends Thread {
                     e3.printStackTrace();
                     return;
                 }
+
+                readReq.setSignature(signature);
                 
-                /* FIXME: ADAPT TO NEW REALITY
                 try {
-                    ret = port.read(publicKey, readKey, Long.valueOf(number), signature);
+                    readRes = port.read(readReq);
                 } catch (EmptyBoardFault_Exception | InvalidNumberFault_Exception | NumberPostsFault_Exception | ReferredUserFault_Exception e2) {
                     // TODO Auto-generated catch block
                     e2.printStackTrace();
                     return;
                 }
-                */
+
+                if (!readRes.getSender().equals(servName)) 
+                    throw new RuntimeException("Not my server response");
+                
+                if (!readRes.getDestination().equals(username))
+                    throw new RuntimeException("Response not to me");
+
+                if (readRes.getSeqNumber() != seqNumber) {
+                    throw new RuntimeException("Sequence numbers don't match");
+                }
 
                 try {
-                    hash = CryptoTools.decryptSignature(servName, ret.get(1));
+                    hash = CryptoTools.decryptSignature(readRes.getSender(), readRes.getSignature());
                 } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
                         | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
                         | UnrecoverableEntryException | IOException e1) {
@@ -375,10 +389,10 @@ public class Client extends Thread {
                 }
                 
                 toHash = new ArrayList<>();
-                toHash.add(servName);
-                toHash.add(username);
-                toHash.add(parent.sn.toString());
-                toHash.add(ret.get(0));
+                toHash.add(readRes.getSender());
+                toHash.add(readRes.getDestination());
+                toHash.add(String.valueOf(readRes.getSeqNumber()));
+                toHash.add(announcementListToString(readRes.getAnnouncements())); //need similar func in the server
                 toHash.add(hash);
 
                 try {
@@ -391,6 +405,14 @@ public class Client extends Thread {
                     e.printStackTrace();
                     return;
                 }
+
+                String res = "";
+
+                for (AnnouncementMessage mess: readRes.getAnnouncements()) {
+                    res += postToString(mess);
+                }
+
+                ret.add(res);
                 
 				break;
 				
@@ -466,5 +488,24 @@ public class Client extends Thread {
             //else System.out.println("\n");
             parent.notify();
         }
+    }
+
+    private String announcementListToString(List<AnnouncementMessage> posts) {
+        String res = "";
+
+        for (AnnouncementMessage post: posts) {
+            res += String.format("%s,%s,%s,%s,%s\n", 
+                post.getWriter(), post.getMessage(),
+                post.getAnnouncementId(), post.getAnnouncementList().toString(),
+                post.getSignature());
+        }
+
+        return res;
+    }
+
+    private String postToString(AnnouncementMessage post) {
+        return String.format("Author: %s, Id: %s\n\"%s\"\nReferences: %s\n",
+            post.getWriter(), post.getAnnouncementId(), post.getMessage(),
+            post.getAnnouncementList().toString());
     }
 }
