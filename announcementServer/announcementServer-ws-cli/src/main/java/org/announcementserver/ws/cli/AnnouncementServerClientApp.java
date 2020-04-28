@@ -80,7 +80,6 @@ public class AnnouncementServerClientApp {
     		authenticationMenu();
     	}
     	
-    	printSuccess("Sucessfull authentication! Welcome!");
 		client.init(username);
 		
     	try {

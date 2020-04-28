@@ -8,9 +8,6 @@ public class AnnouncementServerEndpointManager {
 	
 	/* Variables */
 	
-	/** UDDI Naming Server Location */
-	private String uddiURL = null;
-	
 	/** Web Service Name */
 	private String wsName = null;
 	
@@ -22,9 +19,6 @@ public class AnnouncementServerEndpointManager {
 	
 	/** Web Service Endpoint */
 	private Endpoint endpoint = null;
-	
-	/** UDDI Naming instance for containing UDDI server */
-	//private UDDINaming uddiNaming = null;
 	
 	/** Verbose output? */
 	private boolean verbose = true;

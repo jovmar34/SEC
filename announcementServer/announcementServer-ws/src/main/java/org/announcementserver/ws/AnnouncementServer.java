@@ -85,6 +85,7 @@ public class AnnouncementServer implements Serializable {
 		return sns.get(client);
 	}
 	
+	/* Post */
 	public Integer post(Announcement announcement) {
 		if (!personalBoards.containsKey(announcement.author)) 
 			throw new RuntimeException("The user who wants to post doesn't exist");
@@ -115,7 +116,7 @@ public class AnnouncementServer implements Serializable {
 		}
 
 		if (sns.get(announcement.author) == announcement.seqNumber) {
-			personalBoards.get(announcement.author).add(announcement);
+			putPersonal(announcement.author, announcement);
 			sns.put(announcement.author, announcement.seqNumber + 1);
 			PersistenceUtils.serialize(this);
 		}
@@ -123,13 +124,57 @@ public class AnnouncementServer implements Serializable {
 		return announcement.seqNumber;
 	}
 	
+	/* Post General */
+	public Integer postGeneral(Announcement announcement) {
+		if (!personalBoards.containsKey(announcement.author)) 
+			throw new RuntimeException("The user who wants to post doesn't exist");
+		
+		if (announcement.content.length() > 255)
+			throw new RuntimeException("The message is too long");
+		
+		for (String reference : announcement.references) {
+			String[] parts = reference.split("a|c"); // [<p|g>, author_id, ctr_id]
+			String owner = String.format("client%s", parts[1]);
+			
+			if (!personalBoards.containsKey(owner)) {
+				throw new RuntimeException("Referred user doesn't exist");
+			}
+			
+			if (parts[0].equals("p")) {								
+				if (personalBoards.get(owner).size() < Integer.parseInt(parts[2])) { // FIXME size is not best comparison (wts instead?)
+					throw new RuntimeException("The referred announcement doesn’t exist");
+				}
+				
+			} else if (parts[0].equals("g")) {
+				if (generalBoard.size() < Integer.parseInt(parts[2])) { // FIXME size is not best comparison (wts instead?)
+					throw new RuntimeException("The referred announcement doesn’t exist");
+				}
+			} else {
+				throw new RuntimeException("The type of post in reference is incorrect");
+			}
+		}
+		
+		if (sns.get(announcement.author) == announcement.seqNumber) {
+			putGeneral(announcement);
+			sns.put(announcement.author, announcement.seqNumber + 1);
+			PersistenceUtils.serialize(this);
+		}
+		
+		return announcement.seqNumber;
+	}
+	
+	/* Read */
+	
+	/* Read General */
+	
+	
 	/* For testing purposes */
 	public void putGeneral(Announcement ann) {
 		generalBoard.add(ann);
 	}
 	
-	public void putPersonal(String publicKey, Announcement ann) {
-		personalBoards.get(publicKey).add(ann);
+	public void putPersonal(String author, Announcement ann) {
+		personalBoards.get(author).add(ann);
 	}
 	
 	public void clean() {

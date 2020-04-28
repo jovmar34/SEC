@@ -83,7 +83,6 @@ public class FrontEnd {
 
         checkInit();
         Client cli;
-
         responses = new ArrayList<RegisterRet>(nServ);
 
         for (int i = 1; i <= nServ; i++) {
@@ -146,17 +145,16 @@ public class FrontEnd {
 
         checkInit();
         Client cli;
+        responses = new ArrayList<String>(nServ);
         
         response = null;
-        
-        /* FIXME new reality
         for (int i = 1; i <= nServ; i++) {
-            cli = new Client(this, Operation.POSTGENERAL, i);
+            cli = new Client(this, Operation.POSTGENERAL, i, responses);
             cli.message = message;
             cli.references = announcementList;
+            cli.seqNumber = sn;
             cli.start();
         }
-        */
         
         while (this.response == null) {
             try {

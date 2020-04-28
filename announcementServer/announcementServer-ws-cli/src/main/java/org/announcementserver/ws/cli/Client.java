@@ -132,7 +132,7 @@ public class Client extends Thread {
                     return;
                 }
 
-                ret.add("All good");
+                ret.add("Sucessfull authentication! Welcome!");
                 ret.add(String.valueOf(response.getSeqNumber()));
                 
                 break;
@@ -229,61 +229,102 @@ public class Client extends Thread {
                 	return;
                 }
 
-                ret.add("post all good");
+                ret.add("Post was successfully posted to Personal Board!");
                 
                 break;
                 
             case POSTGENERAL:
+            	WriteRet postGenRet = null;
+            	WriteReq postGenReq = new WriteReq();
+            	postGenReq.setSender(username);
+            	postGenReq.setDestination(servName);
+            	postGenReq.setSeqNumber(seqNumber);
+            	
+            	AnnouncementMessage postGen = new AnnouncementMessage();
+            	postGen.setMessage(message);
+            	postGen.setWriter(username);
+                postGen.getAnnouncementList().addAll(this.references);
+                postGen.setAnnouncementId(String.format("pc%sa%d", username.replaceAll("client", ""), seqNumber));
+            	
+                List<String> messHashG = new ArrayList<>();
+                messHashG.add(username);
+                messHashG.add(message);
+                messHashG.add(references.toString());
+                messHashG.add(postGen.getAnnouncementId());
+                
+                String messSigG = null;
+                
+                try {
+                    messSigG = CryptoTools.makeSignature(messHashG.toArray(new String[0]));
+                } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
+                        | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
+                        | UnrecoverableEntryException | IOException e) {
+                    e.printStackTrace();
+                    return;
+                }
+                
+                postGen.setSignature(messSigG);
+                postGenReq.setAnnouncement(postGen);
+                
+                toHash = new ArrayList<>();
                 toHash.add(username);
                 toHash.add(servName);
-                toHash.add(parent.sn.toString());
-                toHash.add(publicKey);
+                toHash.add(String.valueOf(seqNumber));
+                toHash.add(username);
                 toHash.add(message);
-                toHash.addAll(references);
-
+                toHash.add(references.toString());
+                toHash.add(postGen.getAnnouncementId());
+                toHash.add(messSigG);
+                
                 try {
                 	signature = CryptoTools.makeSignature(toHash.toArray(new String[0]));
                 } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
                 		| NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
-                		| UnrecoverableEntryException | IOException e1) {
-                	e1.printStackTrace();
+                		| UnrecoverableEntryException | IOException e2) {
+                	e2.printStackTrace();
                 	return;
                 }
                 
-                /* FIXME: ADAPT TO NEW REALITY
-                try {
-                	ret = port.postGeneral(publicKey, message, references, signature);
-                } catch (WebServiceException | MessageSizeFault_Exception | PostTypeFault_Exception | ReferredAnnouncementFault_Exception | ReferredUserFault_Exception | UserNotRegisteredFault_Exception e1) {
-                	System.out.println("Hey, dead");
-                	e1.printStackTrace();
-                	return;
-                }
-                */
+                postGenReq.setSignature(signature);
+
+                System.out.println(postGen.getSignature());
 
                 try {
-                	hash = CryptoTools.decryptSignature(servName, ret.get(1));
+                	postGenRet = port.postGeneral(postGenReq);
+                } catch (MessageSizeFault_Exception | PostTypeFault_Exception | ReferredAnnouncementFault_Exception
+                		| ReferredUserFault_Exception | UserNotRegisteredFault_Exception e2) {
+                	e2.printStackTrace();
+                	return;
+                }
+
+                try {
+                	hash = CryptoTools.decryptSignature(servName, postGenRet.getSignature());
                 } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
                 		| NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
-                		| UnrecoverableEntryException | IOException e1) {
-                	e1.printStackTrace();
+                		| UnrecoverableEntryException | IOException e2) {
+                	e2.printStackTrace();
                 	return;
                 }
                 
-                //String response;
+                toHash = new ArrayList<>();
 
+                toHash.add(servName);
+                toHash.add(username);
+                toHash.add(String.valueOf(postGenRet.getSeqNumber()));
+                toHash.add(hash);
+                
                 try {
-                	if (CryptoTools.checkHash(servName, username, String.valueOf(parent.sn), ret.get(0), hash)) {
-                		//response = ret.get(0);
-                	} else {
+                	if (!CryptoTools.checkHash(toHash.toArray(new String[0]))) {
                 		throw new RuntimeException("Hashes are not equal");
                 	}
                 } catch (NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException | CertificateException
-                		| IOException e1) {
-                	// TODO Auto-generated catch block
-                	e1.printStackTrace();
+                		| IOException e2) {
+                	e2.printStackTrace();
                 	return;
                 }
-            	
+
+                ret.add("Post was successfully posted to General Board!");
+                
                 break;
                 
             case READ:

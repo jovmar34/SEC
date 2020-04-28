@@ -17,13 +17,12 @@ import org.announcementserver.exceptions.UserNotRegisteredException;
 
 public class AnnouncementServerProxy {
     protected String myId;
-        
-    private AnnouncementServer announcementServer;
 
     public AnnouncementServerProxy() {
 
     }
 
+    // --- Register ---------
     public RegisterRet register(RegisterReq request) {
         String hash = null;
         if (!request.getDestination().equals(myId)) throw new RuntimeException("Not me");
@@ -58,7 +57,8 @@ public class AnnouncementServerProxy {
 
         return response;
     }
-
+    
+    // --- POST ---------
     public WriteRet post(WriteReq request) {
         String hash = null;
         if (!request.getDestination().equals(myId)) throw new RuntimeException("Not me");
@@ -97,6 +97,52 @@ public class AnnouncementServerProxy {
 
         return response;
     }
+    
+    // --- POST GENERAL ---------
+    public WriteRet postGeneral(WriteReq request) {
+    	String hash = null;
+    	if (!request.getDestination().equals(myId)) throw new RuntimeException("Not me");
+    	
+        System.out.println(request.getSender());
+        System.out.println(request.getSignature());
+        hash = decryptSignature(request.getSender(), request.getSignature());
+        
+        List<String> inHash = new ArrayList<>();
+		inHash.add(request.getSender());
+        inHash.add(request.getDestination());
+        inHash.add(String.valueOf(request.getSeqNumber()));
+        inHash.addAll(strAnnouncement(request.getAnnouncement()));
+        inHash.add(request.getAnnouncement().getSignature());
+        inHash.add(hash);
+        
+        if (!checkHash(inHash.toArray(new String[0]))) 
+            throw new RuntimeException("Possible Tampering in transport of post message");
+        
+        Announcement new_post = transformAnnouncement(request.getAnnouncement());
+        new_post.setSeqNumber(request.getSeqNumber());
+        Integer sn = AnnouncementServer.getInstance().postGeneral(new_post);
+
+        WriteRet response = new WriteRet();
+        response.setSender(request.getDestination());
+        response.setDestination(request.getSender());
+        response.setSeqNumber(sn);
+        
+        List<String> outHash = new ArrayList<>();
+
+		outHash.add(response.getSender());
+        outHash.add(response.getDestination());
+        outHash.add(String.valueOf(response.getSeqNumber()));
+        
+        response.setSignature(makeSignature(outHash.toArray(new String[0])));
+    	
+    	return response;
+    }
+    
+    // --- READ ---------
+    
+    // --- READ GENERAL ---------
+    
+    // -- Auxiliary Functions -------------------
 
     private String decryptSignature(String author, String signature) {
         try {
