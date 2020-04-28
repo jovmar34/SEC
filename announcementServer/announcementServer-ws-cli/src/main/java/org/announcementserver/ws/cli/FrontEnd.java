@@ -25,6 +25,7 @@ import org.announcementserver.ws.InvalidNumberFault_Exception;
 import org.announcementserver.ws.MessageSizeFault_Exception;
 import org.announcementserver.ws.NumberPostsFault_Exception;
 import org.announcementserver.ws.PostTypeFault_Exception;
+import org.announcementserver.ws.ReadRet;
 import org.announcementserver.ws.ReferredAnnouncementFault_Exception;
 import org.announcementserver.ws.ReferredUserFault_Exception;
 import org.announcementserver.ws.UserNotRegisteredFault_Exception;
@@ -174,20 +175,19 @@ public class FrontEnd {
 
         checkInit();
 
-        
-
         Client cli;
+
+        List<ReadRet> readList = new ArrayList<>(nServ);
         
         this.response = null;
         
-        /* FIXME new reality
         for (int i = 1; i <= nServ; i++) {
-            cli = new Client(this, Operation.READ, i);
+            cli = new Client(this, Operation.READ, i, readList);
             cli.number = number;
-            cli.clientID=clientID;
+            cli.clientID = clientID;
+            cli.seqNumber = sn;
             cli.start();
         }
-        */
         
         while (this.response == null) {
             try {
@@ -201,8 +201,6 @@ public class FrontEnd {
         System.out.println(response);
 
         sn++;
-
-        
 
         return response.get(0);
     }
