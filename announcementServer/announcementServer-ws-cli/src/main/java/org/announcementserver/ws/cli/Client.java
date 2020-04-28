@@ -335,6 +335,7 @@ public class Client extends Thread {
                 ReadReq readReq = new ReadReq();
                 readReq.setSender(username);
                 readReq.setDestination(servName);
+                readReq.setSeqNumber(seqNumber);
                 readReq.setOwner(clientID);
                 readReq.setNumber(number);
 			
