@@ -8,6 +8,11 @@ import org.announcementserver.ws.AnnouncementServerPortType;
 
 import org.announcementserver.ws.RegisterReq;
 import org.announcementserver.ws.RegisterRet;
+import org.announcementserver.ws.WriteReq;
+import org.announcementserver.ws.WriteRet;
+import org.announcementserver.ws.ReadReq;
+import org.announcementserver.ws.ReadGeneralReq;
+import org.announcementserver.ws.ReadRet;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -29,8 +34,6 @@ import org.announcementserver.ws.PostTypeFault_Exception;
 import org.announcementserver.ws.ReferredAnnouncementFault_Exception;
 import org.announcementserver.ws.ReferredUserFault_Exception;
 import org.announcementserver.ws.UserNotRegisteredFault_Exception;
-import org.announcementserver.ws.WriteReq;
-import org.announcementserver.ws.WriteRet;
 
 enum Operation {
     REGISTER, POST, POSTGENERAL, READ, READGENERAL
@@ -392,40 +395,42 @@ public class Client extends Thread {
 				break;
 				
             case READGENERAL:
+            	ReadRet readGenRet = null;
+            	ReadGeneralReq readGenReq = new ReadGeneralReq();
+            	readGenReq.setSender(username);
+            	readGenReq.setDestination(servName);
+            	readGenReq.setSeqNumber(seqNumber);
+            	readGenReq.setNumber(number);
             	
-            	
-            	
+            	toHash = new ArrayList<>();
                 toHash.add(username);
                 toHash.add(servName);
-                toHash.add(parent.sn.toString());
-                toHash.add(number.toString());
+                toHash.add(String.valueOf(seqNumber));
+                toHash.add(String.valueOf(number));
                 
                 try {
                     signature = CryptoTools.makeSignature(toHash.toArray(new String[0]));
                 } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
                         | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
                         | UnrecoverableEntryException | IOException e3) {
-                    // TODO Auto-generated catch block
                     e3.printStackTrace();
                     return;
                 }
-
-                /* FIXME: ADAPT TO NEW REALITY                
+                
+                readGenReq.setSignature(signature);
+              
                 try {
-                    ret = port.readGeneral(publicKey, Long.valueOf(number), signature);
+                    readGenRet = port.readGeneral(readGenReq);
                 } catch (EmptyBoardFault_Exception | InvalidNumberFault_Exception | NumberPostsFault_Exception e2) {
-                    // TODO Auto-generated catch block
                     e2.printStackTrace();
                     return;
                 }
-                */
 
                 try {
-                    hash = CryptoTools.decryptSignature(servName, ret.get(1));
+                    hash = CryptoTools.decryptSignature(servName, readGenRet.getSignature());
                 } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
                         | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
                         | UnrecoverableEntryException | IOException e1) {
-                    // TODO Auto-generated catch block
                     e1.printStackTrace();
                     return;
                 }
@@ -433,8 +438,8 @@ public class Client extends Thread {
                 toHash = new ArrayList<>();
                 toHash.add(servName);
                 toHash.add(username);
-                toHash.add(String.valueOf(parent.sn));
-                toHash.add(ret.get(0));
+                toHash.add(String.valueOf(readGenRet.getSeqNumber()));
+                toHash.add(String.valueOf(readGenRet.getAnnouncements()));
                 toHash.add(hash);
 
                 try {
@@ -443,10 +448,11 @@ public class Client extends Thread {
                     }
                 } catch (NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException
                         | CertificateException | IOException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                     return;
                 }
+                
+                //ret = readGenRet.getAnnouncements();
                 
 				break;
         }
