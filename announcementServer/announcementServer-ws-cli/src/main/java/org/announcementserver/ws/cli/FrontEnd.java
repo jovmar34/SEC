@@ -94,7 +94,6 @@ public class FrontEnd {
             try {
                 wait();
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
@@ -127,7 +126,6 @@ public class FrontEnd {
             try {
                 wait();
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
@@ -160,7 +158,6 @@ public class FrontEnd {
             try {
                 wait();
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
@@ -216,24 +213,21 @@ public class FrontEnd {
             IllegalBlockSizeException, BadPaddingException {
 
         checkInit();
-
         Client cli;
+        responses = new ArrayList<String>(nServ);
         
-        this.response = null;
-        
-        /* FIXME new reality
+        response = null;
         for (int i = 1; i <= nServ; i++) {
-            cli = new Client(this, Operation.READGENERAL, i);
+            cli = new Client(this, Operation.READGENERAL, i, responses);
+            cli.seqNumber = sn;
             cli.number = number;
             cli.start();
         }
-        */
         
         while (this.response == null) {
             try {
                 wait();
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }

@@ -62,7 +62,6 @@ public class Client extends Thread {
         AnnouncementServerPortType port = parent.ports.get(servId - 1);
         String servName = Constants.SERVER_NAME + servId.toString();
         String username = parent.username;
-        String publicKey = parent.publicKey;
         String signature = "";
         String hash = null;
         List<String> toHash = new ArrayList<>();
@@ -393,6 +392,9 @@ public class Client extends Thread {
 				break;
 				
             case READGENERAL:
+            	
+            	
+            	
                 toHash.add(username);
                 toHash.add(servName);
                 toHash.add(parent.sn.toString());
