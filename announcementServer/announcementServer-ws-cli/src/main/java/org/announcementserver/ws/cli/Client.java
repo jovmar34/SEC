@@ -447,9 +447,19 @@ public class Client extends Thread {
                     e2.printStackTrace();
                     return;
                 }
+                
+                if (!readGenRet.getSender().equals(servName)) 
+                    throw new RuntimeException("Not my server response");
+                
+                if (!readGenRet.getDestination().equals(username))
+                    throw new RuntimeException("Response not to me");
+
+                if (readGenRet.getSeqNumber() != seqNumber) {
+                    throw new RuntimeException("Sequence numbers don't match");
+                }
 
                 try {
-                    hash = CryptoTools.decryptSignature(servName, readGenRet.getSignature());
+                    hash = CryptoTools.decryptSignature(readGenRet.getSender(), readGenRet.getSignature());
                 } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
                         | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
                         | UnrecoverableEntryException | IOException e1) {
@@ -458,10 +468,10 @@ public class Client extends Thread {
                 }
                 
                 toHash = new ArrayList<>();
-                toHash.add(servName);
-                toHash.add(username);
+                toHash.add(readGenRet.getSender());
+                toHash.add(readGenRet.getDestination());
                 toHash.add(String.valueOf(readGenRet.getSeqNumber()));
-                toHash.add(String.valueOf(readGenRet.getAnnouncements()));
+                toHash.add(announcementListToString(readGenRet.getAnnouncements()));
                 toHash.add(hash);
 
                 try {
@@ -474,7 +484,12 @@ public class Client extends Thread {
                     return;
                 }
                 
-                //ret = readGenRet.getAnnouncements();
+                res = "";
+                for (AnnouncementMessage mess: readGenRet.getAnnouncements()) {
+                    res += postToString(mess);
+                }
+                
+                ret.add(res);
                 
 				break;
         }
@@ -489,6 +504,8 @@ public class Client extends Thread {
             parent.notify();
         }
     }
+    
+    // --- Auxiliary ---------
 
     private String announcementListToString(List<AnnouncementMessage> posts) {
         String res = "";

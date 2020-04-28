@@ -139,7 +139,6 @@ public class AnnouncementServerProxy {
     }
     
     // --- READ ---------
-
     public ReadRet read(ReadReq request) {
         String hash = null;
         if(!request.getDestination().equals(myId)) throw new RuntimeException("Not me");
@@ -159,12 +158,22 @@ public class AnnouncementServerProxy {
 
         List<Announcement> posts = AnnouncementServer.getInstance().read(
             request.getOwner(), request.getNumber(), request.getSeqNumber()); 
-        ReadRet response;
+        ReadRet response = null;
 
         return response;
     }
     
     // --- READ GENERAL ---------
+    public ReadRet readGeneral(ReadGeneralReq request) {
+    	String hash = null;
+    	
+    	
+    	hash = decryptSignature(request.getSender(), request.getSignature());
+    	
+    	
+    	return 
+    }
+    
     
     // -- Auxiliary Functions -------------------
 
