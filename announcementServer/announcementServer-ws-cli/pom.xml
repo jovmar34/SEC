@@ -34,7 +34,7 @@
   		<artifactId>announcementServer-ws</artifactId>
   		<version>0.1</version>
   	</dependency>
-  	<!-- Common -->
+	<!-- Common -->
   	<dependency>
       <groupId>com.sec</groupId>
 	  <artifactId>announcementServer-common</artifactId>

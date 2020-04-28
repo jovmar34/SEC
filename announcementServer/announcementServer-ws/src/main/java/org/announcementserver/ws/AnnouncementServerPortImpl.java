@@ -32,7 +32,7 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 	@SuppressWarnings("unused")
 	private final AnnouncementServerEndpointManager endpointManager;
 
-	private AnnouncementServerProxy proxy;
+	protected AnnouncementServerProxy proxy;
 
 	/** Constructor receives a reference to the endpoint manager. */
 	public AnnouncementServerPortImpl(AnnouncementServerEndpointManager endpointManager) {
@@ -43,21 +43,26 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 	// Main operations -----------------------------------------------
 	
 	/* Register */
-	public List<String> register(String publicKey, String signature) {
-		List<String> res = null;
+	public RegisterRet register(RegisterReq request) {
+		RegisterRet res = null;
 		
 		try {
-			res = AnnouncementServer.getInstance().register(publicKey, signature);
+			res = proxy.register(request);
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new RuntimeException(e.getMessage());
 		}
 		
+		System.out.println(String.format("Response: %s, %s, %d, %d, %d, %s", 
+			res.getSender(), res.getDestination(), res.getSeqNumber(), 
+			res.getWts(), res.getRid(), res.getSignature()));
 		return res;
 	}
 	
 	/* Post */
-	public List<String> post(String publicKey, String message, List<String> announcementList, String signature) 
+	public WriteRet post(WriteReq request) 
 			throws UserNotRegisteredFault_Exception, MessageSizeFault_Exception, ReferredUserFault_Exception, PostTypeFault_Exception, ReferredAnnouncementFault_Exception {
+		/* FIXME new reality
 		List<String> res = null;
 		try {
 			res = this.proxy.post(publicKey, message, announcementList, signature);
@@ -74,12 +79,14 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 		} catch (Exception e) {
 			throw new RuntimeException(e.getMessage());
 		}
-		return res;
+		*/
+		throw new RuntimeException("Not implemented");
 	}
 	
 	/* Post General */
-	public List<String> postGeneral(String publicKey, String message, List<String> announcementList, String signature) 
+	public WriteRet postGeneral(WriteReq request) 
 			throws UserNotRegisteredFault_Exception, MessageSizeFault_Exception, ReferredUserFault_Exception, PostTypeFault_Exception, ReferredAnnouncementFault_Exception {
+		/* FIXME new reality
 		List<String> res = null;
 		try {
 			res = this.proxy.postGeneral(publicKey, message, announcementList, signature);
@@ -96,12 +103,14 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 		} catch (Exception e) {
 			throw new RuntimeException(e.getMessage());
 		}
-		return res;
+		*/
+		throw new RuntimeException("Not implemented");
 	}
 	
 	/* Read */
-	public List<String> read(String readerKey, String publicKey, Long number, String signature) 
+	public ReadRet read(ReadReq request) 
 			throws InvalidNumberFault_Exception, ReferredUserFault_Exception, EmptyBoardFault_Exception, NumberPostsFault_Exception {
+		/* FIXME new reality
 		List<String> res = null;
 		try {
 			res = this.proxy.read(readerKey, publicKey, number, signature);
@@ -116,12 +125,14 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 		} catch (Exception e) {
 			throw new RuntimeException(e.getMessage());
 		}
-		return res;
+		*/
+		throw new RuntimeException("Not implemented");
 	}
 	
 	/* Read General */
-	public List<String> readGeneral(String readerKey, Long number, String signature) 
+	public ReadRet readGeneral(ReadGeneralReq request) 
 			throws InvalidNumberFault_Exception, EmptyBoardFault_Exception, NumberPostsFault_Exception {
+		/* FIXME new reality
 		List<String> res = null;
 		try {
 			res = this.proxy.readGeneral(readerKey, number, signature);
@@ -134,7 +145,8 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 		} catch (Exception e) {
 			throw new RuntimeException(e.getMessage());
 		}
-		return res;
+		*/ 
+		throw new RuntimeException("Not implemented");
 	}
 	
 	/* Exceptions handlers */

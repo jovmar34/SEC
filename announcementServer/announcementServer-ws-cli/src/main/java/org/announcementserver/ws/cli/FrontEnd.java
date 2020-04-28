@@ -25,6 +25,7 @@ import org.announcementserver.ws.NumberPostsFault_Exception;
 import org.announcementserver.ws.PostTypeFault_Exception;
 import org.announcementserver.ws.ReferredAnnouncementFault_Exception;
 import org.announcementserver.ws.ReferredUserFault_Exception;
+import org.announcementserver.ws.RegisterRet;
 import org.announcementserver.ws.UserNotRegisteredFault_Exception;
 
 import javax.xml.ws.BindingProvider;
@@ -38,6 +39,7 @@ public class FrontEnd {
     Integer sn;
     String publicKey;
     List<String> response;
+    List<?> responses;
     Integer nServ;
 
     boolean verbose = false;
@@ -81,10 +83,10 @@ public class FrontEnd {
         checkInit();
         Client cli;
 
-        response = null;
+        responses = new ArrayList<RegisterRet>(nServ);
 
         for (int i = 1; i <= nServ; i++) {
-            cli = new Client(this, Operation.REGISTER, i);
+            cli = new Client(this, Operation.REGISTER, i, responses);
             cli.start();
         }
 
@@ -114,15 +116,17 @@ public class FrontEnd {
 
         checkInit();
         Client cli;
+        // List<String> acks = new ArrayList<>();
         
         response = null;
-        
+        /* FIXME new reality
         for (int i = 1; i <= nServ; i++) {
             cli = new Client(this, Operation.POST, i);
             cli.message = message;
             cli.references = announcementList;
             cli.start();
         }
+        */
         
         while (this.response == null) {
             try {
@@ -149,12 +153,14 @@ public class FrontEnd {
         
         response = null;
         
+        /* FIXME new reality
         for (int i = 1; i <= nServ; i++) {
             cli = new Client(this, Operation.POSTGENERAL, i);
             cli.message = message;
             cli.references = announcementList;
             cli.start();
         }
+        */
         
         while (this.response == null) {
             try {
@@ -183,12 +189,14 @@ public class FrontEnd {
         
         this.response = null;
         
+        /* FIXME new reality
         for (int i = 1; i <= nServ; i++) {
             cli = new Client(this, Operation.READ, i);
             cli.number = number;
             cli.clientID=clientID;
             cli.start();
         }
+        */
         
         while (this.response == null) {
             try {
@@ -219,11 +227,13 @@ public class FrontEnd {
         
         this.response = null;
         
+        /* FIXME new reality
         for (int i = 1; i <= nServ; i++) {
             cli = new Client(this, Operation.READGENERAL, i);
             cli.number = number;
             cli.start();
         }
+        */
         
         while (this.response == null) {
             try {

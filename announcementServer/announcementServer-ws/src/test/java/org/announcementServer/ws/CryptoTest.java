@@ -45,6 +45,7 @@ public class CryptoTest {
 	 * and expects to get a RunTimeException
 	 */
 	
+	/*
 	@Test
 	public void testWithBadHashGoodSignature() throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException {
 		
@@ -62,6 +63,8 @@ public class CryptoTest {
 		
 		instance.register(publicKey, signature);
 	}
+
+	*/
 	
 	/**
 	 * -- Test Description -- 
@@ -71,6 +74,7 @@ public class CryptoTest {
 	 * and expects to get a RunTimeException
 	 */
 	
+	/*
 	@Test
 	public void testWithGoodHashBadSignature() throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException {
 		
@@ -86,6 +90,8 @@ public class CryptoTest {
 		instance.register(publicKey, signature);
 	}
 	
+	*/
+
 	/**
 	 * -- Test Description -- 
 	 * This test aims to prove that our system is
@@ -93,6 +99,8 @@ public class CryptoTest {
 	 * we pass correct arguments.
 	 */
 	
+
+	/*
 	@Test
 	public void testWithGoodHashGoodSignature() throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException {
 		
@@ -118,6 +126,7 @@ public class CryptoTest {
 		
 		Assert.assertEquals(response, instance.register(publicKey, signature));
 	}
+	*/
 
 	/**
 	 * -- Test Description -- 
@@ -126,6 +135,7 @@ public class CryptoTest {
 	 * we pass correct arguments.
 	 */
 	
+	/*
 	@Test
 	public void testGoodSequenceNumber() 
 		throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, UserNotRegisteredException, MessageSizeException, ReferredUserException, PostTypeException, ReferredAnnouncementException {
@@ -165,7 +175,8 @@ public class CryptoTest {
 		
 		Assert.assertEquals(response, instance.post(publicKey, "Hello World", new ArrayList<>(), signature));
 	}
-	
+	*/
+
 	/**
 	 * -- Test Description -- 
 	 * This test aims to prove that our system can
@@ -174,6 +185,7 @@ public class CryptoTest {
 	 * and expects to get a RunTimeException
 	 */
 	
+	/*
 	@Test
 	public void testBadSequenceNumber() throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, UserNotRegisteredException, MessageSizeException, ReferredUserException, PostTypeException, ReferredAnnouncementException {
 		
@@ -206,6 +218,7 @@ public class CryptoTest {
 		instance.post(publicKey, "Hello World", new ArrayList<>(), signature);
 		instance.post(publicKey, "Hello World", new ArrayList<>(), signature);
 	}
+	*/
 	
 	@After
 	public void cleanup() {

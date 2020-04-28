@@ -46,78 +46,149 @@
   	
   	<xs:element name="readGeneral" type="tns:readGeneral" />
   	<xs:element name="readGeneralResponse" type="tns:readGeneralResponse" />
+
+	<!-- Announcement for transport -->
+	<xs:complexType name="AnnouncementMessage">
+		<xs:sequence>
+			<xs:element minOccurs="1" maxOccurs="1" name="writer" type="xs:string" />
+			<xs:element minOccurs="1" maxOccurs="1" name="message" type="xs:string" />
+			<xs:element minOccurs="0" maxOccurs="unbounded" name="announcementList" type="xs:string" />
+			<xs:element minOccurs="1" maxOccurs="1" name="announcementId" type="xs:string" />
+			<xs:element minOccurs="1" maxOccurs="1" name="signature" type="xs:string" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<!-- Register Messages -->
+	<xs:complexType name="RegisterReq">
+		<xs:sequence>
+			<xs:element minOccurs="1" maxOccurs="1" name="sender" type="xs:string" />
+			<xs:element minOccurs="1" maxOccurs="1" name="destination" type="xs:string" />
+			<xs:element minOccurs="1" maxOccurs="1" name="signature" type="xs:string" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="RegisterRet">
+		<xs:sequence>
+			<xs:element minOccurs="1" maxOccurs="1" name="sender" type="xs:string" />
+			<xs:element minOccurs="1" maxOccurs="1" name="destination" type="xs:string" />
+			<xs:element minOccurs="1" maxOccurs="1" name="seqNumber" type="xs:int" />
+			<xs:element minOccurs="1" maxOccurs="1" name="wts" type="xs:int" />
+			<xs:element minOccurs="1" maxOccurs="1" name="rid" type="xs:int" />
+			<xs:element minOccurs="1" maxOccurs="1" name="signature" type="xs:string" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<!-- Write Messages (posts) -->
+	<xs:complexType name="WriteReq">
+		<xs:sequence>
+			<xs:element minOccurs="1" maxOccurs="1" name="sender" type="xs:string" />
+			<xs:element minOccurs="1" maxOccurs="1" name="destination" type="xs:string" />
+			<xs:element minOccurs="1" maxOccurs="1" name="seqNum" type="xs:int" />
+			<xs:element minOccurs="1" maxOccurs="1" name="announcement" type="tns:AnnouncementMessage" />
+			<xs:element minOccurs="1" maxOccurs="1" name="signature" type="xs:string" />
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="WriteRet">
+		<xs:sequence>
+			<xs:element minOccurs="1" maxOccurs="1" name="sender" type="xs:string" />
+			<xs:element minOccurs="1" maxOccurs="1" name="destination" type="xs:string" />
+			<xs:element minOccurs="1" maxOccurs="1" name="seqNum" type="xs:int" />
+			<xs:element minOccurs="1" maxOccurs="1" name="signature" type="xs:string" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<!-- Read Messages -->
+	<xs:complexType name="ReadReq">
+		<xs:sequence>
+			<xs:element minOccurs="1" maxOccurs="1" name="sender" type="xs:string" />
+			<xs:element minOccurs="1" maxOccurs="1" name="destination" type="xs:string" />
+			<xs:element minOccurs="1" maxOccurs="1" name="seqNum" type="xs:int" />
+			<xs:element minOccurs="1" maxOccurs="1" name="owner" type="xs:string" />
+			<xs:element minOccurs="1" maxOccurs="1" name="number" type="xs:int" />
+			<xs:element minOccurs="1" maxOccurs="1" name="signature" type="xs:string" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="ReadGeneralReq">
+		<xs:sequence>
+			<xs:element minOccurs="1" maxOccurs="1" name="sender" type="xs:string" />
+			<xs:element minOccurs="1" maxOccurs="1" name="destination" type="xs:string" />
+			<xs:element minOccurs="1" maxOccurs="1" name="seqNum" type="xs:int" />
+			<xs:element minOccurs="1" maxOccurs="1" name="number" type="xs:int" />
+			<xs:element minOccurs="1" maxOccurs="1" name="signature" type="xs:string" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="ReadRet">
+		<xs:sequence>
+			<xs:element minOccurs="1" maxOccurs="1" name="sender" type="xs:string" />
+			<xs:element minOccurs="1" maxOccurs="1" name="destination" type="xs:string" />
+			<xs:element minOccurs="1" maxOccurs="1" name="seqNum" type="xs:int" />
+			<xs:element minOccurs="0" maxOccurs="unbounded" name="announcements" type="tns:AnnouncementMessage" />
+			<xs:element minOccurs="1" maxOccurs="1" name="signature" type="xs:string" />
+		</xs:sequence>
+	</xs:complexType>
   	
   	
   	<!-- REGISTER -->
   	<xs:complexType name="register">
-  		<xs:sequence>
-  			<xs:element minOccurs="0" name="publicKey" type="xs:string" />
-			<xs:element minOccurs="0" name="signature" type="xs:string" />
-  		</xs:sequence>
+	  	<xs:sequence>
+  			<xs:element minOccurs="1" maxOccurs="1" type="tns:RegisterReq" name="request" />
+	  	</xs:sequence>
   	</xs:complexType>
   	<xs:complexType name="registerResponse">
-  		<xs:sequence>
-  			<xs:element minOccurs="2" name="return" type="xs:string" maxOccurs="3"/>
-  		</xs:sequence>
+		<xs:sequence>
+			<xs:element minOccurs="1" maxOccurs="1" type="tns:RegisterRet" name="return" />
+		</xs:sequence>
   	</xs:complexType>
   	
   	<!-- POST -->
   	<xs:complexType name="post">
-  		<xs:sequence>
-  		  	<xs:element minOccurs="0" name="publicKey" type="xs:string" />
-  			<xs:element minOccurs="0" name="message" type="xs:string" />
-  			<xs:element minOccurs="0" name="announcementList" type="xs:string" maxOccurs="unbounded" />
-			<xs:element minOccurs="0" name="signature" type="xs:string" />
-  		</xs:sequence>
+	  	<xs:sequence>
+  			<xs:element minOccurs="1" maxOccurs="1" type="tns:WriteReq" name="request" />
+		</xs:sequence>
   	</xs:complexType>
   	<xs:complexType name="postResponse">
-  		<xs:sequence>
-  			<xs:element minOccurs="2" name="return" type="xs:string" maxOccurs="2"/>
-  		</xs:sequence>
+	  	<xs:sequence>
+	  		<xs:element minOccurs="1" maxOccurs="1" type="tns:WriteRet" name="return" />	  
+		</xs:sequence>
   	</xs:complexType>
   	
   	<!-- POST GENERAL -->
   	<xs:complexType name="postGeneral">
-  		<xs:sequence>
-  		  	<xs:element minOccurs="0" name="publicKey" type="xs:string" />
-  			<xs:element minOccurs="0" name="message" type="xs:string" />
-  			<xs:element minOccurs="0" name="announcementList" type="xs:string" maxOccurs="unbounded" />
-			<xs:element minOccurs="0" name="signature" type="xs:string" />
-  		</xs:sequence>
+		<xs:sequence>
+  			<xs:element minOccurs="1" maxOccurs="1" type="tns:WriteReq" name="request" />  
+	  	</xs:sequence>
   	</xs:complexType>
   	<xs:complexType name="postGeneralResponse">
-  		<xs:sequence>
-  			<xs:element minOccurs="2" name="return" type="xs:string" maxOccurs="2"/>
-  		</xs:sequence>
+	  	<xs:sequence>
+  			<xs:element minOccurs="1" maxOccurs="1" type="tns:WriteRet" name="return" />
+	  	</xs:sequence>
   	</xs:complexType>
   	
   	<!-- READ -->
   	<xs:complexType name="read">
   		<xs:sequence>
-  			<xs:element minOccurs="0" name="readerKey" type="xs:string" />
-  			<xs:element minOccurs="0" name="publicKey" type="xs:string" />
-  			<xs:element minOccurs="0" name="number" type="xs:long" />
-			<xs:element minOccurs="0" name="signature" type="xs:string" />
-  		</xs:sequence>
+	  		<xs:element minOccurs="1" maxOccurs="1" type="tns:ReadReq" name="request" />
+	  	</xs:sequence>
   	</xs:complexType>
   	<xs:complexType name="readResponse">
   		<xs:sequence>
-  			<xs:element minOccurs="2" name="return" type="xs:string" maxOccurs="2"/>
-  		</xs:sequence>
+	  		<xs:element minOccurs="1" maxOccurs="1" type="tns:ReadRet" name="return" />
+	  	</xs:sequence>
   	</xs:complexType>
   	
   	<!-- READ GENERAL -->
   	<xs:complexType name="readGeneral">
-  		<xs:sequence>
-  			<xs:element minOccurs="0" name="readerKey" type="xs:string" />
-  			<xs:element minOccurs="0" name="number" type="xs:long" />
-			<xs:element minOccurs="0" name="signature" type="xs:string" />
-  		</xs:sequence>
+	  	<xs:sequence>
+  			<xs:element minOccurs="1" maxOccurs="1" type="tns:ReadGeneralReq" name="request" />
+		</xs:sequence>
   	</xs:complexType>
   	<xs:complexType name="readGeneralResponse">
   		<xs:sequence>
-  			<xs:element minOccurs="2" name="return" type="xs:string" maxOccurs="2"/>
-  		</xs:sequence>
+	  		<xs:element minOccurs="1" maxOccurs="1" type="tns:ReadRet" name="return" />
+	  	</xs:sequence>
   	</xs:complexType>
 
 

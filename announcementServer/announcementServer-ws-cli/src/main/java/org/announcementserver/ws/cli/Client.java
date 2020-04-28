@@ -24,6 +24,8 @@ import org.announcementserver.ws.NumberPostsFault_Exception;
 import org.announcementserver.ws.PostTypeFault_Exception;
 import org.announcementserver.ws.ReferredAnnouncementFault_Exception;
 import org.announcementserver.ws.ReferredUserFault_Exception;
+import org.announcementserver.ws.RegisterReq;
+import org.announcementserver.ws.RegisterRet;
 import org.announcementserver.ws.UserNotRegisteredFault_Exception;
 
 enum Operation {
@@ -40,12 +42,14 @@ public class Client extends Thread {
     public List<String> references;
     public String boardKey;
     public Integer number;
-	public String clientID;
+    public String clientID;
+    public List<?> responses;
 
-    public Client(FrontEnd parent, Operation op, Integer id) {
+    public Client(FrontEnd parent, Operation op, Integer id, List<?> responses) {
         this.parent = parent;
         this.op = op;
         this.servId = id;
+        this.responses = responses;
     }
 
     @Override
@@ -56,14 +60,18 @@ public class Client extends Thread {
         String publicKey = parent.publicKey;
         String signature = "";
         String hash = null;
-        List<String> ret = null;
         List<String> toHash = new ArrayList<>();
+        List<String> ret = new ArrayList<>();
 
         switch (this.op) {
             case REGISTER:
-                toHash.add(username);
-                toHash.add(servName);
-                toHash.add(publicKey);
+                RegisterRet response;
+                RegisterReq request = new RegisterReq();
+                request.setSender(username);
+                request.setDestination(servName);
+
+                toHash.add(request.getSender());
+                toHash.add(request.getDestination());
 
                 try {
                     signature = CryptoTools.makeSignature(toHash.toArray(new String[0]));
@@ -74,25 +82,32 @@ public class Client extends Thread {
                     return;
                 }
 
+                request.setSignature(signature);
+
                 try {
-                    ret = port.register(publicKey, signature);
+                    response = port.register(request);
                 } catch (WebServiceException e) {
                     System.out.println("Hey, dead");
                     return;
                 }
 
-                toHash = new ArrayList<>();
-                toHash.add(servName);
-                toHash.add(username);
-                toHash.add(ret.get(0));
+                System.out.println(String.format("Response: %s, %s, %d, %d, %d, %s", 
+			        response.getSender(), response.getDestination(), response.getSeqNumber(), 
+			        response.getWts(), response.getRid(), response.getSignature()));
 
-                if (ret.size() == 3) { // Not a new user
-                    toHash.add(ret.get(1));
-                }
+                if (!response.getSender().equals(servName)) throw new RuntimeException("Received response that wasn't from right server");
+                if (!response.getDestination().equals(username)) throw new RuntimeException("Received response that wasn't for me");
+
+                toHash = new ArrayList<>();
+                toHash.add(response.getSender());
+                toHash.add(response.getDestination());
+                toHash.add(String.valueOf(response.getSeqNumber()));
+                toHash.add(String.valueOf(response.getWts()));
+                toHash.add(String.valueOf(response.getRid()));
 
                 hash = null;
                 try {
-                    hash = CryptoTools.decryptSignature(servName, ret.get(ret.size() - 1));
+                    hash = CryptoTools.decryptSignature(response.getSender(), response.getSignature());
                 } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
                         | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
                         | UnrecoverableEntryException | IOException e) {
@@ -111,6 +126,8 @@ public class Client extends Thread {
                     e.printStackTrace();
                     return;
                 }
+
+                ret.add("All good");
                 
                 break;
                 
@@ -132,6 +149,7 @@ public class Client extends Thread {
                 	return;
                 }
 
+                /* FIXME: ADAPT TO NEW REALITY
                 try {
                 	ret = port.post(publicKey, message, references, signature);
                 } catch (MessageSizeFault_Exception | PostTypeFault_Exception | ReferredAnnouncementFault_Exception
@@ -140,6 +158,7 @@ public class Client extends Thread {
                 	e2.printStackTrace();
                 	return;
                 }
+                */
 
                 try {
                 	hash = CryptoTools.decryptSignature(servName, ret.get(1));
@@ -185,6 +204,7 @@ public class Client extends Thread {
                 	return;
                 }
                 
+                /* FIXME: ADAPT TO NEW REALITY
                 try {
                 	ret = port.postGeneral(publicKey, message, references, signature);
                 } catch (WebServiceException | MessageSizeFault_Exception | PostTypeFault_Exception | ReferredAnnouncementFault_Exception | ReferredUserFault_Exception | UserNotRegisteredFault_Exception e1) {
@@ -192,6 +212,7 @@ public class Client extends Thread {
                 	e1.printStackTrace();
                 	return;
                 }
+                */
 
                 try {
                 	hash = CryptoTools.decryptSignature(servName, ret.get(1));
@@ -220,9 +241,6 @@ public class Client extends Thread {
                 break;
                 
             case READ:
-            	
-			
-			
             	try {
             		readKey = CryptoTools.publicKeyAsString(CryptoTools.getPublicKey(clientID));
             	} catch (NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException | CertificateException
@@ -231,12 +249,12 @@ public class Client extends Thread {
             		e4.printStackTrace();
             	}
 			
-            	  toHash.add(username);
-                  toHash.add(servName);
-                  toHash.add(parent.sn.toString());
-                  toHash.add(readKey);
-                  toHash.add(number.toString());
-                  System.out.println(toHash);
+                toHash.add(username);
+                toHash.add(servName);
+                toHash.add(parent.sn.toString());
+                toHash.add(readKey);
+                toHash.add(number.toString());
+
                 try {
                     signature = CryptoTools.makeSignature(toHash.toArray(new String[0]));
                 } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
@@ -247,6 +265,7 @@ public class Client extends Thread {
                     return;
                 }
                 
+                /* FIXME: ADAPT TO NEW REALITY
                 try {
                     ret = port.read(publicKey, readKey, Long.valueOf(number), signature);
                 } catch (EmptyBoardFault_Exception | InvalidNumberFault_Exception | NumberPostsFault_Exception | ReferredUserFault_Exception e2) {
@@ -254,7 +273,8 @@ public class Client extends Thread {
                     e2.printStackTrace();
                     return;
                 }
-        
+                */
+
                 try {
                     hash = CryptoTools.decryptSignature(servName, ret.get(1));
                 } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
@@ -300,7 +320,8 @@ public class Client extends Thread {
                     e3.printStackTrace();
                     return;
                 }
-                
+
+                /* FIXME: ADAPT TO NEW REALITY                
                 try {
                     ret = port.readGeneral(publicKey, Long.valueOf(number), signature);
                 } catch (EmptyBoardFault_Exception | InvalidNumberFault_Exception | NumberPostsFault_Exception e2) {
@@ -308,7 +329,8 @@ public class Client extends Thread {
                     e2.printStackTrace();
                     return;
                 }
-        
+                */
+
                 try {
                     hash = CryptoTools.decryptSignature(servName, ret.get(1));
                 } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
