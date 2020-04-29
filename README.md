@@ -12,8 +12,7 @@ Student Number | Name
 
 ## Requirements
 In order to build and run this project you will need:
-* GNU/Linux
-* Apache-Maven 3.x.x 
+* Apache-Maven Version 3
 * Java Development Kit 8
 
 ## Compiling
