@@ -28,14 +28,16 @@ In order to run the system..
     
 Regarding the server, execute:
 
-    cd announcementServer-ws
+    cd announcementServer-ws -Dws.
     mvn exec:java
     
 Regarding the clients, execute:
 
     cd announcementServer-ws-cli
-    mvn exec:java
+    mvn exec:java -Dws.f=x
     
+**Note1:** In -Dws.f=x, x is the number of faults to tolerate (e.g: 1, max: 4)
+**Note2:** In -Dws.i=x, x is the serverId (e.g: 1, max:16)
 
 ## Paswords for Users
 
