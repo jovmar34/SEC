@@ -8,16 +8,16 @@ public class Announcement implements Serializable {
 	private static final long serialVersionUID = -4546920147162956800L;
 	protected String author;
 	protected String content;
-	protected String id;
+	protected Integer id;
 	protected ArrayList<String> references;
 	protected String signature;
-	protected Integer seqNumber;
+	protected String type;
 	
 	public Announcement() {
 		this.references = new ArrayList<>();
 	}
 	
-	public Announcement(String auth, String cont, String id) {
+	public Announcement(String auth, String cont, Integer id) {
 		this.author = auth;
 		this.content = cont;
 		this.id = id;
@@ -25,7 +25,7 @@ public class Announcement implements Serializable {
 	}
 	
 	public void setContent(String cont) {
-		this.content=cont;
+		this.content = cont;
 	}
 	
 	public void addReference(String ref) {
@@ -36,7 +36,7 @@ public class Announcement implements Serializable {
 		this.references = new ArrayList<String>(refs);
 	}
 	
-	public void setId(String id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 	
@@ -48,12 +48,14 @@ public class Announcement implements Serializable {
 		this.signature = signature;
 	}
 
-	public void setSeqNumber(Integer seqNumber) {
-		this.seqNumber = seqNumber;
+	public void setType(String type) {
+		this.type = type;
 	}
 	
 	@Override
 	public String toString() {
-		return String.format("auth: %s, id: %s\n  text: \"%s\"\n  references: %s\n", this.author, this.id, this.content, this.references);
+		return String.format("auth: %s, id: %s, type: %s\n  text: \"%s\"\n  references: %s",
+		 this.author, this.id,  this.type, this.content,
+		 this.references);
 	}
 }

@@ -1,19 +1,9 @@
 package org.announcementserver.ws;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.announcementserver.common.CryptoTools;
-import org.announcementserver.exceptions.EmptyBoardException;
-import org.announcementserver.exceptions.InvalidNumberException;
-import org.announcementserver.exceptions.MessageSizeException;
-import org.announcementserver.exceptions.NumberPostsException;
-import org.announcementserver.exceptions.PostTypeException;
-import org.announcementserver.exceptions.ReferredAnnouncementException;
-import org.announcementserver.exceptions.ReferredUserException;
-import org.announcementserver.exceptions.UserNotRegisteredException;
 
 public class AnnouncementServerProxy {
     protected String myId;
@@ -37,20 +27,20 @@ public class AnnouncementServerProxy {
         if (!checkHash(inHash.toArray(new String[0]))) 
             throw new RuntimeException("Possible Tampering Detected");
 
-        Integer sn = AnnouncementServer.getInstance().register(request.getSender());
+        List<Integer> nums = AnnouncementServer.getInstance().register(request.getSender());
 
         RegisterRet response = new RegisterRet();
         response.setSender(myId);
         response.setDestination(request.getSender());
-        response.setSeqNumber(sn);
-        response.setWts(0);
+        response.setSeqNumber(nums.get(0));
+        response.setWts(nums.get(1));
         response.setRid(0);
 
         List<String> outHash = new ArrayList<>();
         outHash.add(response.getSender());
         outHash.add(response.getDestination());
         outHash.add(String.valueOf(response.getSeqNumber()));
-        outHash.add(String.valueOf(response.getWts())); //FIXME wts
+        outHash.add(String.valueOf(response.getWts()));
         outHash.add(String.valueOf(response.getRid())); //FIXME rid
 
         response.setSignature(makeSignature(outHash.toArray(new String[0])));
@@ -63,29 +53,31 @@ public class AnnouncementServerProxy {
         String hash = null;
         if (!request.getDestination().equals(myId)) throw new RuntimeException("Not me");
 
-        System.out.println(request.getSender());
-        System.out.println(request.getSignature());
         hash = decryptSignature(request.getSender(), request.getSignature());
 
         List<String> inHash = new ArrayList<>();
 		inHash.add(request.getSender());
         inHash.add(request.getDestination());
         inHash.add(String.valueOf(request.getSeqNumber()));
-        inHash.addAll(strAnnouncement(request.getAnnouncement()));
-        inHash.add(request.getAnnouncement().getSignature());
+        inHash.addAll(postToSign(request.getAnnouncement(), true));
         inHash.add(hash);
 
         if (!checkHash(inHash.toArray(new String[0]))) 
             throw new RuntimeException("Possible Tampering in transport of post message");
 
+        if (!request.getSender().equals(request.getAnnouncement().getWriter()))
+            throw new RuntimeException("The poster is different than the writer");
+
         Announcement new_post = transformAnnouncement(request.getAnnouncement());
-        new_post.setSeqNumber(request.getSeqNumber());
-        Integer sn = AnnouncementServer.getInstance().post(new_post);
+        List<Integer> numsPost = AnnouncementServer.getInstance().post(new_post, request.getSeqNumber());
+
+        System.out.println(new_post);
 
         WriteRet response = new WriteRet();
         response.setSender(request.getDestination());
         response.setDestination(request.getSender());
-        response.setSeqNumber(sn);
+        response.setSeqNumber(numsPost.get(0));
+        response.setWts(numsPost.get(1));
         
         List<String> outHash = new ArrayList<>();
 
@@ -102,26 +94,24 @@ public class AnnouncementServerProxy {
     public WriteRet postGeneral(WriteReq request) {
     	String hash = null;
     	if (!request.getDestination().equals(myId)) throw new RuntimeException("Not me");
-    	
-        System.out.println(request.getSender());
-        System.out.println(request.getSignature());
+
         hash = decryptSignature(request.getSender(), request.getSignature());
         
         List<String> inHash = new ArrayList<>();
 		inHash.add(request.getSender());
         inHash.add(request.getDestination());
         inHash.add(String.valueOf(request.getSeqNumber()));
-        inHash.addAll(strAnnouncement(request.getAnnouncement()));
-        inHash.add(request.getAnnouncement().getSignature());
+        inHash.addAll(postToSign(request.getAnnouncement(), true));
         inHash.add(hash);
         
         if (!checkHash(inHash.toArray(new String[0]))) 
             throw new RuntimeException("Possible Tampering in transport of post message");
         
         Announcement new_post = transformAnnouncement(request.getAnnouncement());
-        new_post.setSeqNumber(request.getSeqNumber());
-        Integer sn = AnnouncementServer.getInstance().postGeneral(new_post);
+        Integer sn = AnnouncementServer.getInstance().postGeneral(new_post, request.getSeqNumber());
 
+        System.out.println(new_post);
+        
         WriteRet response = new WriteRet();
         response.setSender(request.getDestination());
         response.setDestination(request.getSender());
@@ -240,30 +230,47 @@ public class AnnouncementServerProxy {
         }
     }
 
-    // FIXME replace by postToString 
-    private List<String> strAnnouncement(AnnouncementMessage announcement) {
-        List<String> total = new ArrayList<>();
-        total.add(announcement.getWriter());
-        total.add(announcement.getMessage());
-        total.add(announcement.getAnnouncementList().toString());
-        total.add(announcement.getAnnouncementId());
-        return total;
-    }
-
     private Announcement transformAnnouncement(AnnouncementMessage announcement) {
         Announcement res = new Announcement();
         res.setAuthor(announcement.getWriter());
         res.setContent(announcement.getMessage());
         res.setReferences(announcement.getAnnouncementList());
-        res.setId(announcement.getAnnouncementId());
+        res.setId(announcement.getWts());
+        res.setType(announcement.getType());
         res.setSignature(announcement.getSignature());
         return res;
     }
 
-    private String postToString(AnnouncementMessage post) {
-        return String.format("Author: %s, Id: %s\n\"%s\"\nReferences: %s\n",
-            post.getWriter(), post.getAnnouncementId(), post.getMessage(),
-            post.getAnnouncementList().toString());
+    private List<String> listToSign(List<AnnouncementMessage> posts) {
+        List<String> res = new ArrayList<>();
+
+        for (AnnouncementMessage post: posts) {
+            res.addAll(postToSign(post, true));
+        }
+
+        return res;
+    }
+
+    private List<String> postToSign(AnnouncementMessage post, boolean signature) {
+        List<String> res = new ArrayList<>();
+
+        res.add(post.getWriter());
+        res.add(post.getMessage());
+        res.add(post.getAnnouncementList().toString());
+        res.add(String.valueOf(post.getWts()));
+        res.add(post.getType());
+        if (signature) res.add(post.getSignature());
+
+        return res;
+    }
+
+    private String postToHash(AnnouncementMessage post, boolean signature) {
+        String res = String.format("%s,%s,%d,%s", post.getWriter(), post.getMessage(),
+            post.getWts(), post.getAnnouncementList().toString());
+        
+        if (signature) res += "," + post.getSignature();
+
+        return res + "\n";
     }
 
     private List<AnnouncementMessage> transformAnnouncementList(List<Announcement> posts) {
@@ -274,7 +281,7 @@ public class AnnouncementServerProxy {
             mess = new AnnouncementMessage();
             mess.setWriter(post.author);
             mess.setMessage(post.content);
-            mess.setAnnouncementId(post.id);
+            mess.setWts(post.id);
             mess.getAnnouncementList().addAll(post.references);
             mess.setSignature(post.signature);
             res.add(mess);
@@ -287,10 +294,7 @@ public class AnnouncementServerProxy {
         String res = "";
 
         for (AnnouncementMessage post: posts) {
-            res += String.format("%s,%s,%s,%s,%s\n", 
-                post.getWriter(), post.getMessage(),
-                post.getAnnouncementId(), post.getAnnouncementList().toString(),
-                post.getSignature());
+            res += postToHash(post, true);
         }
 
         return res;

@@ -51,13 +51,17 @@ public class Client extends Thread {
     public Integer number;
     public String clientID;
     public Integer seqNumber;
-    public List<?> responses;
+    public List<RegisterRet> regRets;
+    public List<WriteRet> writeRets;
+    public List<ReadRet> readRets;
+    public Integer wts;
+    public Integer rid;
+    public List<String> ret;
 
-    public Client(FrontEnd parent, Operation op, Integer id, List<?> responses) {
+    public Client(FrontEnd parent, Operation op, Integer id) {
         this.parent = parent;
         this.op = op;
         this.servId = id;
-        this.responses = responses;
     }
 
     @Override
@@ -68,10 +72,10 @@ public class Client extends Thread {
         String signature = "";
         String hash = null;
         List<String> toHash = new ArrayList<>();
-        List<String> ret = new ArrayList<>();
 
         switch (this.op) {
             case REGISTER:
+                List<Integer> regRet = new ArrayList<>();
                 RegisterRet response;
                 RegisterReq request = new RegisterReq();
                 request.setSender(username);
@@ -114,12 +118,13 @@ public class Client extends Thread {
                 toHash.add(hash);
 
                 if (!checkHash(toHash.toArray(new String[0]))) return;
+                
+                synchronized(parent) {
+                    regRets.add(response);
+                    parent.notify();
+                }
 
-                ret.add("Sucessfull authentication! Welcome!");
-                ret.add(String.valueOf(response.getSeqNumber()));
-                
-                break;
-                
+                return;
             case POST:
                 WriteRet postRet = null;
                 WriteReq postReq = new WriteReq();
@@ -131,13 +136,10 @@ public class Client extends Thread {
                 post.setMessage(message);
                 post.setWriter(username);
                 post.getAnnouncementList().addAll(this.references);
-                post.setAnnouncementId(String.format("pc%sa%d", username.replaceAll("client", ""), seqNumber));
+                post.setWts(wts);
+                post.setType("Personal");
 
-                List<String> messHash = new ArrayList<>();
-                messHash.add(username);
-                messHash.add(message);
-                messHash.add(references.toString());
-                messHash.add(post.getAnnouncementId());
+                List<String> messHash = postToSign(post, false);
 
                 String messSig = makeSignature(messHash.toArray(new String[0]));
 
@@ -151,17 +153,11 @@ public class Client extends Thread {
                 toHash.add(username);
                 toHash.add(servName);
                 toHash.add(String.valueOf(seqNumber));
-                toHash.add(username);
-                toHash.add(message);
-                toHash.add(references.toString());
-                toHash.add(post.getAnnouncementId());
-                toHash.add(messSig);
+                toHash.addAll(postToSign(post, true));
 
                 signature = makeSignature(toHash.toArray(new String[0]));
 
                 postReq.setSignature(signature);
-
-                System.out.println(post.getSignature());
 
                 try {
                 	postRet = port.post(postReq);
@@ -173,23 +169,34 @@ public class Client extends Thread {
 
                 hash = decryptSignature(servName, postRet.getSignature());
                 
-                if (hash == null) return;
+                if (hash == null) {
+                    System.out.println("Issue on hash");
+                    return;
+                }
                 
                 toHash = new ArrayList<>();
 
+                if (wts != postRet.getWts()) {
+                    System.out.println("WTS wrongly set");
+                    return; // if server acked wrong w
+                } 
+
                 toHash.add(servName);
                 toHash.add(username);
-                toHash.add(String.valueOf(postRet.getSeqNumber()));
+                toHash.add(String.valueOf(seqNumber));
                 toHash.add(hash);
                 
                 if (!checkHash(toHash.toArray(new String[0]))) {
                     return;
                 }
 
-                ret.add("Post was successfully posted to Personal Board!");
+                synchronized(parent) {
+                    System.out.println("Returned");
+                    writeRets.add(postRet);
+                    parent.notify();
+                }
                 
-                break;
-                
+                return;                
             case POSTGENERAL:
             	WriteRet postGenRet = null;
             	WriteReq postGenReq = new WriteReq();
@@ -201,13 +208,10 @@ public class Client extends Thread {
             	postGen.setMessage(message);
             	postGen.setWriter(username);
                 postGen.getAnnouncementList().addAll(this.references);
-                postGen.setAnnouncementId(String.format("pc%sa%d", username.replaceAll("client", ""), seqNumber));
+                postGen.setWts(wts);
+                postGen.setType("General");
             	
-                List<String> messHashG = new ArrayList<>();
-                messHashG.add(username);
-                messHashG.add(message);
-                messHashG.add(references.toString());
-                messHashG.add(postGen.getAnnouncementId());
+                List<String> messHashG = postToSign(postGen, false);
                 
                 String messSigG = makeSignature(messHashG.toArray(new String[0]));
                 
@@ -218,11 +222,7 @@ public class Client extends Thread {
                 toHash.add(username);
                 toHash.add(servName);
                 toHash.add(String.valueOf(seqNumber));
-                toHash.add(username);
-                toHash.add(message);
-                toHash.add(references.toString());
-                toHash.add(postGen.getAnnouncementId());
-                toHash.add(messSigG);
+                toHash.addAll(postToSign(postGen, true));
                 
                 signature = makeSignature(toHash.toArray(new String[0]));
 
@@ -308,7 +308,7 @@ public class Client extends Thread {
                 toHash.add(readRes.getSender());
                 toHash.add(readRes.getDestination());
                 toHash.add(String.valueOf(readRes.getSeqNumber()));
-                toHash.add(announcementListToString(readRes.getAnnouncements())); //need similar func in the server
+                toHash.addAll(listToSign(readRes.getAnnouncements())); //need similar func in the server
                 toHash.add(hash);
 
                 if (!checkHash(toHash.toArray(new String[0]))) {
@@ -370,7 +370,7 @@ public class Client extends Thread {
                 toHash.add(readGenRet.getSender());
                 toHash.add(readGenRet.getDestination());
                 toHash.add(String.valueOf(readGenRet.getSeqNumber()));
-                toHash.add(announcementListToString(readGenRet.getAnnouncements()));
+                toHash.addAll(listToSign(readGenRet.getAnnouncements()));
                 toHash.add(hash);
 
                 if (!checkHash(toHash.toArray(new String[0]))) {
@@ -388,34 +388,36 @@ public class Client extends Thread {
         }
         
         System.out.println("HELLO");
-
-        synchronized(parent) {
-            if (parent.response == null) {
-                parent.response = ret;
-            } 
-            //else System.out.println("\n");
-            parent.notify();
-        }
     }
     
     // --- Auxiliary ---------
 
-    private String announcementListToString(List<AnnouncementMessage> posts) {
-        String res = "";
+    private List<String> postToSign(AnnouncementMessage post, boolean signature) {
+        List<String> res = new ArrayList<>();
+
+        res.add(post.getWriter());
+        res.add(post.getMessage());
+        res.add(post.getAnnouncementList().toString());
+        res.add(String.valueOf(post.getWts()));
+        res.add(post.getType());
+        if (signature) res.add(post.getSignature());
+
+        return res;
+    }
+
+    private List<String> listToSign(List<AnnouncementMessage> posts) {
+        List<String> res = new ArrayList<>();
 
         for (AnnouncementMessage post: posts) {
-            res += String.format("%s,%s,%s,%s,%s\n", 
-                post.getWriter(), post.getMessage(),
-                post.getAnnouncementId(), post.getAnnouncementList().toString(),
-                post.getSignature());
+            res.addAll(postToSign(post, true));
         }
 
         return res;
     }
 
     private String postToString(AnnouncementMessage post) {
-        return String.format("Author: %s, Id: %s\n\"%s\"\nReferences: %s\n",
-            post.getWriter(), post.getAnnouncementId(), post.getMessage(),
+        return String.format("Author: %s, Id: %d\n\"%s\"\nReferences: %s\n",
+            post.getWriter(), post.getWts(), post.getMessage(),
             post.getAnnouncementList().toString());
     }
 

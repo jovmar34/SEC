@@ -29,6 +29,7 @@ import org.announcementserver.ws.ReadRet;
 import org.announcementserver.ws.ReferredAnnouncementFault_Exception;
 import org.announcementserver.ws.ReferredUserFault_Exception;
 import org.announcementserver.ws.UserNotRegisteredFault_Exception;
+import org.announcementserver.ws.WriteRet;
 
 import javax.xml.ws.BindingProvider;
 import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
@@ -41,8 +42,11 @@ public class FrontEnd {
     Integer sn;
     String publicKey;
     List<String> response;
-    List<?> responses;
     Integer nServ;
+    Integer f;
+    Integer quorum;
+    Integer wts = -1;
+    Integer rid = -1;
 
     boolean verbose = false;
 
@@ -53,8 +57,9 @@ public class FrontEnd {
     public FrontEnd(String host, String faults) throws AnnouncementServerClientException {
         wsUrls = new ArrayList<>();
         ports = new ArrayList<>();
-        Integer f = Integer.valueOf(faults);
+        f = Integer.valueOf(faults);
         nServ = 3 * f + 1;
+        quorum = (nServ + f) / 2;
         System.out.println(String.format("NServ: %d", nServ));
 
         for (Integer i = 1; i <= nServ; i++) {
@@ -84,14 +89,15 @@ public class FrontEnd {
 
         checkInit();
         Client cli;
-        responses = new ArrayList<RegisterRet>(nServ);
+        List<RegisterRet> responses = new ArrayList<>(nServ);
 
         for (int i = 1; i <= nServ; i++) {
-            cli = new Client(this, Operation.REGISTER, i, responses);
+            cli = new Client(this, Operation.REGISTER, i);
+            cli.regRets = responses;
             cli.start();
         }
 
-        while (this.response == null) {
+        while (responses.size() <= quorum) {
             try {
                 wait();
             } catch (InterruptedException e) {
@@ -99,9 +105,13 @@ public class FrontEnd {
             }
         }
 
-        sn = Integer.valueOf(response.get(1));
+        RegisterRet response = responses.get(0); //FIXME vulnerable to byzantine servers
 
-        return response.get(0);
+        sn = response.getSeqNumber();
+        wts = response.getWts();
+        rid = response.getRid();
+
+        return "Register successfull! Welcome user!";
     }
 
     public synchronized String post(String message, List<String> announcementList)
@@ -112,28 +122,35 @@ public class FrontEnd {
 
         checkInit();
         Client cli;
-        responses = new ArrayList<String>(nServ);
+
+        wts++;
+        List<WriteRet> ackList = new ArrayList<>(nServ);
         
         response = null;
         for (int i = 1; i <= nServ; i++) {
-            cli = new Client(this, Operation.POST, i, responses);
+            cli = new Client(this, Operation.POST, i);
+            cli.writeRets = ackList;
             cli.message = message;
             cli.references = announcementList;
             cli.seqNumber = sn;
+            cli.wts = wts;
             cli.start();
         }
         
-        while (this.response == null) {
+        while (ackList.size() <= quorum) {
             try {
                 wait();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            System.out.println("Awoke");
         }
+
+        System.out.println("Post done Frontend");
         
         sn++;
 
-        return response.get(0);
+        return "Post was successfully posted to Personal Board!";
     }
 
     public synchronized String postGeneral(String message, List<String> announcementList)
@@ -144,14 +161,15 @@ public class FrontEnd {
 
         checkInit();
         Client cli;
-        responses = new ArrayList<String>(nServ);
+        List<String> responses = new ArrayList<String>(nServ);
         
         response = null;
         for (int i = 1; i <= nServ; i++) {
-            cli = new Client(this, Operation.POSTGENERAL, i, responses);
+            cli = new Client(this, Operation.POSTGENERAL, i);
             cli.message = message;
             cli.references = announcementList;
             cli.seqNumber = sn;
+            cli.wts = wts; // FIXME onHold for (N,N)
             cli.start();
         }
         
@@ -177,19 +195,22 @@ public class FrontEnd {
 
         Client cli;
 
+        rid++;
         List<ReadRet> readList = new ArrayList<>(nServ);
         
         this.response = null;
         
         for (int i = 1; i <= nServ; i++) {
-            cli = new Client(this, Operation.READ, i, readList);
+            cli = new Client(this, Operation.READ, i);
             cli.number = number;
+            cli.readRets = readList;
             cli.clientID = clientID;
             cli.seqNumber = sn;
+            cli.rid = rid;
             cli.start();
         }
         
-        while (this.response == null) {
+        while (readList.size() <= quorum) {
             try {
                 wait();
             } catch (InterruptedException e) {
@@ -210,13 +231,14 @@ public class FrontEnd {
             InvalidNumberFault_Exception, NumberPostsFault_Exception, InvalidKeyException, NoSuchPaddingException,
             IllegalBlockSizeException, BadPaddingException {
 
+        // FIXME onHold for (N,N)
         checkInit();
         Client cli;
-        responses = new ArrayList<String>(nServ);
+        List<String> responses = new ArrayList<String>(nServ);
         
         response = null;
         for (int i = 1; i <= nServ; i++) {
-            cli = new Client(this, Operation.READGENERAL, i, responses);
+            cli = new Client(this, Operation.READGENERAL, i);
             cli.seqNumber = sn;
             cli.number = number;
             cli.start();

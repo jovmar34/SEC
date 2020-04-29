@@ -53,7 +53,8 @@
 			<xs:element minOccurs="1" maxOccurs="1" name="writer" type="xs:string" />
 			<xs:element minOccurs="1" maxOccurs="1" name="message" type="xs:string" />
 			<xs:element minOccurs="0" maxOccurs="unbounded" name="announcementList" type="xs:string" />
-			<xs:element minOccurs="1" maxOccurs="1" name="announcementId" type="xs:string" />
+			<xs:element minOccurs="1" maxOccurs="1" name="type" type="xs:string" />
+			<xs:element minOccurs="1" maxOccurs="1" name="wts" type="xs:int" />
 			<xs:element minOccurs="1" maxOccurs="1" name="signature" type="xs:string" />
 		</xs:sequence>
 	</xs:complexType>
@@ -94,6 +95,7 @@
 			<xs:element minOccurs="1" maxOccurs="1" name="sender" type="xs:string" />
 			<xs:element minOccurs="1" maxOccurs="1" name="destination" type="xs:string" />
 			<xs:element minOccurs="1" maxOccurs="1" name="seqNumber" type="xs:int" />
+			<xs:element minOccurs="1" maxOccurs="1" name="wts" type="xs:int" />
 			<xs:element minOccurs="1" maxOccurs="1" name="signature" type="xs:string" />
 		</xs:sequence>
 	</xs:complexType>
@@ -104,6 +106,7 @@
 			<xs:element minOccurs="1" maxOccurs="1" name="sender" type="xs:string" />
 			<xs:element minOccurs="1" maxOccurs="1" name="destination" type="xs:string" />
 			<xs:element minOccurs="1" maxOccurs="1" name="seqNumber" type="xs:int" />
+			<xs:element minOccurs="1" maxOccurs="1" name="rid" type="xs:int" />
 			<xs:element minOccurs="1" maxOccurs="1" name="owner" type="xs:string" />
 			<xs:element minOccurs="1" maxOccurs="1" name="number" type="xs:int" />
 			<xs:element minOccurs="1" maxOccurs="1" name="signature" type="xs:string" />
@@ -115,6 +118,7 @@
 			<xs:element minOccurs="1" maxOccurs="1" name="sender" type="xs:string" />
 			<xs:element minOccurs="1" maxOccurs="1" name="destination" type="xs:string" />
 			<xs:element minOccurs="1" maxOccurs="1" name="seqNumber" type="xs:int" />
+			<xs:element minOccurs="1" maxOccurs="1" name="rid" type="xs:int" />
 			<xs:element minOccurs="1" maxOccurs="1" name="number" type="xs:int" />
 			<xs:element minOccurs="1" maxOccurs="1" name="signature" type="xs:string" />
 		</xs:sequence>

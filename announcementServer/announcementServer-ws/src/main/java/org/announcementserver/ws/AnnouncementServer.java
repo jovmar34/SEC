@@ -1,36 +1,14 @@
 package org.announcementserver.ws;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.security.KeyStoreException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableEntryException;
-import java.security.cert.CertificateException;
 import java.util.Scanner;
 
-import javax.management.RuntimeErrorException;
-
 import org.announcementserver.utils.*;
-import org.announcementserver.common.Constants;
-import org.announcementserver.common.CryptoTools;
-import org.announcementserver.exceptions.EmptyBoardException;
-import org.announcementserver.exceptions.InvalidNumberException;
-import org.announcementserver.exceptions.MessageSizeException;
-import org.announcementserver.exceptions.NumberPostsException;
-import org.announcementserver.exceptions.PostTypeException;
-import org.announcementserver.exceptions.ReferredAnnouncementException;
-import org.announcementserver.exceptions.ReferredUserException;
-import org.announcementserver.exceptions.UserNotRegisteredException;
 
 public class AnnouncementServer implements Serializable {
 	
@@ -41,6 +19,7 @@ public class AnnouncementServer implements Serializable {
 	private List<String> clients;
 	
 	public HashMap<String, Integer> sns; // sequence numbers
+	public HashMap<String, Integer> wtss; // clients wts's
 	
 	public static AnnouncementServer getInstance() {
 		if (instance == null) {
@@ -57,6 +36,7 @@ public class AnnouncementServer implements Serializable {
 		this.generalBoard = new ArrayList<>();
 		this.personalBoards = new HashMap<>();
 		this.sns = new HashMap<>();
+		this.wtss = new HashMap<>();
 		this.clients = new ArrayList<>();
 		
 		try {
@@ -72,21 +52,26 @@ public class AnnouncementServer implements Serializable {
 	}
 	
 	/* Register */
-	public Integer register(String client) {
+	public List<Integer> register(String client) {
 		if (!clients.contains(client)) 
 			throw new RuntimeException("Unknown user registering");
 
 		if (!personalBoards.containsKey(client)) {
 			personalBoards.put(client, new ArrayList<>());
 			sns.put(client, 0);
+			wtss.put(client,0);
 			PersistenceUtils.serialize(instance);
 		}
+
+		List<Integer> ret = new ArrayList<>();
+		ret.add(sns.get(client));
+		ret.add(wtss.get(client));
 		
-		return sns.get(client);
+		return ret;
 	}
 	
 	/* Post */
-	public Integer post(Announcement announcement) {
+	public List<Integer> post(Announcement announcement, Integer seqNumber) {
 		if (!personalBoards.containsKey(announcement.author)) 
 			throw new RuntimeException("The user who wants to post doesn't exist");
 			
@@ -115,17 +100,23 @@ public class AnnouncementServer implements Serializable {
 			}
 		}
 
-		if (sns.get(announcement.author) == announcement.seqNumber) {
+		if (sns.get(announcement.author) == seqNumber && 
+				wtss.get(announcement.author) < announcement.id) {
 			putPersonal(announcement.author, announcement);
-			sns.put(announcement.author, announcement.seqNumber + 1);
+			sns.put(announcement.author, seqNumber + 1);
+			wtss.put(announcement.author, announcement.id);
 			PersistenceUtils.serialize(this);
 		}
 
-		return announcement.seqNumber;
+		List<Integer> ret = new ArrayList<>();
+		ret.add(seqNumber);
+		ret.add(announcement.id);
+
+		return ret;
 	}
 	
 	/* Post General */
-	public Integer postGeneral(Announcement announcement) {
+	public Integer postGeneral(Announcement announcement, Integer seqNumber) {
 		if (!personalBoards.containsKey(announcement.author)) 
 			throw new RuntimeException("The user who wants to post doesn't exist");
 		
@@ -154,13 +145,13 @@ public class AnnouncementServer implements Serializable {
 			}
 		}
 		
-		if (sns.get(announcement.author) == announcement.seqNumber) {
+		if (sns.get(announcement.author) == seqNumber) {
 			putGeneral(announcement);
-			sns.put(announcement.author, announcement.seqNumber + 1);
+			sns.put(announcement.author, seqNumber + 1);
 			PersistenceUtils.serialize(this);
 		}
 		
-		return announcement.seqNumber;
+		return seqNumber;
 	}
 	
 	/* Read */
