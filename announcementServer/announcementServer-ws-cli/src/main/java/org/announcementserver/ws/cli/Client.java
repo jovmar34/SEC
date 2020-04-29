@@ -31,8 +31,6 @@ import org.announcementserver.ws.InvalidNumberFault_Exception;
 import org.announcementserver.ws.MessageSizeFault_Exception;
 import org.announcementserver.ws.NumberPostsFault_Exception;
 import org.announcementserver.ws.PostTypeFault_Exception;
-import org.announcementserver.ws.ReadReq;
-import org.announcementserver.ws.ReadRet;
 import org.announcementserver.ws.ReferredAnnouncementFault_Exception;
 import org.announcementserver.ws.ReferredUserFault_Exception;
 import org.announcementserver.ws.UserNotRegisteredFault_Exception;
@@ -82,14 +80,9 @@ public class Client extends Thread {
                 toHash.add(request.getSender());
                 toHash.add(request.getDestination());
 
-                try {
-                    signature = CryptoTools.makeSignature(toHash.toArray(new String[0]));
-                } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
-                        | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
-                        | UnrecoverableEntryException | IOException e) {
-                    e.printStackTrace();
-                    return;
-                }
+                signature = makeSignature(toHash.toArray(new String[0]));
+
+                if (signature == null) return;
 
                 request.setSignature(signature);
 
@@ -114,27 +107,13 @@ public class Client extends Thread {
                 toHash.add(String.valueOf(response.getWts()));
                 toHash.add(String.valueOf(response.getRid()));
 
-                hash = null;
-                try {
-                    hash = CryptoTools.decryptSignature(response.getSender(), response.getSignature());
-                } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
-                        | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
-                        | UnrecoverableEntryException | IOException e) {
-                    e.printStackTrace();
-                    return;
-                }
+                hash = decryptSignature(response.getSender(), response.getSignature());
+                
+                if (hash == null) return;
 
                 toHash.add(hash);
 
-                try {
-                    if (!CryptoTools.checkHash(toHash.toArray(new String[0]))) {
-                        throw new RuntimeException("Hashes are not equal");
-                    }                
-                } catch (NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException
-                        | CertificateException | IOException e) {
-                    e.printStackTrace();
-                    return;
-                }
+                if (!checkHash(toHash.toArray(new String[0]))) return;
 
                 ret.add("Sucessfull authentication! Welcome!");
                 ret.add(String.valueOf(response.getSeqNumber()));
@@ -160,16 +139,9 @@ public class Client extends Thread {
                 messHash.add(references.toString());
                 messHash.add(post.getAnnouncementId());
 
-                String messSig = null;
+                String messSig = makeSignature(messHash.toArray(new String[0]));
 
-                try {
-                    messSig = CryptoTools.makeSignature(messHash.toArray(new String[0]));
-                } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
-                        | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
-                        | UnrecoverableEntryException | IOException e) {
-                    e.printStackTrace();
-                    return;
-                }
+                if (messSig == null) return;
 
                 post.setSignature(messSig);
 
@@ -185,15 +157,7 @@ public class Client extends Thread {
                 toHash.add(post.getAnnouncementId());
                 toHash.add(messSig);
 
-                try {
-                	signature = CryptoTools.makeSignature(toHash.toArray(new String[0]));
-                } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
-                		| NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
-                		| UnrecoverableEntryException | IOException e2) {
-                	// TODO Auto-generated catch block
-                	e2.printStackTrace();
-                	return;
-                }
+                signature = makeSignature(toHash.toArray(new String[0]));
 
                 postReq.setSignature(signature);
 
@@ -207,14 +171,9 @@ public class Client extends Thread {
                 	return;
                 }
 
-                try {
-                	hash = CryptoTools.decryptSignature(servName, postRet.getSignature());
-                } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
-                		| NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
-                		| UnrecoverableEntryException | IOException e2) {
-                	e2.printStackTrace();
-                	return;
-                }
+                hash = decryptSignature(servName, postRet.getSignature());
+                
+                if (hash == null) return;
                 
                 toHash = new ArrayList<>();
 
@@ -223,14 +182,8 @@ public class Client extends Thread {
                 toHash.add(String.valueOf(postRet.getSeqNumber()));
                 toHash.add(hash);
                 
-                try {
-                	if (!CryptoTools.checkHash(toHash.toArray(new String[0]))) {
-                		throw new RuntimeException("Hashes are not equal");
-                	}
-                } catch (NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException | CertificateException
-                		| IOException e2) {
-                	e2.printStackTrace();
-                	return;
+                if (!checkHash(toHash.toArray(new String[0]))) {
+                    return;
                 }
 
                 ret.add("Post was successfully posted to Personal Board!");
@@ -256,16 +209,7 @@ public class Client extends Thread {
                 messHashG.add(references.toString());
                 messHashG.add(postGen.getAnnouncementId());
                 
-                String messSigG = null;
-                
-                try {
-                    messSigG = CryptoTools.makeSignature(messHashG.toArray(new String[0]));
-                } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
-                        | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
-                        | UnrecoverableEntryException | IOException e) {
-                    e.printStackTrace();
-                    return;
-                }
+                String messSigG = makeSignature(messHashG.toArray(new String[0]));
                 
                 postGen.setSignature(messSigG);
                 postGenReq.setAnnouncement(postGen);
@@ -280,14 +224,9 @@ public class Client extends Thread {
                 toHash.add(postGen.getAnnouncementId());
                 toHash.add(messSigG);
                 
-                try {
-                	signature = CryptoTools.makeSignature(toHash.toArray(new String[0]));
-                } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
-                		| NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
-                		| UnrecoverableEntryException | IOException e2) {
-                	e2.printStackTrace();
-                	return;
-                }
+                signature = makeSignature(toHash.toArray(new String[0]));
+
+                if (signature == null) return;
                 
                 postGenReq.setSignature(signature);
 
@@ -301,14 +240,9 @@ public class Client extends Thread {
                 	return;
                 }
 
-                try {
-                	hash = CryptoTools.decryptSignature(servName, postGenRet.getSignature());
-                } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
-                		| NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
-                		| UnrecoverableEntryException | IOException e2) {
-                	e2.printStackTrace();
-                	return;
-                }
+                hash = decryptSignature(servName, postGenRet.getSignature());
+
+                if (hash == null) return;
                 
                 toHash = new ArrayList<>();
 
@@ -317,14 +251,8 @@ public class Client extends Thread {
                 toHash.add(String.valueOf(postGenRet.getSeqNumber()));
                 toHash.add(hash);
                 
-                try {
-                	if (!CryptoTools.checkHash(toHash.toArray(new String[0]))) {
-                		throw new RuntimeException("Hashes are not equal");
-                	}
-                } catch (NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException | CertificateException
-                		| IOException e2) {
-                	e2.printStackTrace();
-                	return;
+                if (!checkHash(toHash.toArray(new String[0]))) {
+                    return;
                 }
 
                 ret.add("Post was successfully posted to General Board!");
@@ -348,15 +276,9 @@ public class Client extends Thread {
                 toHash.add(clientID);
                 toHash.add(number.toString());
 
-                try {
-                    signature = CryptoTools.makeSignature(toHash.toArray(new String[0]));
-                } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
-                        | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
-                        | UnrecoverableEntryException | IOException e3) {
-                    // TODO Auto-generated catch block
-                    e3.printStackTrace();
-                    return;
-                }
+                signature = makeSignature(toHash.toArray(new String[0]));
+
+                if (signature == null) return;
 
                 readReq.setSignature(signature);
                 
@@ -378,15 +300,9 @@ public class Client extends Thread {
                     throw new RuntimeException("Sequence numbers don't match");
                 }
 
-                try {
-                    hash = CryptoTools.decryptSignature(readRes.getSender(), readRes.getSignature());
-                } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
-                        | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
-                        | UnrecoverableEntryException | IOException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
-                    return;
-                }
+                hash = decryptSignature(readRes.getSender(), readRes.getSignature());
+
+                if (hash == null) return;
                 
                 toHash = new ArrayList<>();
                 toHash.add(readRes.getSender());
@@ -395,14 +311,7 @@ public class Client extends Thread {
                 toHash.add(announcementListToString(readRes.getAnnouncements())); //need similar func in the server
                 toHash.add(hash);
 
-                try {
-                    if (!CryptoTools.checkHash(toHash.toArray(new String[0]))) {
-                        throw new RuntimeException("Hashes don't match");
-                    }
-                } catch (NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException
-                        | CertificateException | IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                if (!checkHash(toHash.toArray(new String[0]))) {
                     return;
                 }
 
@@ -430,14 +339,9 @@ public class Client extends Thread {
                 toHash.add(String.valueOf(seqNumber));
                 toHash.add(String.valueOf(number));
                 
-                try {
-                    signature = CryptoTools.makeSignature(toHash.toArray(new String[0]));
-                } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
-                        | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
-                        | UnrecoverableEntryException | IOException e3) {
-                    e3.printStackTrace();
-                    return;
-                }
+                signature = makeSignature(toHash.toArray(new String[0]));
+                
+                if (signature == null) return;
                 
                 readGenReq.setSignature(signature);
               
@@ -458,14 +362,9 @@ public class Client extends Thread {
                     throw new RuntimeException("Sequence numbers don't match");
                 }
 
-                try {
-                    hash = CryptoTools.decryptSignature(readGenRet.getSender(), readGenRet.getSignature());
-                } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
-                        | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
-                        | UnrecoverableEntryException | IOException e1) {
-                    e1.printStackTrace();
-                    return;
-                }
+                hash = decryptSignature(readGenRet.getSender(), readGenRet.getSignature());
+
+                if (hash == null) return;
                 
                 toHash = new ArrayList<>();
                 toHash.add(readGenRet.getSender());
@@ -474,13 +373,7 @@ public class Client extends Thread {
                 toHash.add(announcementListToString(readGenRet.getAnnouncements()));
                 toHash.add(hash);
 
-                try {
-                    if (!CryptoTools.checkHash(toHash.toArray(new String[0]))) {
-                        throw new RuntimeException("Hashes don't match");
-                    }
-                } catch (NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException
-                        | CertificateException | IOException e) {
-                    e.printStackTrace();
+                if (!checkHash(toHash.toArray(new String[0]))) {
                     return;
                 }
                 
@@ -524,5 +417,40 @@ public class Client extends Thread {
         return String.format("Author: %s, Id: %s\n\"%s\"\nReferences: %s\n",
             post.getWriter(), post.getAnnouncementId(), post.getMessage(),
             post.getAnnouncementList().toString());
+    }
+
+    private String makeSignature(String[] args) {
+        String res = null;
+        try {
+            res = CryptoTools.makeSignature(args);
+        } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
+                | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
+                | UnrecoverableEntryException | IOException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    private String decryptSignature(String sender, String signature) {
+        String res = null;
+        try {
+            res = CryptoTools.decryptSignature(sender, signature);
+        } catch (InvalidKeyException | CertificateException | KeyStoreException | NoSuchAlgorithmException
+                | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException
+                | UnrecoverableEntryException | IOException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    private boolean checkHash(String[] args) {
+        boolean res = false;
+        try {
+            res = CryptoTools.checkHash(args);
+        } catch (NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException
+                | CertificateException | IOException e) {
+            e.printStackTrace();
+        }
+        return res;
     }
 }

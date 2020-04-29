@@ -20,7 +20,7 @@
 	<wsdl.dir>${basedir}/../announcementServer-contract/</wsdl.dir>
 	<ws.name>announcementserver-ws</ws.name>
 	<ws.host>localhost</ws.host>
-	<ws.f>0</ws.f>
+	<ws.f>1</ws.f>
 	<!--
 		<ws.port>8090</ws.port>
 		<ws.url>http://${ws.host}:${ws.port}/${ws.name}/endpoint/</ws.url>
