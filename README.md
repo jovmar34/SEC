@@ -12,8 +12,7 @@ Student Number | Name
 
 ## Requirements
 In order to build and run this project you will need:
-* GNU/Linux
-* Apache-Maven 3.x.x 
+* Apache-Maven Version 3
 * Java Development Kit 8
 
 ## Compiling
@@ -28,14 +27,17 @@ In order to run the system..
     
 Regarding the server, execute:
 
-    cd announcementServer-ws
+    cd announcementServer-ws -Dws.i=y -Dw.f=x
     mvn exec:java
     
 Regarding the clients, execute:
 
     cd announcementServer-ws-cli
-    mvn exec:java
+    mvn exec:java -Dws.f=x
     
+**Note1:** In -Dws.f=x, x is the number of faults to tolerate (e.g: 1, max: 4)
+
+**Note2:** In -Dws.i=y, y is the serverId (e.g: 1, max:16)
 
 ## Paswords for Users
 

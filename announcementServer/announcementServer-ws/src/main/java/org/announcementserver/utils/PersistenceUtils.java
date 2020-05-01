@@ -9,15 +9,14 @@ import org.announcementserver.ws.AnnouncementServer;
 
 public class PersistenceUtils {
 	
-	public static final String FILENAME = "src/main/resources/serverState.ser";
-	public static final String BACKUP_FILENAME = "src/main/resources/serverStateBackup.ser";
+	public static final String FILEPATH = "src/main/resources/";
 	
-	public static void recover() {
+	public static void recover(String serverId) {
 		FileInputStream fis = null;
 		ObjectInputStream ois = null;
 		
 		try {
-			fis = new FileInputStream(new File(FILENAME));
+			fis = new FileInputStream(new File(FILEPATH+serverId+"State.ser"));
 			ois = new ObjectInputStream(fis);
 			AnnouncementServer announcementServer = (AnnouncementServer) ois.readObject();
 			AnnouncementServer.setInstance(announcementServer);
@@ -25,7 +24,7 @@ public class PersistenceUtils {
 			fis.close();
 		} catch(Exception i) {
 			try {
-				fis = new FileInputStream(new File(BACKUP_FILENAME));
+				fis = new FileInputStream(new File(FILEPATH+serverId+"StateBackup.ser"));
 				ois = new ObjectInputStream(fis);
 				AnnouncementServer announcementServer = (AnnouncementServer) ois.readObject();
 				AnnouncementServer.setInstance(announcementServer);
@@ -35,15 +34,15 @@ public class PersistenceUtils {
 		}
 	}
 	
-	public static void serialize(AnnouncementServer announcementServer) {
+	public static void serialize(AnnouncementServer announcementServer, String serverId) {
 		FileOutputStream fos = null;
 		FileOutputStream fosb = null;
 		ObjectOutputStream oos = null;
 		ObjectOutputStream oosb = null;
 		
 		try {
-			fos = new FileOutputStream(new File(FILENAME));
-			fosb = new FileOutputStream(new File(BACKUP_FILENAME));
+			fos = new FileOutputStream(new File(FILEPATH+serverId+"State.ser"));
+			fosb = new FileOutputStream(new File(FILEPATH+serverId+"StateBackup.ser"));
 			oos = new ObjectOutputStream(fos);
 			oosb = new ObjectOutputStream(fosb);
 			oos.writeObject(announcementServer);

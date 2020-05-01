@@ -28,6 +28,7 @@ public class AnnouncementServerApp {
 		endpoint = new AnnouncementServerEndpointManager(String.format(Constants.WS_NAME_FORMAT, host, Constants.PORT_START + Integer.valueOf(id)));
 		
 		endpoint.portImpl.proxy.myId = Constants.SERVER_NAME + id;
+		AnnouncementServer.getInstance().setId(Constants.SERVER_NAME + id);
 		
     	String answer = "";
 
@@ -46,7 +47,7 @@ public class AnnouncementServerApp {
     		}
 
     		if (answer.equals("y")) {
-    			PersistenceUtils.recover();
+    			PersistenceUtils.recover(Constants.SERVER_NAME + id);
     		}
     		
     		endpoint.awaitConnections();

@@ -17,6 +17,7 @@ public class AnnouncementServer implements Serializable {
 	private HashMap<String, ArrayList<Announcement>> personalBoards;
 	private static AnnouncementServer instance = null; //Singleton, maybe unnecessary
 	private List<String> clients;
+	private String id;
 	
 	public HashMap<String, Integer> sns; // sequence numbers
 	public HashMap<String, Integer> wtss; // clients wts's
@@ -30,6 +31,10 @@ public class AnnouncementServer implements Serializable {
 	
 	public static void setInstance(AnnouncementServer announcementServer) {
 		instance = announcementServer;
+	}
+	
+	public void setId(String serverId) {
+		this.id = serverId;
 	}
 	
 	private AnnouncementServer () {
@@ -60,7 +65,7 @@ public class AnnouncementServer implements Serializable {
 			personalBoards.put(client, new ArrayList<>());
 			sns.put(client, 0);
 			wtss.put(client,0);
-			PersistenceUtils.serialize(instance);
+			PersistenceUtils.serialize(instance, id);
 		}
 
 		List<Integer> ret = new ArrayList<>();
@@ -105,7 +110,7 @@ public class AnnouncementServer implements Serializable {
 			putPersonal(announcement.author, announcement);
 			sns.put(announcement.author, seqNumber + 1);
 			wtss.put(announcement.author, announcement.id);
-			PersistenceUtils.serialize(this);
+			PersistenceUtils.serialize(instance, id);
 		}
 
 		List<Integer> ret = new ArrayList<>();
@@ -148,7 +153,7 @@ public class AnnouncementServer implements Serializable {
 		if (sns.get(announcement.author) == seqNumber) {
 			putGeneral(announcement);
 			sns.put(announcement.author, seqNumber + 1);
-			PersistenceUtils.serialize(this);
+			PersistenceUtils.serialize(instance, id);
 		}
 		
 		return seqNumber;
@@ -170,7 +175,7 @@ public class AnnouncementServer implements Serializable {
 		Integer start = (number == 0) ? 0 : end - number;
 
 		sns.put(reader, sn + 1);
-		PersistenceUtils.serialize(this);
+		PersistenceUtils.serialize(instance, id);
 
 		return board.subList(start, end);
 	}
@@ -185,7 +190,7 @@ public class AnnouncementServer implements Serializable {
 			(number > generalBoard.size() || number == 0) ? 0 : end - number;
 
 		sns.put(reader, sn + 1);
-		PersistenceUtils.serialize(this);
+		PersistenceUtils.serialize(instance, id);
 		
 		return generalBoard.subList(start, end);
 	}
