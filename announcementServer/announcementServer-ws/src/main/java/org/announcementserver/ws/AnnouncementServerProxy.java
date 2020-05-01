@@ -168,6 +168,8 @@ public class AnnouncementServerProxy {
     
     // --- READ GENERAL ---------
     public ReadRet readGeneral(ReadGeneralReq request) {
+
+        Thread.currentThread().interrupt();
     	String hash = null;
     	if(!request.getDestination().equals(myId)) throw new RuntimeException("Not me");
     	
@@ -196,9 +198,13 @@ public class AnnouncementServerProxy {
 		outHash.add(response.getSender());
         outHash.add(response.getDestination());
         outHash.add(String.valueOf(response.getSeqNumber()));
-        outHash.add(announcementListToString(response.getAnnouncements()));
+        outHash.addAll(listToSign(response.getAnnouncements()));
+
+        System.out.println("sender\ndest\nseqNum\nwriter\nmess\nlist\nwts\ntype\nsignature");
 
         response.setSignature(makeSignature(outHash.toArray(new String[0])));
+
+        System.out.println(String.format("How much %d", response.getAnnouncements().size()));
     	
     	return response;
     }
@@ -226,6 +232,7 @@ public class AnnouncementServerProxy {
         try {
             return CryptoTools.makeSignature(args);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         }
     }
@@ -281,8 +288,9 @@ public class AnnouncementServerProxy {
             mess = new AnnouncementMessage();
             mess.setWriter(post.author);
             mess.setMessage(post.content);
-            mess.setWts(post.id);
             mess.getAnnouncementList().addAll(post.references);
+            mess.setWts(post.id);
+            mess.setType(post.type);
             mess.setSignature(post.signature);
             res.add(mess);
         }

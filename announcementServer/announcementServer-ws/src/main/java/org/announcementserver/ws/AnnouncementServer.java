@@ -177,15 +177,12 @@ public class AnnouncementServer implements Serializable {
 
 	
 	/* Read General */
-	public List<Announcement> readGeneral(String reader, Integer number, Integer sn) {
-		if (generalBoard.isEmpty()) throw new RuntimeException("Empty Board");
-
-		if (number > generalBoard.size()) throw new RuntimeException("Not Enough Messages");
-		
+	public List<Announcement> readGeneral(String reader, Integer number, Integer sn) {		
 		if (sn != sns.get(reader)) throw new RuntimeException("Sequence numbers not in synch");
 
 		Integer end = generalBoard.size();
-		Integer start = (number == 0) ? 0 : end - number;
+		Integer start = 
+			(number > generalBoard.size() || number == 0) ? 0 : end - number;
 
 		sns.put(reader, sn + 1);
 		PersistenceUtils.serialize(this);

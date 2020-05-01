@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.announcementserver.common.CryptoTools;
 import org.announcementserver.common.Constants;
+import org.announcementserver.ws.AnnouncementMessage;
 import org.announcementserver.ws.AnnouncementServerPortType;
 import org.announcementserver.ws.AnnouncementServerService;
 
@@ -161,7 +162,40 @@ public class FrontEnd {
 
         checkInit();
         Client cli;
-        List<String> responses = new ArrayList<String>(nServ);
+
+        // READ PHASE: obtain highest ts
+
+        List<ReadRet> readList = new ArrayList<>(nServ);
+
+        rid++;
+
+        for (int i = 1; i <= nServ; i++) {
+            cli = new Client(this, Operation.READGENERAL, i);
+            cli.number = 1;
+            cli.seqNumber = sn;
+            cli.rid = rid;
+            cli.readRets = readList;
+            cli.start();
+        }
+
+        while (readList.size() <= quorum) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        System.out.println("Read Done");
+
+        sn++;
+
+        Integer nwts = highestWts(readList);
+        System.out.println(String.format("Highest wts: %d", nwts));
+
+        // WRITE PHASE: write the with highest ts + 1
+
+        List<WriteRet> ackList = new ArrayList<>(nServ);
         
         response = null;
         for (int i = 1; i <= nServ; i++) {
@@ -169,11 +203,12 @@ public class FrontEnd {
             cli.message = message;
             cli.references = announcementList;
             cli.seqNumber = sn;
-            cli.wts = wts; // FIXME onHold for (N,N)
+            cli.wts = nwts + 1;
+            cli.writeRets = ackList;
             cli.start();
         }
         
-        while (this.response == null) {
+        while (ackList.size() <= quorum) {
             try {
                 wait();
             } catch (InterruptedException e) {
@@ -183,7 +218,7 @@ public class FrontEnd {
 
         sn++;
 
-        return response.get(0);
+        return "Post General okay!";
     }
 
     public synchronized String read(String clientID, Integer number) throws NoSuchAlgorithmException, UnrecoverableEntryException,
@@ -234,26 +269,27 @@ public class FrontEnd {
         // FIXME onHold for (N,N)
         checkInit();
         Client cli;
-        List<String> responses = new ArrayList<String>(nServ);
+        List<ReadRet> readList = new ArrayList<>(nServ);
         
         response = null;
         for (int i = 1; i <= nServ; i++) {
             cli = new Client(this, Operation.READGENERAL, i);
             cli.seqNumber = sn;
             cli.number = number;
+            cli.readRets = readList;
             cli.start();
         }
         
-        while (this.response == null) {
+        while (readList.size() <= quorum) {
             try {
                 wait();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
-        
-        System.out.println(response);
 
+        List<AnnouncementMessage> ret = highestVal(readList);
+        
         sn++;
 
         return response.get(0);
@@ -280,5 +316,36 @@ public class FrontEnd {
                 System.out.println(wsUrl);    
             }
         }
+    }
+
+    // AUXILIARY FUNCTIONS
+
+    /*
+    * used for postGeneral decision on highest wts (which means, each ret only has one post)
+    */
+    private Integer highestWts(List<ReadRet> readList) {
+        Integer res = 0;
+
+        for (ReadRet ret: readList) {
+            if (ret.getAnnouncements().isEmpty()) continue;
+            System.out.println(postToString(ret.getAnnouncements().get(0)));
+            if (ret.getAnnouncements().get(0).getWts() > res) 
+                res = ret.getAnnouncements().get(0).getWts(); // only one post
+        }
+
+        return res;
+    }
+
+    private String postToString(AnnouncementMessage post) {
+        return String.format("Author: %s, Id: %d\n\"%s\"\nReferences: %s\n",
+            post.getWriter(), post.getWts(), post.getMessage(),
+            post.getAnnouncementList().toString());
+    }
+
+    private List<AnnouncementMessage> highestVal(List<ReadRet> readList) {
+        Integer highTs = 0;
+        ReadRet high;
+
+        return null;
     }
 }

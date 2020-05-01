@@ -100,10 +100,10 @@ public class CryptoTools {
 	/* Auxiliary functions */
 	public static String makeHash(String... args) 
 			throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
-		//PrivateKey privKey = CryptoTools.getPrivateKey(username);
 		MessageDigest hashFunc = MessageDigest.getInstance("SHA-256");
 		
 		for (String arg: args) {
+			System.out.println(arg);
 			hashFunc.update(arg.getBytes());
 		}
 		

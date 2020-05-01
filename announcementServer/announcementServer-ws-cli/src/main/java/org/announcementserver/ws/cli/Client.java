@@ -75,7 +75,6 @@ public class Client extends Thread {
 
         switch (this.op) {
             case REGISTER:
-                List<Integer> regRet = new ArrayList<>();
                 RegisterRet response;
                 RegisterReq request = new RegisterReq();
                 request.setSender(username);
@@ -205,8 +204,8 @@ public class Client extends Thread {
             	postGenReq.setSeqNumber(seqNumber);
             	
             	AnnouncementMessage postGen = new AnnouncementMessage();
-            	postGen.setMessage(message);
             	postGen.setWriter(username);
+            	postGen.setMessage(message);
                 postGen.getAnnouncementList().addAll(this.references);
                 postGen.setWts(wts);
                 postGen.setType("General");
@@ -214,8 +213,11 @@ public class Client extends Thread {
                 List<String> messHashG = postToSign(postGen, false);
                 
                 String messSigG = makeSignature(messHashG.toArray(new String[0]));
+
+                if (messSigG == null) return;
                 
                 postGen.setSignature(messSigG);
+
                 postGenReq.setAnnouncement(postGen);
                 
                 toHash = new ArrayList<>();
@@ -229,8 +231,6 @@ public class Client extends Thread {
                 if (signature == null) return;
                 
                 postGenReq.setSignature(signature);
-
-                System.out.println(postGen.getSignature());
 
                 try {
                 	postGenRet = port.postGeneral(postGenReq);
@@ -255,10 +255,12 @@ public class Client extends Thread {
                     return;
                 }
 
-                ret.add("Post was successfully posted to General Board!");
+                synchronized(parent) {
+                    writeRets.add(postGenRet);
+                    parent.notify();
+                }
                 
-                break;
-                
+                return;
             case READ:
                 toHash = new ArrayList<>();
                 
@@ -318,7 +320,7 @@ public class Client extends Thread {
                 String res = "";
 
                 for (AnnouncementMessage mess: readRes.getAnnouncements()) {
-                    res += postToString(mess);
+                    res += postToString(mess); // deprecated use
                 }
 
                 ret.add(res);
@@ -378,13 +380,14 @@ public class Client extends Thread {
                 }
                 
                 res = "";
-                for (AnnouncementMessage mess: readGenRet.getAnnouncements()) {
-                    res += postToString(mess);
+                if (!verifySigns(readGenRet.getAnnouncements())) {
+                    System.out.println("Posts are not valid");
                 }
                 
-                ret.add(res);
-                
-				break;
+                synchronized (parent) {
+                    readRets.add(readGenRet);
+                    parent.notify();
+                }
         }
         
         System.out.println("HELLO");
@@ -454,5 +457,28 @@ public class Client extends Thread {
             e.printStackTrace();
         }
         return res;
+    }
+
+    private boolean verifySigns(List<AnnouncementMessage> posts) {
+        String hash = null;
+        List<String> toHash;
+        for (AnnouncementMessage post: posts) {
+            hash = decryptSignature(post.getWriter(), post.getSignature());
+            if (hash == null) {
+                System.out.println("Error decrypting");
+                return false;
+            }
+
+            toHash = new ArrayList<>();
+            toHash.addAll(postToSign(post, false));
+            toHash.add(hash);
+
+            if (!checkHash(toHash.toArray(new String[0]))) {
+                System.out.println("Hash is wrong on post");
+                return false;
+            }
+        }
+
+        return true;
     }
 }
