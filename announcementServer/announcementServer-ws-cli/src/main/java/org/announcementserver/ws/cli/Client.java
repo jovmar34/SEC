@@ -143,8 +143,8 @@ public class Client extends Thread {
                 postReq.setSeqNumber(seqNumber);
 
                 AnnouncementMessage post = new AnnouncementMessage();
-                post.setMessage(message);
                 post.setWriter(username);
+                post.setMessage(message);
                 post.getAnnouncementList().addAll(this.references);
                 post.setWts(wts);
                 post.setType("Personal");
@@ -166,7 +166,9 @@ public class Client extends Thread {
                 toHash.addAll(postToSign(post, true));
 
                 signature = makeSignature(toHash.toArray(new String[0]));
-
+                
+                if (signature == null) return;
+                
                 postReq.setSignature(signature);
 
                 end = LocalDateTime.now().plusSeconds(40);
@@ -205,7 +207,6 @@ public class Client extends Thread {
                 }
 
                 synchronized(parent) {
-                    System.out.println("Returned");
                     writeRets.add(postRet);
                     parent.notify();
                 }
@@ -217,8 +218,6 @@ public class Client extends Thread {
             	postGenReq.setSender(username);
             	postGenReq.setDestination(servName);
                 postGenReq.setSeqNumber(seqNumber);
-                
-                System.out.println(seqNumber);
             	
             	AnnouncementMessage postGen = new AnnouncementMessage();
             	postGen.setWriter(username);
@@ -283,21 +282,22 @@ public class Client extends Thread {
                 
                 return;
             case READ:
-                toHash = new ArrayList<>();
-                
-                ReadRet readRes = null;
+                ReadRet readRet = null;
                 ReadReq readReq = new ReadReq();
                 readReq.setSender(username);
                 readReq.setDestination(servName);
                 readReq.setSeqNumber(seqNumber);
                 readReq.setOwner(clientID);
+                readReq.setRid(rid);
                 readReq.setNumber(number);
-			
+                
+                toHash = new ArrayList<>();
                 toHash.add(username);
                 toHash.add(servName);
-                toHash.add(seqNumber.toString());
-                toHash.add(clientID);
-                toHash.add(number.toString());
+                toHash.add(String.valueOf(seqNumber));
+                toHash.add(String.valueOf(clientID));
+                toHash.add(String.valueOf(rid));
+                toHash.add(String.valueOf(number));
 
                 signature = makeSignature(toHash.toArray(new String[0]));
 
@@ -309,46 +309,48 @@ public class Client extends Thread {
 
                 while (LocalDateTime.now().isBefore(end)) {
                     try {
-                        readRes = port.read(readReq);
+                        readRet = port.read(readReq);
                     } catch (EmptyBoardFault_Exception | InvalidNumberFault_Exception | NumberPostsFault_Exception | ReferredUserFault_Exception e2) {
-                        // TODO Auto-generated catch block
-                        e2.printStackTrace();
-                        return;
+                    	System.out.println("timeout");
                     }
                 }
+                
+                if (readRet == null) return;
 
-                if (!readRes.getSender().equals(servName)) 
+                if (!readRet.getSender().equals(servName)) 
                     throw new RuntimeException("Not my server response");
                 
-                if (!readRes.getDestination().equals(username))
+                if (!readRet.getDestination().equals(username))
                     throw new RuntimeException("Response not to me");
 
-                if (readRes.getSeqNumber() != seqNumber) {
+                if (readRet.getSeqNumber() != seqNumber) {
                     throw new RuntimeException("Sequence numbers don't match");
                 }
 
-                hash = decryptSignature(readRes.getSender(), readRes.getSignature());
+                hash = decryptSignature(readRet.getSender(), readRet.getSignature());
 
                 if (hash == null) return;
                 
                 toHash = new ArrayList<>();
-                toHash.add(readRes.getSender());
-                toHash.add(readRes.getDestination());
-                toHash.add(String.valueOf(readRes.getSeqNumber()));
-                toHash.addAll(listToSign(readRes.getAnnouncements())); //need similar func in the server
+                toHash.add(readRet.getSender());
+                toHash.add(readRet.getDestination());
+                toHash.add(String.valueOf(readRet.getSeqNumber()));
+                toHash.add(String.valueOf(rid));
+                toHash.addAll(listToSign(readRet.getAnnouncements()));
                 toHash.add(hash);
 
                 if (!checkHash(toHash.toArray(new String[0]))) {
                     return;
                 }
 
-                String res = "";
-
-                for (AnnouncementMessage mess: readRes.getAnnouncements()) {
-                    res += postToString(mess); // deprecated use
+                if (!verifySigns(readRet.getAnnouncements())) {
+                    System.out.println("Posts are not valid");
                 }
-
-                ret.add(res);
+                
+                synchronized (parent) {
+                	readRets.add(readRet);
+                	parent.notify();
+                }
                 
 				return;				
             case READGENERAL:
@@ -413,7 +415,6 @@ public class Client extends Thread {
                     return;
                 }
                 
-                res = "";
                 if (!verifySigns(readGenRet.getAnnouncements())) {
                     System.out.println("Posts are not valid");
                 }

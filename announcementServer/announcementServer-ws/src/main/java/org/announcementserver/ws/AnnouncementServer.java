@@ -165,19 +165,13 @@ public class AnnouncementServer implements Serializable {
 			throw new RuntimeException("Referred user doesn't exist");
 
 		List<Announcement> board = personalBoards.get(owner);
-		if (board.isEmpty()) throw new RuntimeException("Empty Board");
-
-		if (number > board.size()) throw new RuntimeException("Not Enough Messages");
 
 		if (sn != sns.get(reader)) throw new RuntimeException("Sequence numbers not in synch");
-
-		Integer end = board.size();
-		Integer start = (number == 0) ? 0 : end - number;
 
 		sns.put(reader, sn + 1);
 		PersistenceUtils.serialize(instance, id);
 
-		return board.subList(start, end);
+		return board.subList(0, board.size());
 	}
 
 	

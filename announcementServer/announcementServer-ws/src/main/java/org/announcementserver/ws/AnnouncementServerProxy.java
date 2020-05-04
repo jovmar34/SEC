@@ -140,6 +140,7 @@ public class AnnouncementServerProxy {
         inHash.add(request.getDestination());
         inHash.add(String.valueOf(request.getSeqNumber()));
         inHash.add(request.getOwner());
+        inHash.add(String.valueOf(request.getRid()));
         inHash.add(String.valueOf(request.getNumber()));
         inHash.add(hash);
 
@@ -153,12 +154,14 @@ public class AnnouncementServerProxy {
         response.setSender(request.getDestination());
         response.setDestination(request.getSender());
         response.setSeqNumber(request.getSeqNumber());
+        response.setRid(request.getRid());
         response.getAnnouncements().addAll(transformAnnouncementList(posts));
 
         List<String> outHash = new ArrayList<>();
 		outHash.add(response.getSender());
         outHash.add(response.getDestination());
         outHash.add(String.valueOf(response.getSeqNumber()));
+        outHash.add(String.valueOf(response.getRid()));
         outHash.add(announcementListToString(response.getAnnouncements()));
 
         response.setSignature(makeSignature(outHash.toArray(new String[0])));

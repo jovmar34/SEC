@@ -127,14 +127,14 @@ public class FrontEnd {
         wts++;
         List<WriteRet> ackList = new ArrayList<>(nServ);
         
-        response = null;
+        this.response = null;
         for (int i = 1; i <= nServ; i++) {
             cli = new Client(this, Operation.POST, i);
-            cli.writeRets = ackList;
             cli.message = message;
             cli.references = announcementList;
             cli.seqNumber = sn;
             cli.wts = wts;
+            cli.writeRets = ackList;
             cli.start();
         }
         
@@ -144,10 +144,7 @@ public class FrontEnd {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            System.out.println("Awoke");
         }
-
-        System.out.println("Post done Frontend");
         
         sn++;
 
@@ -163,7 +160,7 @@ public class FrontEnd {
         checkInit();
         Client cli;
 
-        // READ PHASE: obtain highest ts
+        // READ PHASE: obtain highest wts
 
         List<ReadRet> readList = new ArrayList<>(nServ);
 
@@ -194,7 +191,7 @@ public class FrontEnd {
         Integer nwts = highestWts(readList);
         System.out.println(String.format("Highest wts: %d", nwts));
 
-        // WRITE PHASE: write the with highest ts + 1
+        // WRITE PHASE: write the wts with highest wts + 1
 
         List<WriteRet> ackList = new ArrayList<>(nServ);
         
@@ -219,7 +216,7 @@ public class FrontEnd {
 
         sn++;
 
-        return "Post General okay!";
+        return "Post was successfully posted to General Board!";
     }
 
     public synchronized String read(String clientID, Integer number) throws NoSuchAlgorithmException, UnrecoverableEntryException,
@@ -228,21 +225,18 @@ public class FrontEnd {
             NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
 
         checkInit();
-
         Client cli;
-
-        rid++;
         List<ReadRet> readList = new ArrayList<>(nServ);
+        rid++;
         
         this.response = null;
-        
         for (int i = 1; i <= nServ; i++) {
             cli = new Client(this, Operation.READ, i);
-            cli.number = number;
-            cli.readRets = readList;
-            cli.clientID = clientID;
             cli.seqNumber = sn;
+            cli.number = number;
+            cli.clientID = clientID;
             cli.rid = rid;
+            cli.readRets = readList;
             cli.start();
         }
         
@@ -250,16 +244,15 @@ public class FrontEnd {
             try {
                 wait();
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
         
-        System.out.println(response);
+        ReadRet ret = highestVal(readList);
 
         sn++;
 
-        return response.get(0);
+        return postsToString(ret);
     }
 
     public synchronized String readGeneral(Integer number) throws NoSuchAlgorithmException, UnrecoverableEntryException,
