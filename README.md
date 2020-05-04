@@ -27,8 +27,8 @@ In order to run the system..
     
 Regarding the server, execute:
 
-    cd announcementServer-ws -Dws.i=y -Dw.f=x
-    mvn exec:java
+    cd announcementServer-ws
+    mvn exec:java -Dws.i=y -Dw.f=x
     
 Regarding the clients, execute:
 
