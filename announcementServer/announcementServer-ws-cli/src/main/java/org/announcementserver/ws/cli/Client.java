@@ -20,6 +20,8 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
+import java.time.LocalDateTime;
+
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
@@ -72,10 +74,11 @@ public class Client extends Thread {
         String signature = "";
         String hash = null;
         List<String> toHash = new ArrayList<>();
+        LocalDateTime end, start;
 
         switch (this.op) {
             case REGISTER:
-                RegisterRet response;
+                RegisterRet response = null;
                 RegisterReq request = new RegisterReq();
                 request.setSender(username);
                 request.setDestination(servName);
@@ -89,12 +92,20 @@ public class Client extends Thread {
 
                 request.setSignature(signature);
 
-                try {
-                    response = port.register(request);
-                } catch (WebServiceException e) {
-                    System.out.println("Hey, dead");
-                    return;
+                end = LocalDateTime.now().plusSeconds(40);
+                start = LocalDateTime.now();
+                System.out.println(start);
+
+                while (LocalDateTime.now().isBefore(end)) {
+                    try {
+                        response = port.register(request);
+                    } catch (WebServiceException e) {
+                        System.out.println("Hey, dead");
+                        System.out.println(LocalDateTime.now());
+                    }
                 }
+
+                if (response == null) return;
 
                 System.out.println(String.format("Response: %s, %s, %d, %d, %d, %s", 
 			        response.getSender(), response.getDestination(), response.getSeqNumber(), 
@@ -158,12 +169,16 @@ public class Client extends Thread {
 
                 postReq.setSignature(signature);
 
-                try {
-                	postRet = port.post(postReq);
-                } catch (MessageSizeFault_Exception | PostTypeFault_Exception | ReferredAnnouncementFault_Exception
-                		| ReferredUserFault_Exception | UserNotRegisteredFault_Exception e2) {
-                	e2.printStackTrace();
-                	return;
+                end = LocalDateTime.now().plusSeconds(40);
+
+                while (LocalDateTime.now().isBefore(end)) {
+                    try {
+                        postRet = port.post(postReq);
+                    } catch (MessageSizeFault_Exception | PostTypeFault_Exception | ReferredAnnouncementFault_Exception
+                            | ReferredUserFault_Exception | UserNotRegisteredFault_Exception e2) {
+                        e2.printStackTrace();
+                        return;
+                    }
                 }
 
                 hash = decryptSignature(servName, postRet.getSignature());
@@ -201,7 +216,9 @@ public class Client extends Thread {
             	WriteReq postGenReq = new WriteReq();
             	postGenReq.setSender(username);
             	postGenReq.setDestination(servName);
-            	postGenReq.setSeqNumber(seqNumber);
+                postGenReq.setSeqNumber(seqNumber);
+                
+                System.out.println(seqNumber);
             	
             	AnnouncementMessage postGen = new AnnouncementMessage();
             	postGen.setWriter(username);
@@ -232,12 +249,16 @@ public class Client extends Thread {
                 
                 postGenReq.setSignature(signature);
 
-                try {
-                	postGenRet = port.postGeneral(postGenReq);
-                } catch (MessageSizeFault_Exception | PostTypeFault_Exception | ReferredAnnouncementFault_Exception
-                		| ReferredUserFault_Exception | UserNotRegisteredFault_Exception e2) {
-                	e2.printStackTrace();
-                	return;
+                end = LocalDateTime.now().plusSeconds(40);
+
+                while (LocalDateTime.now().isBefore(end)) {
+                    try {
+                        postGenRet = port.postGeneral(postGenReq);
+                    } catch (MessageSizeFault_Exception | PostTypeFault_Exception | ReferredAnnouncementFault_Exception
+                            | ReferredUserFault_Exception | UserNotRegisteredFault_Exception e2) {
+                        e2.printStackTrace();
+                        return;
+                    }
                 }
 
                 hash = decryptSignature(servName, postGenRet.getSignature());
@@ -264,7 +285,7 @@ public class Client extends Thread {
             case READ:
                 toHash = new ArrayList<>();
                 
-                ReadRet readRes;
+                ReadRet readRes = null;
                 ReadReq readReq = new ReadReq();
                 readReq.setSender(username);
                 readReq.setDestination(servName);
@@ -284,12 +305,16 @@ public class Client extends Thread {
 
                 readReq.setSignature(signature);
                 
-                try {
-                    readRes = port.read(readReq);
-                } catch (EmptyBoardFault_Exception | InvalidNumberFault_Exception | NumberPostsFault_Exception | ReferredUserFault_Exception e2) {
-                    // TODO Auto-generated catch block
-                    e2.printStackTrace();
-                    return;
+                end = LocalDateTime.now().plusSeconds(40);
+
+                while (LocalDateTime.now().isBefore(end)) {
+                    try {
+                        readRes = port.read(readReq);
+                    } catch (EmptyBoardFault_Exception | InvalidNumberFault_Exception | NumberPostsFault_Exception | ReferredUserFault_Exception e2) {
+                        // TODO Auto-generated catch block
+                        e2.printStackTrace();
+                        return;
+                    }
                 }
 
                 if (!readRes.getSender().equals(servName)) 
@@ -325,20 +350,23 @@ public class Client extends Thread {
 
                 ret.add(res);
                 
-				break;
-				
+				return;				
             case READGENERAL:
             	ReadRet readGenRet = null;
             	ReadGeneralReq readGenReq = new ReadGeneralReq();
             	readGenReq.setSender(username);
             	readGenReq.setDestination(servName);
-            	readGenReq.setSeqNumber(seqNumber);
-            	readGenReq.setNumber(number);
+                readGenReq.setSeqNumber(seqNumber);
+                readGenReq.setRid(rid);
+                readGenReq.setNumber(number);
+                
+                System.out.println("Sequence number: " + String.valueOf(seqNumber));
             	
             	toHash = new ArrayList<>();
                 toHash.add(username);
                 toHash.add(servName);
                 toHash.add(String.valueOf(seqNumber));
+                toHash.add(String.valueOf(rid));
                 toHash.add(String.valueOf(number));
                 
                 signature = makeSignature(toHash.toArray(new String[0]));
@@ -347,12 +375,17 @@ public class Client extends Thread {
                 
                 readGenReq.setSignature(signature);
               
-                try {
-                    readGenRet = port.readGeneral(readGenReq);
-                } catch (EmptyBoardFault_Exception | InvalidNumberFault_Exception | NumberPostsFault_Exception e2) {
-                    e2.printStackTrace();
-                    return;
+                end = LocalDateTime.now().plusSeconds(40);
+
+                while (LocalDateTime.now().isBefore(end)) {
+                    try {
+                        readGenRet = port.readGeneral(readGenReq);
+                    } catch (EmptyBoardFault_Exception | InvalidNumberFault_Exception | NumberPostsFault_Exception e2) {
+                        System.out.println("timeout");
+                    }
                 }
+
+                if (readGenRet == null) return;
                 
                 if (!readGenRet.getSender().equals(servName)) 
                     throw new RuntimeException("Not my server response");
@@ -372,6 +405,7 @@ public class Client extends Thread {
                 toHash.add(readGenRet.getSender());
                 toHash.add(readGenRet.getDestination());
                 toHash.add(String.valueOf(readGenRet.getSeqNumber()));
+                toHash.add(String.valueOf(rid));
                 toHash.addAll(listToSign(readGenRet.getAnnouncements()));
                 toHash.add(hash);
 
@@ -388,6 +422,8 @@ public class Client extends Thread {
                     readRets.add(readGenRet);
                     parent.notify();
                 }
+
+                return;
         }
         
         System.out.println("HELLO");

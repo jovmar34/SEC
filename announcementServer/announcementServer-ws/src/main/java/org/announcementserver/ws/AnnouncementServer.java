@@ -183,7 +183,8 @@ public class AnnouncementServer implements Serializable {
 	
 	/* Read General */
 	public List<Announcement> readGeneral(String reader, Integer number, Integer sn) {		
-		if (sn != sns.get(reader)) throw new RuntimeException("Sequence numbers not in synch");
+		if (sn != sns.get(reader)) 
+			throw new RuntimeException("Sequence numbers not in synch");
 
 		Integer end = generalBoard.size();
 		Integer start = 

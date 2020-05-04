@@ -103,7 +103,6 @@ public class CryptoTools {
 		MessageDigest hashFunc = MessageDigest.getInstance("SHA-256");
 		
 		for (String arg: args) {
-			System.out.println(arg);
 			hashFunc.update(arg.getBytes());
 		}
 		

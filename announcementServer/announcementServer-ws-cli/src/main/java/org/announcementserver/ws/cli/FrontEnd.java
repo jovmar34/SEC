@@ -170,6 +170,7 @@ public class FrontEnd {
         rid++;
 
         for (int i = 1; i <= nServ; i++) {
+            System.out.println(String.valueOf(i) + "th client");
             cli = new Client(this, Operation.READGENERAL, i);
             cli.number = 1;
             cli.seqNumber = sn;
@@ -270,12 +271,14 @@ public class FrontEnd {
         checkInit();
         Client cli;
         List<ReadRet> readList = new ArrayList<>(nServ);
+        rid++;
         
         response = null;
         for (int i = 1; i <= nServ; i++) {
             cli = new Client(this, Operation.READGENERAL, i);
             cli.seqNumber = sn;
             cli.number = number;
+            cli.rid = rid;
             cli.readRets = readList;
             cli.start();
         }
@@ -288,11 +291,11 @@ public class FrontEnd {
             }
         }
 
-        List<AnnouncementMessage> ret = highestVal(readList);
+        ReadRet ret = highestVal(readList);
         
         sn++;
 
-        return response.get(0);
+        return postsToString(ret);
     }
 
     private void createStub() {
@@ -342,10 +345,37 @@ public class FrontEnd {
             post.getAnnouncementList().toString());
     }
 
-    private List<AnnouncementMessage> highestVal(List<ReadRet> readList) {
+    private ReadRet highestVal(List<ReadRet> readList) {
         Integer highTs = 0;
-        ReadRet high;
+        String highWriter = null;
+        ReadRet high = null;
+        List<AnnouncementMessage> list;
+        AnnouncementMessage temp;
 
-        return null;
+        for (ReadRet ret: readList) {
+            list = ret.getAnnouncements();
+            if (list.isEmpty()) continue;
+            System.out.println(postToString(ret.getAnnouncements().get(0)));
+            temp = list.get(list.size() - 1); // most recent post
+
+            // higher if ts is bigger or, if they're same, lowest client id (decided by Java default String comparison)
+            if (temp.getWts() > highTs || (temp.getWts() == highTs && temp.getWriter().compareTo(highWriter) < 0)) {
+                highTs = temp.getWts(); // only one post
+                highWriter = temp.getWriter();
+                high = ret;
+            }
+        }
+
+        return high;
+    }
+
+    private String postsToString(ReadRet response) {
+        String res = "";
+
+        for (AnnouncementMessage post: response.getAnnouncements()) {
+            res += postToString(post);
+        }
+
+        return res;
     }
 }

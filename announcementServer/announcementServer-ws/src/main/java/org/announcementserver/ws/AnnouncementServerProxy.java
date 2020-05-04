@@ -168,8 +168,6 @@ public class AnnouncementServerProxy {
     
     // --- READ GENERAL ---------
     public ReadRet readGeneral(ReadGeneralReq request) {
-
-        Thread.currentThread().interrupt();
     	String hash = null;
     	if(!request.getDestination().equals(myId)) throw new RuntimeException("Not me");
     	
@@ -179,32 +177,31 @@ public class AnnouncementServerProxy {
 		inHash.add(request.getSender());
         inHash.add(request.getDestination());
         inHash.add(String.valueOf(request.getSeqNumber()));
+        inHash.add(String.valueOf(request.getRid()));
         inHash.add(String.valueOf(request.getNumber()));
         inHash.add(hash);
 
         if (!checkHash(inHash.toArray(new String[0]))) 
             throw new RuntimeException("Possible Tampering in transport of post message");
 
-        List<Announcement> posts = AnnouncementServer.getInstance().readGeneral(
-        		request.getSender(), request.getNumber(), request.getSeqNumber());
+
+        List<Announcement> posts = AnnouncementServer.getInstance().readGeneral(request.getSender(), request.getNumber(), request.getSeqNumber());
 
         ReadRet response = new ReadRet();
         response.setSender(request.getDestination());
         response.setDestination(request.getSender());
         response.setSeqNumber(request.getSeqNumber());
+        response.setRid(request.getRid());
         response.getAnnouncements().addAll(transformAnnouncementList(posts));
 
         List<String> outHash = new ArrayList<>();
 		outHash.add(response.getSender());
         outHash.add(response.getDestination());
         outHash.add(String.valueOf(response.getSeqNumber()));
+        outHash.add(String.valueOf(response.getRid()));
         outHash.addAll(listToSign(response.getAnnouncements()));
 
-        System.out.println("sender\ndest\nseqNum\nwriter\nmess\nlist\nwts\ntype\nsignature");
-
         response.setSignature(makeSignature(outHash.toArray(new String[0])));
-
-        System.out.println(String.format("How much %d", response.getAnnouncements().size()));
     	
     	return response;
     }
