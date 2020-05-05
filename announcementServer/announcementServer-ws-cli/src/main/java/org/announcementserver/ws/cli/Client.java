@@ -13,6 +13,8 @@ import org.announcementserver.ws.WriteRet;
 import org.announcementserver.ws.ReadReq;
 import org.announcementserver.ws.ReadGeneralReq;
 import org.announcementserver.ws.ReadRet;
+import org.announcementserver.ws.WriteBackReq;
+import org.announcementserver.ws.WriteBackRet;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -38,7 +40,7 @@ import org.announcementserver.ws.ReferredUserFault_Exception;
 import org.announcementserver.ws.UserNotRegisteredFault_Exception;
 
 enum Operation {
-    REGISTER, POST, POSTGENERAL, READ, READGENERAL
+    REGISTER, POST, POSTGENERAL, READ, READGENERAL, WRITEBACK
 };
 
 public class Client extends Thread {
@@ -56,6 +58,8 @@ public class Client extends Thread {
     public List<RegisterRet> regRets;
     public List<WriteRet> writeRets;
     public List<ReadRet> readRets;
+    public List<WriteBackRet> writeBackRets;
+    public ReadRet writeBack;
     public Integer wts;
     public Integer rid;
     public List<String> ret;
@@ -425,6 +429,61 @@ public class Client extends Thread {
                 }
 
                 return;
+             case WRITEBACK:
+            	 WriteBackRet writeBackRet = null;
+            	 WriteBackReq writeBackReq = new WriteBackReq();
+            	 
+            	 writeBackReq.setSender(username);
+            	 writeBackReq.setDestination(servName);
+            	 writeBackReq.setSeqNumber(seqNumber);
+            	 writeBackReq.getAnnouncements().addAll(writeBack.getAnnouncements());
+            	 
+            	 toHash = new ArrayList<>();
+            	 toHash.add(writeBackReq.getSender());
+            	 toHash.add(writeBackReq.getDestination());
+            	 toHash.add(String.valueOf(writeBackReq.getSeqNumber()));
+            	 toHash.add(announcementListToString(writeBackReq.getAnnouncements()));
+            	 
+            	 signature = makeSignature(toHash.toArray(new String[0]));
+            	 
+            	 if (signature == null) return;
+            	 
+            	 writeBackReq.setSignature(signature);
+            	 
+            	 end = LocalDateTime.now().plusSeconds(40);
+            	 
+            	 while (LocalDateTime.now().isBefore(end)) {
+            		 try {
+            			 writeBackRet = port.writeBack(writeBackReq);
+            		 } catch (Exception e) {
+            			 System.out.println("timeout");
+            		 }
+            	 }
+            	 
+            	 hash = decryptSignature(servName, writeBackRet.getSignature());
+            	 
+                 if (hash == null) {
+                     System.out.println("Issue on hash");
+                     return;
+                 }
+                 
+                 toHash = new ArrayList<>();
+
+                 toHash.add(servName);
+                 toHash.add(username);
+                 toHash.add(String.valueOf(seqNumber));
+                 toHash.add(hash);
+                 
+                 if (!checkHash(toHash.toArray(new String[0]))) {
+                     return;
+                 }
+
+                 synchronized(parent) {
+                     writeBackRets.add(writeBackRet);
+                     parent.notify();
+                 }
+                 
+                 return;   	 
         }
         
         System.out.println("HELLO");
@@ -517,5 +576,24 @@ public class Client extends Thread {
         }
 
         return true;
+    }
+    
+    private String postToHash(AnnouncementMessage post, boolean signature) {
+        String res = String.format("%s,%s,%d,%s", post.getWriter(), post.getMessage(),
+            post.getWts(), post.getAnnouncementList().toString());
+        
+        if (signature) res += "," + post.getSignature();
+
+        return res + "\n";
+    }
+    
+    private String announcementListToString(List<AnnouncementMessage> posts) {
+        String res = "";
+
+        for (AnnouncementMessage post: posts) {
+            res += postToHash(post, true);
+        }
+
+        return res;
     }
 }

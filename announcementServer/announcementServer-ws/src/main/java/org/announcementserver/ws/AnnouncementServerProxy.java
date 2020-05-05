@@ -209,6 +209,13 @@ public class AnnouncementServerProxy {
     	return response;
     }
     
+    // --- WRITE BACK --------
+    public WriteBackRet writeBack(WriteBackReq request) {
+    	WriteBackRet response = new WriteBackRet();
+    	
+    	return response;
+    }
+    
     
     // -- Auxiliary Functions -------------------
 

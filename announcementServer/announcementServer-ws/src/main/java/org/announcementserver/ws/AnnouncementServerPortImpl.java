@@ -117,6 +117,21 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 		return res;
 	}
 	
+	/* Write Back */
+	public WriteBackRet writeBack(WriteBackReq request) {
+		WriteBackRet res = null;
+		
+		try {
+			res = proxy.writeBack(request);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(e.getMessage());
+		}
+		
+		return res;
+	}
+	
+	
 	/* Exceptions handlers */
 	private void throwUserNotRegisteredFault(final String message) throws UserNotRegisteredFault_Exception {
 		UserNotRegisteredFault faultInfo = new UserNotRegisteredFault();

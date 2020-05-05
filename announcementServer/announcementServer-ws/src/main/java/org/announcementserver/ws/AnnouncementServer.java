@@ -190,6 +190,13 @@ public class AnnouncementServer implements Serializable {
 		return generalBoard.subList(start, end);
 	}
 	
+	/* Write Back */
+	public Integer writeBack(List<Announcement> announcements, Integer seqNumber) {
+		
+		return seqNumber;
+		
+	}
+	
 	/* For testing purposes */
 	public void putGeneral(Announcement ann) {
 		generalBoard.add(ann);

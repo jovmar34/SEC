@@ -46,6 +46,9 @@
   	
   	<xs:element name="readGeneral" type="tns:readGeneral" />
   	<xs:element name="readGeneralResponse" type="tns:readGeneralResponse" />
+  	
+  	<xs:element name="writeBack" type="tns:writeBack" />
+  	<xs:element name="writeBackResponse" type="tns:writeBackResponse" />
 
 	<!-- Announcement for transport -->
 	<xs:complexType name="AnnouncementMessage">
@@ -90,6 +93,16 @@
 		</xs:sequence>
 	</xs:complexType>
 	
+	<xs:complexType name="WriteBackReq">
+		<xs:sequence>
+			<xs:element minOccurs="1" maxOccurs="1" name="sender" type="xs:string" />
+			<xs:element minOccurs="1" maxOccurs="1" name="destination" type="xs:string" />
+			<xs:element minOccurs="1" maxOccurs="1" name="seqNumber" type="xs:int" />
+			<xs:element minOccurs="1" maxOccurs="unbounded" name="announcements" type="tns:AnnouncementMessage" />
+			<xs:element minOccurs="1" maxOccurs="1" name="signature" type="xs:string" />
+		</xs:sequence>
+	</xs:complexType>
+	
 	<xs:complexType name="WriteRet">
 		<xs:sequence>
 			<xs:element minOccurs="1" maxOccurs="1" name="sender" type="xs:string" />
@@ -99,7 +112,16 @@
 			<xs:element minOccurs="1" maxOccurs="1" name="signature" type="xs:string" />
 		</xs:sequence>
 	</xs:complexType>
-
+	
+	<xs:complexType name="WriteBackRet">
+		<xs:sequence>
+			<xs:element minOccurs="1" maxOccurs="1" name="sender" type="xs:string" />
+			<xs:element minOccurs="1" maxOccurs="1" name="destination" type="xs:string" />
+			<xs:element minOccurs="1" maxOccurs="1" name="seqNumber" type="xs:int" />
+			<xs:element minOccurs="1" maxOccurs="1" name="signature" type="xs:string" />
+		</xs:sequence>
+	</xs:complexType>
+	
 	<!-- Read Messages -->
 	<xs:complexType name="ReadReq">
 		<xs:sequence>
@@ -195,6 +217,18 @@
 	  		<xs:element minOccurs="1" maxOccurs="1" type="tns:ReadRet" name="return" />
 	  	</xs:sequence>
   	</xs:complexType>
+  	
+  	<!-- WRITE BACK -->
+  	<xs:complexType name="writeBack">
+	  	<xs:sequence>
+  			<xs:element minOccurs="1" maxOccurs="1" type="tns:WriteBackReq" name="request" />
+		</xs:sequence>
+  	</xs:complexType>
+  	<xs:complexType name="writeBackResponse">
+  		<xs:sequence>
+	  		<xs:element minOccurs="1" maxOccurs="1" type="tns:WriteBackRet" name="return" />
+	  	</xs:sequence>
+  	</xs:complexType>
 
 
 	<!-- EXCEPTIONS -->
@@ -284,7 +318,14 @@
   <message name="readGeneralResponse">
   	<part element="tns:readGeneralResponse" name="parameters" />
   </message>
-
+  
+  <message name="writeBack">
+  	<part element="tns:writeBack" name="parameters" />
+  </message>
+  <message name="writeBackResponse">
+  	<part element="tns:writeBackResponse" name="parameters" />
+  </message>
+  
   <message name="UserNotRegisteredFault">
   	<part element="tns:UserNotRegisteredFault" name="fault" />
   </message>
@@ -360,6 +401,11 @@
 		<fault message="tns:InvalidNumberFault" name="InvalidNumberFault" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/readGeneral/Fault/InvalidNumberFault" />
 		<fault message="tns:EmptyBoardFault" name="EmptyBoardFault" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/readGeneral/Fault/EmptyBoardFault" />
 		<fault message="tns:NumberPostsFault" name="NumberPostsFault" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/readGeneral/Fault/NumberPostsFault" />
+  	</operation>
+  	
+  	<operation name="writeBack">
+  		<input message="tns:writeBack" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/writeBack" />
+  		<output message="tns:writeBackResponse" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/writeBackResponse" />
   	</operation>
   	
   </portType>
@@ -467,6 +513,16 @@
 		<fault name="NumberPostsFault">
 			<soap:fault name="NumberPostsFault" use="literal" /> 
 		</fault>
+  	</operation>
+  	
+  	<operation name="writeBack">
+  		<soap:operation soapAction="" />
+  		<input>
+  			<soap:body use="literal" />
+  		</input>
+  		<output>
+  			<soap:body use="literal" />
+  		</output>
   	</operation>
   
   </binding>

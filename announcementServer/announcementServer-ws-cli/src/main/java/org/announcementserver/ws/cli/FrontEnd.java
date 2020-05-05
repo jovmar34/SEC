@@ -11,6 +11,9 @@ import org.announcementserver.ws.AnnouncementServerPortType;
 import org.announcementserver.ws.AnnouncementServerService;
 
 import org.announcementserver.ws.RegisterRet;
+import org.announcementserver.ws.ReadRet;
+import org.announcementserver.ws.WriteRet;
+import org.announcementserver.ws.WriteBackRet;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -26,11 +29,10 @@ import org.announcementserver.ws.InvalidNumberFault_Exception;
 import org.announcementserver.ws.MessageSizeFault_Exception;
 import org.announcementserver.ws.NumberPostsFault_Exception;
 import org.announcementserver.ws.PostTypeFault_Exception;
-import org.announcementserver.ws.ReadRet;
 import org.announcementserver.ws.ReferredAnnouncementFault_Exception;
 import org.announcementserver.ws.ReferredUserFault_Exception;
 import org.announcementserver.ws.UserNotRegisteredFault_Exception;
-import org.announcementserver.ws.WriteRet;
+
 
 import javax.xml.ws.BindingProvider;
 import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
@@ -227,6 +229,7 @@ public class FrontEnd {
         checkInit();
         Client cli;
         List<ReadRet> readList = new ArrayList<>(nServ);
+        List<WriteBackRet> ackList = new ArrayList<>(nServ);
         rid++;
         
         this.response = null;
@@ -249,7 +252,27 @@ public class FrontEnd {
         }
         
         ReadRet ret = highestVal(readList);
-
+        
+        // Write Back Phase
+        
+        // TODO: Verify if ret has posts. If not, no need to do a write back 
+        
+        for (int i = 1; i <= nServ; i++) {
+        	cli = new Client(this, Operation.WRITEBACK, i);
+        	cli.seqNumber = sn;
+        	cli.writeBack = ret;
+        	cli.writeBackRets = ackList;
+        	cli.start();
+        }
+        
+        while (ackList.size() <= quorum) {
+        	try {
+        		wait();
+        	} catch (InterruptedException e) {
+        		e.printStackTrace();
+        	}
+        }
+        
         sn++;
 
         return postsToString(ret);
