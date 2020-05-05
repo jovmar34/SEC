@@ -211,7 +211,35 @@ public class AnnouncementServerProxy {
     
     // --- WRITE BACK --------
     public WriteBackRet writeBack(WriteBackReq request) {
+    	String hash = null;
+    	if (!request.getDestination().equals(myId)) throw new RuntimeException("Not me");
+    	
+    	hash = decryptSignature(request.getSender(), request.getSignature());
+    	
+    	List<String> inHash = new ArrayList<>();
+    	inHash.add(request.getSender());
+    	inHash.add(request.getDestination());
+    	inHash.add(String.valueOf(request.getSeqNumber()));
+    	inHash.addAll(listToSign(request.getAnnouncements()));
+    	inHash.add(hash);
+    	
+        if (!checkHash(inHash.toArray(new String[0]))) 
+            throw new RuntimeException("Possible Tampering in transport of post message");
+    	
+        Integer ts = AnnouncementServer.getInstance().writeBack(request.getAnnouncements(), request.getSeqNumber());
+        
     	WriteBackRet response = new WriteBackRet();
+    	response.setSender(request.getDestination());
+    	response.setDestination(request.getSender());
+    	response.setSeqNumber(ts);
+    			
+    	List<String> outHash = new ArrayList<>();
+    	
+    	outHash.add(response.getSender());
+    	outHash.add(response.getDestination());
+    	outHash.add(String.valueOf(response.getSeqNumber()));
+    	
+    	response.setSignature(makeSignature(outHash.toArray(new String[0])));
     	
     	return response;
     }

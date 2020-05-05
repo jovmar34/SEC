@@ -191,7 +191,57 @@ public class AnnouncementServer implements Serializable {
 	}
 	
 	/* Write Back */
-	public Integer writeBack(List<Announcement> announcements, Integer seqNumber) {
+	public Integer writeBack(List<AnnouncementMessage> announcements, Integer seqNumber) {
+		
+		// Convert all to Announcements
+		List<Announcement> announcementsList = new ArrayList<>();
+		for (AnnouncementMessage am : announcements) {
+			Announcement new_post = transformAnnouncement(am);
+			announcementsList.add(new_post);
+		}
+		
+		// Now we try to write
+		for (Announcement a : announcementsList) {
+			// TODO: Not sure if we need to check if personalBoard contains the key (a.author)
+			// TODO: Not sure if we need to check if announcement message is > 255 (a.content.length)
+			// TODO: And other verifications aswell
+			
+			if (!personalBoards.containsKey(a.author)) 
+				throw new RuntimeException("The user who wants to post doesn't exist");
+				
+			if (a.content.length() > 255)
+				throw new RuntimeException("The message is too long");
+			
+			for (String reference : a.references) {
+				String[] parts = reference.split("a|c"); // [<p|g>, author_id, ctr_id]
+				String owner = String.format("client%s", parts[1]);
+				
+				if (!personalBoards.containsKey(owner)) {
+					throw new RuntimeException("Referred user doesn't exist");
+				}
+				
+				if (parts[0].equals("p")) {								
+					if (personalBoards.get(owner).size() < Integer.parseInt(parts[2])) { // FIXME size is not best comparison (wts instead?)
+						throw new RuntimeException("The referred announcement doesn’t exist");
+					}
+					
+				} else if (parts[0].equals("g")) {
+					if (generalBoard.size() < Integer.parseInt(parts[2])) { // FIXME size is not best comparison (wts instead?)
+						throw new RuntimeException("The referred announcement doesn’t exist");
+					}
+				} else {
+					throw new RuntimeException("The type of post in reference is incorrect");
+				}
+			}
+			
+			if (sns.get(a.author) == seqNumber && 
+					wtss.get(a.author) < a.id) {
+				putPersonal(a.author, a);
+				sns.put(a.author, seqNumber + 1);
+				wtss.put(a.author, a.id);
+				PersistenceUtils.serialize(instance, id);
+			}	
+		}
 		
 		return seqNumber;
 		
@@ -211,5 +261,15 @@ public class AnnouncementServer implements Serializable {
 		generalBoard.clear();
 		sns.clear();
 	}
-		
+	
+	private Announcement transformAnnouncement(AnnouncementMessage announcement) {
+		Announcement res = new Announcement();
+	    res.setAuthor(announcement.getWriter());
+	    res.setContent(announcement.getMessage());
+	    res.setReferences(announcement.getAnnouncementList());
+	    res.setId(announcement.getWts());
+	    res.setType(announcement.getType());
+	    res.setSignature(announcement.getSignature());
+	    return res;
+	}
 }

@@ -253,6 +253,8 @@ public class FrontEnd {
         
         ReadRet ret = highestVal(readList);
         
+        sn++;
+        
         // Write Back Phase
         
         // TODO: Verify if ret has posts. If not, no need to do a write back 
