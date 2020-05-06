@@ -97,19 +97,16 @@ public class Client extends Thread {
                 request.setSignature(signature);
 
                 end = LocalDateTime.now().plusSeconds(40);
-                start = LocalDateTime.now();
-                System.out.println(start);
-                
-                
 
-                //while (LocalDateTime.now().isBefore(end)) {
+                while (LocalDateTime.now().isBefore(end)) {
                     try {
                         response = port.register(request);
+                        break;
                     } catch (WebServiceException e) {
                         System.out.println("Hey, dead");
                         System.out.println(LocalDateTime.now());
                     }
-                //}
+                }
 
                 if (response == null) return;
 
@@ -179,15 +176,16 @@ public class Client extends Thread {
 
                 end = LocalDateTime.now().plusSeconds(40);
 
-                //while (LocalDateTime.now().isBefore(end)) {
+                while (LocalDateTime.now().isBefore(end)) {
                     try {
                         postRet = port.post(postReq);
+                        break;
                     } catch (MessageSizeFault_Exception | PostTypeFault_Exception | ReferredAnnouncementFault_Exception
                             | ReferredUserFault_Exception | UserNotRegisteredFault_Exception e2) {
                         e2.printStackTrace();
                         return;
                     }
-                //}
+                }
 
                 hash = decryptSignature(servName, postRet.getSignature());
                 
@@ -256,15 +254,16 @@ public class Client extends Thread {
 
                 end = LocalDateTime.now().plusSeconds(40);
 
-                //while (LocalDateTime.now().isBefore(end)) {
+                while (LocalDateTime.now().isBefore(end)) {
                     try {
                         postGenRet = port.postGeneral(postGenReq);
+                        break;
                     } catch (MessageSizeFault_Exception | PostTypeFault_Exception | ReferredAnnouncementFault_Exception
                             | ReferredUserFault_Exception | UserNotRegisteredFault_Exception e2) {
                         e2.printStackTrace();
                         return;
                     }
-                //}
+                }
 
                 hash = decryptSignature(servName, postGenRet.getSignature());
 
@@ -314,13 +313,14 @@ public class Client extends Thread {
                 end = LocalDateTime.now().plusSeconds(40);
                 
 
-                //while (LocalDateTime.now().isBefore(end)) {
+                while (LocalDateTime.now().isBefore(end)) {
                     try {
                         readRet = port.read(readReq);
+                        break;
                     } catch (EmptyBoardFault_Exception | InvalidNumberFault_Exception | NumberPostsFault_Exception | ReferredUserFault_Exception e2) {
                     	System.out.println("timeout");
                     }
-                //}
+                }
                 
                 if (readRet == null) return;
 
@@ -388,13 +388,14 @@ public class Client extends Thread {
               
                 end = LocalDateTime.now().plusSeconds(40);
 
-                //while (LocalDateTime.now().isBefore(end)) {
+                while (LocalDateTime.now().isBefore(end)) {
                     try {
                         readGenRet = port.readGeneral(readGenReq);
+                        break;
                     } catch (EmptyBoardFault_Exception | InvalidNumberFault_Exception | NumberPostsFault_Exception e2) {
                         System.out.println("timeout");
                     }
-                //}
+                }
 
                 if (readGenRet == null) return;
                 
@@ -458,13 +459,14 @@ public class Client extends Thread {
             	 
             	 end = LocalDateTime.now().plusSeconds(40);
             	 
-            	 //while (LocalDateTime.now().isBefore(end)) {
+            	 while (LocalDateTime.now().isBefore(end)) {
             		 try {
             			 writeBackRet = port.writeBack(writeBackReq);
+            			 break;
             		 } catch (Exception e) {
             			 System.out.println("timeout");
             		 }
-            	 //}
+            	 }
             	 
             	 hash = decryptSignature(writeBackRet.getSender(), writeBackRet.getSignature());
             	 
