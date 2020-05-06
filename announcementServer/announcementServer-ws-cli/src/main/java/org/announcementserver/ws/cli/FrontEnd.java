@@ -257,26 +257,26 @@ public class FrontEnd {
         
         // Write Back Phase
         
-        // TODO: Verify if ret has posts. If not, no need to do a write back 
-        
-        for (int i = 1; i <= nServ; i++) {
-        	cli = new Client(this, Operation.WRITEBACK, i);
-        	cli.seqNumber = sn;
-        	cli.writeBack = ret;
-        	cli.writeBackRets = ackList;
-        	cli.start();
+        if(!ret.getAnnouncements().isEmpty()) { //not sure if that is enough (the intention is: ret has no posts, no need to do write back)
+            for (int i = 1; i <= nServ; i++) {
+            	cli = new Client(this, Operation.WRITEBACK, i);
+            	cli.seqNumber = sn;
+            	cli.writeBack = ret;
+            	cli.writeBackRets = ackList;
+            	cli.start();
+            }
+            
+            while (ackList.size() <= quorum) {
+            	try {
+            		wait();
+            	} catch (InterruptedException e) {
+            		e.printStackTrace();
+            	}
+            }
+            
+            sn++;
         }
         
-        while (ackList.size() <= quorum) {
-        	try {
-        		wait();
-        	} catch (InterruptedException e) {
-        		e.printStackTrace();
-        	}
-        }
-        
-        sn++;
-
         return postsToString(ret);
     }
 

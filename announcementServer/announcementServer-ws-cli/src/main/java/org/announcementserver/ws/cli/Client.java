@@ -99,15 +99,17 @@ public class Client extends Thread {
                 end = LocalDateTime.now().plusSeconds(40);
                 start = LocalDateTime.now();
                 System.out.println(start);
+                
+                
 
-                while (LocalDateTime.now().isBefore(end)) {
+                //while (LocalDateTime.now().isBefore(end)) {
                     try {
                         response = port.register(request);
                     } catch (WebServiceException e) {
                         System.out.println("Hey, dead");
                         System.out.println(LocalDateTime.now());
                     }
-                }
+                //}
 
                 if (response == null) return;
 
@@ -177,7 +179,7 @@ public class Client extends Thread {
 
                 end = LocalDateTime.now().plusSeconds(40);
 
-                while (LocalDateTime.now().isBefore(end)) {
+                //while (LocalDateTime.now().isBefore(end)) {
                     try {
                         postRet = port.post(postReq);
                     } catch (MessageSizeFault_Exception | PostTypeFault_Exception | ReferredAnnouncementFault_Exception
@@ -185,7 +187,7 @@ public class Client extends Thread {
                         e2.printStackTrace();
                         return;
                     }
-                }
+                //}
 
                 hash = decryptSignature(servName, postRet.getSignature());
                 
@@ -254,7 +256,7 @@ public class Client extends Thread {
 
                 end = LocalDateTime.now().plusSeconds(40);
 
-                while (LocalDateTime.now().isBefore(end)) {
+                //while (LocalDateTime.now().isBefore(end)) {
                     try {
                         postGenRet = port.postGeneral(postGenReq);
                     } catch (MessageSizeFault_Exception | PostTypeFault_Exception | ReferredAnnouncementFault_Exception
@@ -262,7 +264,7 @@ public class Client extends Thread {
                         e2.printStackTrace();
                         return;
                     }
-                }
+                //}
 
                 hash = decryptSignature(servName, postGenRet.getSignature());
 
@@ -310,14 +312,15 @@ public class Client extends Thread {
                 readReq.setSignature(signature);
                 
                 end = LocalDateTime.now().plusSeconds(40);
+                
 
-                while (LocalDateTime.now().isBefore(end)) {
+                //while (LocalDateTime.now().isBefore(end)) {
                     try {
                         readRet = port.read(readReq);
                     } catch (EmptyBoardFault_Exception | InvalidNumberFault_Exception | NumberPostsFault_Exception | ReferredUserFault_Exception e2) {
                     	System.out.println("timeout");
                     }
-                }
+                //}
                 
                 if (readRet == null) return;
 
@@ -344,11 +347,13 @@ public class Client extends Thread {
                 toHash.add(hash);
 
                 if (!checkHash(toHash.toArray(new String[0]))) {
+                	System.out.println("Hashes do not match");
                     return;
                 }
 
                 if (!verifySigns(readRet.getAnnouncements())) {
                     System.out.println("Posts are not valid");
+                    return;
                 }
                 
                 synchronized (parent) {
@@ -383,13 +388,13 @@ public class Client extends Thread {
               
                 end = LocalDateTime.now().plusSeconds(40);
 
-                while (LocalDateTime.now().isBefore(end)) {
+                //while (LocalDateTime.now().isBefore(end)) {
                     try {
                         readGenRet = port.readGeneral(readGenReq);
                     } catch (EmptyBoardFault_Exception | InvalidNumberFault_Exception | NumberPostsFault_Exception e2) {
                         System.out.println("timeout");
                     }
-                }
+                //}
 
                 if (readGenRet == null) return;
                 
@@ -402,7 +407,7 @@ public class Client extends Thread {
                 if (readGenRet.getSeqNumber() != seqNumber) {
                     throw new RuntimeException("Sequence numbers don't match");
                 }
-
+                
                 hash = decryptSignature(readGenRet.getSender(), readGenRet.getSignature());
 
                 if (hash == null) return;
@@ -442,7 +447,8 @@ public class Client extends Thread {
             	 toHash.add(writeBackReq.getSender());
             	 toHash.add(writeBackReq.getDestination());
             	 toHash.add(String.valueOf(writeBackReq.getSeqNumber()));
-            	 toHash.add(announcementListToString(writeBackReq.getAnnouncements()));
+            	 toHash.addAll(listToSign(writeBackReq.getAnnouncements()));
+            	 
             	 
             	 signature = makeSignature(toHash.toArray(new String[0]));
             	 
@@ -452,15 +458,15 @@ public class Client extends Thread {
             	 
             	 end = LocalDateTime.now().plusSeconds(40);
             	 
-            	 while (LocalDateTime.now().isBefore(end)) {
+            	 //while (LocalDateTime.now().isBefore(end)) {
             		 try {
             			 writeBackRet = port.writeBack(writeBackReq);
             		 } catch (Exception e) {
             			 System.out.println("timeout");
             		 }
-            	 }
+            	 //}
             	 
-            	 hash = decryptSignature(servName, writeBackRet.getSignature());
+            	 hash = decryptSignature(writeBackRet.getSender(), writeBackRet.getSignature());
             	 
                  if (hash == null) {
                      System.out.println("Issue on hash");

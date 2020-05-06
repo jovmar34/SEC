@@ -162,7 +162,7 @@ public class AnnouncementServerProxy {
         outHash.add(response.getDestination());
         outHash.add(String.valueOf(response.getSeqNumber()));
         outHash.add(String.valueOf(response.getRid()));
-        outHash.add(announcementListToString(response.getAnnouncements()));
+        outHash.addAll(listToSign(response.getAnnouncements()));
 
         response.setSignature(makeSignature(outHash.toArray(new String[0])));
 
