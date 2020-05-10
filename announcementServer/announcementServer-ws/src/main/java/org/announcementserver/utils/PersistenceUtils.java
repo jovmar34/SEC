@@ -42,14 +42,14 @@ public class PersistenceUtils {
 		
 		try {
 			fos = new FileOutputStream(new File(FILEPATH+serverId+"State.ser"));
-			fosb = new FileOutputStream(new File(FILEPATH+serverId+"StateBackup.ser"));
 			oos = new ObjectOutputStream(fos);
-			oosb = new ObjectOutputStream(fosb);
 			oos.writeObject(announcementServer);
-			oosb.writeObject(announcementServer);
 			oos.close();
-			oosb.close();
 			fos.close();
+			fosb = new FileOutputStream(new File(FILEPATH+serverId+"StateBackup.ser"));
+			oosb = new ObjectOutputStream(fosb);
+			oosb.writeObject(announcementServer);
+			oosb.close();
 			fosb.close();
 		} catch(Exception i) {
 			i.printStackTrace();
