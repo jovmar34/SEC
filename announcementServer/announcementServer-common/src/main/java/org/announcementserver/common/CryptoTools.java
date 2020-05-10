@@ -3,25 +3,11 @@ package org.announcementserver.common;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Properties;
-import java.util.Scanner;
-import java.util.List;
-import java.util.ArrayList;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ObjectInputStream;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
-import java.security.KeyFactory;
 import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.security.PrivateKey;
@@ -31,9 +17,7 @@ import java.security.interfaces.RSAPublicKey;
 
 import javax.crypto.Cipher;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.security.spec.InvalidKeySpecException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
@@ -97,7 +81,8 @@ public class CryptoTools {
 		return Base64.getEncoder().encodeToString(privateKey.getEncoded());
 	}
 	
-	/* Auxiliary functions */
+	// --- Auxiliary functions -------------
+	
 	public static String makeHash(String... args) 
 			throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException, IOException {
 		MessageDigest hashFunc = MessageDigest.getInstance("SHA-256");

@@ -33,7 +33,6 @@ import org.announcementserver.ws.ReferredAnnouncementFault_Exception;
 import org.announcementserver.ws.ReferredUserFault_Exception;
 import org.announcementserver.ws.UserNotRegisteredFault_Exception;
 
-
 import javax.xml.ws.BindingProvider;
 import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
 
@@ -72,7 +71,7 @@ public class FrontEnd {
         createStub();
 
         if (nServ == 1)
-            client = ports.get(0); // TODO: FOR SIMPLICTY
+            client = ports.get(0);
     }
 
     public void init(String username) throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException,
@@ -285,7 +284,6 @@ public class FrontEnd {
             InvalidNumberFault_Exception, NumberPostsFault_Exception, InvalidKeyException, NoSuchPaddingException,
             IllegalBlockSizeException, BadPaddingException {
 
-        // FIXME onHold for (N,N)
         checkInit();
         Client cli;
         List<ReadRet> readList = new ArrayList<>(nServ);

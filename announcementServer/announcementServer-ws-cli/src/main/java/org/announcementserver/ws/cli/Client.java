@@ -78,7 +78,7 @@ public class Client extends Thread {
         String signature = "";
         String hash = null;
         List<String> toHash = new ArrayList<>();
-        LocalDateTime end, start;
+        LocalDateTime end;
 
         switch (this.op) {
             case REGISTER:
@@ -104,7 +104,6 @@ public class Client extends Thread {
                         break;
                     } catch (WebServiceException e) {
                         System.out.println("Hey, dead");
-                        System.out.println(LocalDateTime.now());
                     }
                 }
 
@@ -184,6 +183,8 @@ public class Client extends Thread {
                             | ReferredUserFault_Exception | UserNotRegisteredFault_Exception e2) {
                         e2.printStackTrace();
                         return;
+                    } catch (WebServiceException e2) {
+                    	return;
                     }
                 }
 
@@ -262,6 +263,8 @@ public class Client extends Thread {
                             | ReferredUserFault_Exception | UserNotRegisteredFault_Exception e2) {
                         e2.printStackTrace();
                         return;
+                    } catch (WebServiceException e2) {
+                    	return;
                     }
                 }
 
@@ -319,6 +322,8 @@ public class Client extends Thread {
                         break;
                     } catch (EmptyBoardFault_Exception | InvalidNumberFault_Exception | NumberPostsFault_Exception | ReferredUserFault_Exception e2) {
                     	System.out.println("timeout");
+                    } catch (WebServiceException e) {
+                    	return;
                     }
                 }
                 
@@ -394,6 +399,8 @@ public class Client extends Thread {
                         break;
                     } catch (EmptyBoardFault_Exception | InvalidNumberFault_Exception | NumberPostsFault_Exception e2) {
                         System.out.println("timeout");
+                    } catch (WebServiceException e) {
+                    	return ;
                     }
                 }
 
@@ -450,7 +457,6 @@ public class Client extends Thread {
                 toHash.add(String.valueOf(writeBackReq.getSeqNumber()));
                 toHash.addAll(listToSign(writeBackReq.getAnnouncements()));
                 
-                
                 signature = makeSignature(toHash.toArray(new String[0]));
                 
                 if (signature == null) return;
@@ -463,8 +469,8 @@ public class Client extends Thread {
                     try {
                         writeBackRet = port.writeBack(writeBackReq);
                         break;
-                    } catch (Exception e) {
-                        System.out.println("timeout");
+                    } catch (WebServiceException e2) {
+                    	return ;
                     }
                 }
                 
@@ -520,12 +526,6 @@ public class Client extends Thread {
         }
 
         return res;
-    }
-
-    private String postToString(AnnouncementMessage post) {
-        return String.format("Author: %s, Id: %d\n\"%s\"\nReferences: %s\n",
-            post.getWriter(), post.getWts(), post.getMessage(),
-            post.getAnnouncementList().toString());
     }
 
     private String makeSignature(String[] args) {
@@ -585,23 +585,5 @@ public class Client extends Thread {
 
         return true;
     }
-    
-    private String postToHash(AnnouncementMessage post, boolean signature) {
-        String res = String.format("%s,%s,%d,%s", post.getWriter(), post.getMessage(),
-            post.getWts(), post.getAnnouncementList().toString());
-        
-        if (signature) res += "," + post.getSignature();
 
-        return res + "\n";
-    }
-    
-    private String announcementListToString(List<AnnouncementMessage> posts) {
-        String res = "";
-
-        for (AnnouncementMessage post: posts) {
-            res += postToHash(post, true);
-        }
-
-        return res;
-    }
 }
