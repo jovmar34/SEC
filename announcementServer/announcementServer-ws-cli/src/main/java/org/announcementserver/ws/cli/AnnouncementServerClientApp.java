@@ -17,9 +17,6 @@ import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
 
 import org.announcementserver.utils.*;
-import org.announcementserver.ws.*;
-
-import javax.xml.ws.Service;
 
 /**
  * Client Side Application
