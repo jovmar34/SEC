@@ -57,7 +57,7 @@ public class AnnouncementServer implements Serializable {
 	}
 	
 	/* Register */
-	public List<Integer> register(String client) {
+	public synchronized List<Integer> register(String client) {
 		if (!clients.contains(client)) 
 			throw new RuntimeException("Unknown user registering");
 
@@ -76,7 +76,7 @@ public class AnnouncementServer implements Serializable {
 	}
 	
 	/* Post */
-	public List<Integer> post(Announcement announcement, Integer seqNumber) {
+	public synchronized List<Integer> post(Announcement announcement, Integer seqNumber) {
 		if (!personalBoards.containsKey(announcement.author)) 
 			throw new RuntimeException("The user who wants to post doesn't exist");
 			
@@ -121,7 +121,7 @@ public class AnnouncementServer implements Serializable {
 	}
 	
 	/* Post General */
-	public Integer postGeneral(Announcement announcement, Integer seqNumber) {
+	public synchronized Integer postGeneral(Announcement announcement, Integer seqNumber) {
 		if (!personalBoards.containsKey(announcement.author)) 
 			throw new RuntimeException("The user who wants to post doesn't exist");
 		
@@ -160,7 +160,7 @@ public class AnnouncementServer implements Serializable {
 	}
 	
 	/* Read */
-	public List<Announcement> read(String reader, String owner, Integer number, Integer sn) {
+	public synchronized List<Announcement> read(String reader, String owner, Integer number, Integer sn) {
 		if (!personalBoards.containsKey(owner))
 			throw new RuntimeException("Referred user doesn't exist");
 
@@ -176,7 +176,7 @@ public class AnnouncementServer implements Serializable {
 
 	
 	/* Read General */
-	public List<Announcement> readGeneral(String reader, Integer number, Integer sn) {		
+	public synchronized List<Announcement> readGeneral(String reader, Integer number, Integer sn) {		
 		if (sn != sns.get(reader)) 
 			throw new RuntimeException("Sequence numbers not in synch");
 
@@ -191,60 +191,30 @@ public class AnnouncementServer implements Serializable {
 	}
 	
 	/* Write Back */
-	public Integer writeBack(List<AnnouncementMessage> announcements, Integer seqNumber) {
-		
+	public synchronized Integer writeBack(String sender, List<AnnouncementMessage> announcements, Integer seqNumber) {
+		if (sns.get(sender) != seqNumber) 
+			throw new RuntimeException("Wrong sequence number");
+
 		// Convert all to Announcements
 		List<Announcement> announcementsList = new ArrayList<>();
+		String writer = announcements.get(0).getWriter();
+		int wts = wtss.get(writer);
+
 		for (AnnouncementMessage am : announcements) {
-			Announcement new_post = transformAnnouncement(am);
-			announcementsList.add(new_post);
-		}
-		
-		// Now we try to write
-		for (Announcement a : announcementsList) {
-			// TODO: Not sure if we need to check if personalBoard contains the key (a.author)
-			// TODO: Not sure if we need to check if announcement message is > 255 (a.content.length)
-			// TODO: And other verifications aswell
-			
-			if (!personalBoards.containsKey(a.author)) 
-				throw new RuntimeException("The user who wants to post doesn't exist");
-				
-			if (a.content.length() > 255)
-				throw new RuntimeException("The message is too long");
-			
-			for (String reference : a.references) {
-				String[] parts = reference.split("a|c"); // [<p|g>, author_id, ctr_id]
-				String owner = String.format("client%s", parts[1]);
-				
-				if (!personalBoards.containsKey(owner)) {
-					throw new RuntimeException("Referred user doesn't exist");
-				}
-				
-				if (parts[0].equals("p")) {								
-					if (personalBoards.get(owner).size() < Integer.parseInt(parts[2])) { // FIXME size is not best comparison (wts instead?)
-						throw new RuntimeException("The referred announcement doesn’t exist");
-					}
-					
-				} else if (parts[0].equals("g")) {
-					if (generalBoard.size() < Integer.parseInt(parts[2])) { // FIXME size is not best comparison (wts instead?)
-						throw new RuntimeException("The referred announcement doesn’t exist");
-					}
-				} else {
-					throw new RuntimeException("The type of post in reference is incorrect");
-				}
+			if (!writer.equals(am.writer)) 
+				throw new RuntimeException("Writer in one of the writeback posts not okay");
+			if (wts < am.wts) {
+				wts++;
+				announcementsList.add(transformAnnouncement(am));
 			}
-			
-			if (sns.get(a.author) == seqNumber && 
-					wtss.get(a.author) < a.id) {
-				putPersonal(a.author, a);
-				sns.put(a.author, seqNumber + 1);
-				wtss.put(a.author, a.id);
-				PersistenceUtils.serialize(instance, id);
-			}	
 		}
+
+		personalBoards.get(writer).addAll(announcementsList);
+		wtss.put(writer, wts);
+		sns.put(sender, seqNumber + 1);
+		PersistenceUtils.serialize(instance, id);
 		
 		return seqNumber;
-		
 	}
 	
 	/* For testing purposes */

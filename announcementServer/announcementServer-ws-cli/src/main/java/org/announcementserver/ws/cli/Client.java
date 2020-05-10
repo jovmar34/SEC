@@ -436,62 +436,62 @@ public class Client extends Thread {
 
                 return;
              case WRITEBACK:
-            	 WriteBackRet writeBackRet = null;
-            	 WriteBackReq writeBackReq = new WriteBackReq();
-            	 
-            	 writeBackReq.setSender(username);
-            	 writeBackReq.setDestination(servName);
-            	 writeBackReq.setSeqNumber(seqNumber);
-            	 writeBackReq.getAnnouncements().addAll(writeBack.getAnnouncements());
-            	 
-            	 toHash = new ArrayList<>();
-            	 toHash.add(writeBackReq.getSender());
-            	 toHash.add(writeBackReq.getDestination());
-            	 toHash.add(String.valueOf(writeBackReq.getSeqNumber()));
-            	 toHash.addAll(listToSign(writeBackReq.getAnnouncements()));
-            	 
-            	 
-            	 signature = makeSignature(toHash.toArray(new String[0]));
-            	 
-            	 if (signature == null) return;
-            	 
-            	 writeBackReq.setSignature(signature);
-            	 
-            	 end = LocalDateTime.now().plusSeconds(40);
-            	 
-            	 while (LocalDateTime.now().isBefore(end)) {
-            		 try {
-            			 writeBackRet = port.writeBack(writeBackReq);
-            			 break;
-            		 } catch (Exception e) {
-            			 System.out.println("timeout");
-            		 }
-            	 }
-            	 
-            	 hash = decryptSignature(writeBackRet.getSender(), writeBackRet.getSignature());
-            	 
-                 if (hash == null) {
-                     System.out.println("Issue on hash");
-                     return;
-                 }
-                 
-                 toHash = new ArrayList<>();
+                WriteBackRet writeBackRet = null;
+                WriteBackReq writeBackReq = new WriteBackReq();
+                
+                writeBackReq.setSender(username);
+                writeBackReq.setDestination(servName);
+                writeBackReq.setSeqNumber(seqNumber);
+                writeBackReq.getAnnouncements().addAll(writeBack.getAnnouncements());
+                
+                toHash = new ArrayList<>();
+                toHash.add(writeBackReq.getSender());
+                toHash.add(writeBackReq.getDestination());
+                toHash.add(String.valueOf(writeBackReq.getSeqNumber()));
+                toHash.addAll(listToSign(writeBackReq.getAnnouncements()));
+                
+                
+                signature = makeSignature(toHash.toArray(new String[0]));
+                
+                if (signature == null) return;
+                
+                writeBackReq.setSignature(signature);
+                
+                end = LocalDateTime.now().plusSeconds(40);
+                
+                while (LocalDateTime.now().isBefore(end)) {
+                    try {
+                        writeBackRet = port.writeBack(writeBackReq);
+                        break;
+                    } catch (Exception e) {
+                        System.out.println("timeout");
+                    }
+                }
+                
+                hash = decryptSignature(writeBackRet.getSender(), writeBackRet.getSignature());
+                
+                if (hash == null) {
+                    System.out.println("Issue on hash");
+                    return;
+                }
+                
+                toHash = new ArrayList<>();
 
-                 toHash.add(servName);
-                 toHash.add(username);
-                 toHash.add(String.valueOf(seqNumber));
-                 toHash.add(hash);
-                 
-                 if (!checkHash(toHash.toArray(new String[0]))) {
-                     return;
-                 }
+                toHash.add(servName);
+                toHash.add(username);
+                toHash.add(String.valueOf(seqNumber));
+                toHash.add(hash);
+                
+                if (!checkHash(toHash.toArray(new String[0]))) {
+                    return;
+                }
 
-                 synchronized(parent) {
-                     writeBackRets.add(writeBackRet);
-                     parent.notify();
-                 }
-                 
-                 return;   	 
+                synchronized(parent) {
+                    writeBackRets.add(writeBackRet);
+                    parent.notify();
+                }
+                
+                return;   	 
         }
         
         System.out.println("HELLO");

@@ -221,12 +221,14 @@ public class AnnouncementServerProxy {
     	inHash.add(request.getDestination());
     	inHash.add(String.valueOf(request.getSeqNumber()));
     	inHash.addAll(listToSign(request.getAnnouncements()));
-    	inHash.add(hash);
+        inHash.add(hash);
+        
+        // verifySigs (make sure the messages are valid in the context of the system)
     	
         if (!checkHash(inHash.toArray(new String[0]))) 
             throw new RuntimeException("Possible Tampering in transport of post message");
     	
-        Integer ts = AnnouncementServer.getInstance().writeBack(request.getAnnouncements(), request.getSeqNumber());
+        Integer ts = AnnouncementServer.getInstance().writeBack(request.getSender(), request.getAnnouncements(), request.getSeqNumber());
         
     	WriteBackRet response = new WriteBackRet();
     	response.setSender(request.getDestination());
