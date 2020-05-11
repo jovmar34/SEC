@@ -2,14 +2,11 @@ package org.announcementserver.ws.cli;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-
 import org.announcementserver.common.Constants;
 import org.announcementserver.common.CryptoTools;
 import org.announcementserver.ws.AnnouncementServerPortType;
 
 import org.announcementserver.ws.RegisterReq;
-import org.announcementserver.ws.RegisterResponse;
 import org.announcementserver.ws.RegisterRet;
 import org.announcementserver.ws.WriteReq;
 import org.announcementserver.ws.WriteRet;
@@ -25,16 +22,11 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import javax.xml.ws.AsyncHandler;
-import javax.xml.ws.Response;
 import javax.xml.ws.WebServiceException;
 
 import org.announcementserver.ws.AnnouncementMessage;
@@ -42,7 +34,6 @@ import org.announcementserver.ws.EmptyBoardFault_Exception;
 import org.announcementserver.ws.InvalidNumberFault_Exception;
 import org.announcementserver.ws.MessageSizeFault_Exception;
 import org.announcementserver.ws.NumberPostsFault_Exception;
-import org.announcementserver.ws.PostResponse;
 import org.announcementserver.ws.PostTypeFault_Exception;
 import org.announcementserver.ws.ReferredAnnouncementFault_Exception;
 import org.announcementserver.ws.ReferredUserFault_Exception;
@@ -72,9 +63,6 @@ public class Client extends Thread {
     public Integer wts;
     public Integer rid;
     public List<String> ret;
-    private static RegisterRet regRet;
-    private static WriteRet writeRet;
-    private static Object lock = new String();
 
     public Client(FrontEnd parent, Operation op, Integer id) {
         this.parent = parent;
@@ -90,12 +78,11 @@ public class Client extends Thread {
         String signature = "";
         String hash = null;
         List<String> toHash = new ArrayList<>();
-        LocalDateTime end, start;
-        Instant endi, starti;
+        LocalDateTime end;
 
         switch (this.op) {
             case REGISTER:
-                regRet = null;
+                RegisterRet response = null;
                 RegisterReq request = new RegisterReq();
                 request.setSender(username);
                 request.setDestination(servName);
@@ -109,62 +96,34 @@ public class Client extends Thread {
 
                 request.setSignature(signature);
 
-                port.registerAsync(request, new AsyncHandler<RegisterResponse>() {
-                    @Override
-                    public void handleResponse(Response<RegisterResponse> response) {
-                        try {
-                            synchronized(lock) {
-                                regRet = response.get().getReturn();
-                                lock.notify();
-                            }
-                            return;
-                        } catch (InterruptedException e) {
-                            System.out.println("Caught interrupted exception.");
-                            System.out.print("Cause: ");
-                            System.out.println(e.getCause());
-                        } catch (ExecutionException e) {
-                            System.out.println("Caught interrupted exception.");
-                            System.out.print("Cause: ");
-                            System.out.println(e.getCause());
-                        }
-                        synchronized(lock) {
-                            regRet = new RegisterRet();
-                            lock.notify();
-                        }
-                    }
-                });
+                end = LocalDateTime.now().plusSeconds(40);
 
-                starti = Instant.now();
-                endi = starti.plusSeconds(40);
-
-                synchronized(lock) {
-                    while (regRet == null && starti.isBefore(endi)) {
-                        try {
-                            lock.wait(Duration.between(starti, endi).toMillis());
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        starti = Instant.now();
+                while (LocalDateTime.now().isBefore(end)) {
+                    try {
+                        response = port.register(request);
+                        break;
+                    } catch (WebServiceException e) {
+                        System.out.println("Hey, dead");
                     }
                 }
 
-                if (regRet == null || regRet.getSender() == null) return;
+                if (response == null) return;
 
                 System.out.println(String.format("Response: %s, %s, %d, %d, %d, %s", 
-			        regRet.getSender(), regRet.getDestination(), regRet.getSeqNumber(), 
-			        regRet.getWts(), regRet.getRid(), regRet.getSignature()));
+			        response.getSender(), response.getDestination(), response.getSeqNumber(), 
+			        response.getWts(), response.getRid(), response.getSignature()));
 
-                if (!regRet.getSender().equals(servName)) throw new RuntimeException("Received response that wasn't from right server");
-                if (!regRet.getDestination().equals(username)) throw new RuntimeException("Received response that wasn't for me");
+                if (!response.getSender().equals(servName)) throw new RuntimeException("Received response that wasn't from right server");
+                if (!response.getDestination().equals(username)) throw new RuntimeException("Received response that wasn't for me");
 
                 toHash = new ArrayList<>();
-                toHash.add(regRet.getSender());
-                toHash.add(regRet.getDestination());
-                toHash.add(String.valueOf(regRet.getSeqNumber()));
-                toHash.add(String.valueOf(regRet.getWts()));
-                toHash.add(String.valueOf(regRet.getRid()));
+                toHash.add(response.getSender());
+                toHash.add(response.getDestination());
+                toHash.add(String.valueOf(response.getSeqNumber()));
+                toHash.add(String.valueOf(response.getWts()));
+                toHash.add(String.valueOf(response.getRid()));
 
-                hash = decryptSignature(regRet.getSender(), regRet.getSignature());
+                hash = decryptSignature(response.getSender(), response.getSignature());
                 
                 if (hash == null) return;
 
@@ -173,12 +132,13 @@ public class Client extends Thread {
                 if (!checkHash(toHash.toArray(new String[0]))) return;
                 
                 synchronized(parent) {
-                    regRets.add(regRet);
+                    regRets.add(response);
                     parent.notify();
                 }
 
                 return;
             case POST:
+                WriteRet postRet = null;
                 WriteReq postReq = new WriteReq();
                 postReq.setSender(username);
                 postReq.setDestination(servName);
@@ -213,48 +173,22 @@ public class Client extends Thread {
                 
                 postReq.setSignature(signature);
 
-                port.postAsync(postReq, new AsyncHandler<PostResponse>() {
-                    @Override
-                    public void handleResponse(Response<PostResponse> response) {
-                        try {
-                            synchronized(lock) {
-                                writeRet = response.get().getReturn();
-                                lock.notify();
-                            }
-                            return;
-                        } catch (InterruptedException e) {
-                            System.out.println("Caught interrupted exception.");
-                            System.out.print("Cause: ");
-                            System.out.println(e.getCause());
-                        } catch (ExecutionException e) {
-                            System.out.println("Caught interrupted exception.");
-                            System.out.print("Cause: ");
-                            System.out.println(e.getCause());
-                        }
-                        synchronized(lock) {
-                            writeRet = new WriteRet();
-                            lock.notify();
-                        }
-                    }
-                });
+                end = LocalDateTime.now().plusSeconds(40);
 
-                starti = Instant.now();
-                endi = starti.plusSeconds(40);
-
-                synchronized(lock) {
-                    while (writeRet == null && starti.isBefore(endi)) {
-                        try {
-                            lock.wait(Duration.between(starti, endi).toMillis());
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        starti = Instant.now();
+                while (LocalDateTime.now().isBefore(end)) {
+                    try {
+                        postRet = port.post(postReq);
+                        break;
+                    } catch (MessageSizeFault_Exception | PostTypeFault_Exception | ReferredAnnouncementFault_Exception
+                            | ReferredUserFault_Exception | UserNotRegisteredFault_Exception e2) {
+                        e2.printStackTrace();
+                        return;
+                    } catch (WebServiceException e2) {
+                    	return;
                     }
                 }
 
-                if (writeRet == null || writeRet.getSender() == null) return;
-
-                hash = decryptSignature(servName, writeRet.getSignature());
+                hash = decryptSignature(servName, postRet.getSignature());
                 
                 if (hash == null) {
                     System.out.println("Issue on hash");
@@ -263,7 +197,7 @@ public class Client extends Thread {
                 
                 toHash = new ArrayList<>();
 
-                if (wts != writeRet.getWts()) {
+                if (wts != postRet.getWts()) {
                     System.out.println("WTS wrongly set");
                     return; // if server acked wrong w
                 } 
@@ -278,12 +212,13 @@ public class Client extends Thread {
                 }
 
                 synchronized(parent) {
-                    writeRets.add(writeRet);
+                    writeRets.add(postRet);
                     parent.notify();
                 }
                 
                 return;                
             case POSTGENERAL:
+            	WriteRet postGenRet = null;
             	WriteReq postGenReq = new WriteReq();
             	postGenReq.setSender(username);
             	postGenReq.setDestination(servName);
@@ -316,48 +251,24 @@ public class Client extends Thread {
 
                 if (signature == null) return;
                 
-                port.postGeneralAsync(postGenReq, new AsyncHandler<PostResponse>() {
-                    @Override
-                    public void handleResponse(Response<PostResponse> response) {
-                        try {
-                            synchronized(lock) {
-                                writeRet = response.get().getReturn();
-                                lock.notify();
-                            }
-                            return;
-                        } catch (InterruptedException e) {
-                            System.out.println("Caught interrupted exception.");
-                            System.out.print("Cause: ");
-                            System.out.println(e.getCause());
-                        } catch (ExecutionException e) {
-                            System.out.println("Caught interrupted exception.");
-                            System.out.print("Cause: ");
-                            System.out.println(e.getCause());
-                        }
-                        synchronized(lock) {
-                            writeRet = new WriteRet();
-                            lock.notify();
-                        }
-                    }
-                });
+                postGenReq.setSignature(signature);
 
-                starti = Instant.now();
-                endi = starti.plusSeconds(40);
+                end = LocalDateTime.now().plusSeconds(40);
 
-                synchronized(lock) {
-                    while (writeRet == null && starti.isBefore(endi)) {
-                        try {
-                            lock.wait(Duration.between(starti, endi).toMillis());
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        starti = Instant.now();
+                while (LocalDateTime.now().isBefore(end)) {
+                    try {
+                        postGenRet = port.postGeneral(postGenReq);
+                        break;
+                    } catch (MessageSizeFault_Exception | PostTypeFault_Exception | ReferredAnnouncementFault_Exception
+                            | ReferredUserFault_Exception | UserNotRegisteredFault_Exception e2) {
+                        e2.printStackTrace();
+                        return;
+                    } catch (WebServiceException e2) {
+                    	return;
                     }
                 }
 
-                if (writeRet == null || writeRet.getSender() == null) return;
-
-                hash = decryptSignature(servName, writeRet.getSignature());
+                hash = decryptSignature(servName, postGenRet.getSignature());
 
                 if (hash == null) return;
                 
@@ -365,7 +276,7 @@ public class Client extends Thread {
 
                 toHash.add(servName);
                 toHash.add(username);
-                toHash.add(String.valueOf(writeRet.getSeqNumber()));
+                toHash.add(String.valueOf(postGenRet.getSeqNumber()));
                 toHash.add(hash);
                 
                 if (!checkHash(toHash.toArray(new String[0]))) {
@@ -373,7 +284,7 @@ public class Client extends Thread {
                 }
 
                 synchronized(parent) {
-                    writeRets.add(writeRet);
+                    writeRets.add(postGenRet);
                     parent.notify();
                 }
                 
