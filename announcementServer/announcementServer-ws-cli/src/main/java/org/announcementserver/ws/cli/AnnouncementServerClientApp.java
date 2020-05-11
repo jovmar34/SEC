@@ -50,10 +50,19 @@ public class AnnouncementServerClientApp {
 		String host = args[0];
 		String faults = args[1];
     	
-        client = new FrontEnd(host, faults);
+		client = new FrontEnd(host, faults);
+		
+		// SIMPLY AN ECHO TEST
+		WriteMessage test = new WriteMessage();
+		test.setSender("Me");
+		test.setDestination("You");
+
+		test.setSignature("signature");
+
+		client.ports.get(0).echo(Messages.toByteArray(test));
     	
         // Start of Interaction
-    	authenticationMenu();
+    	//authenticationMenu();
     }
     
     private static void authenticationMenu() throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, UnrecoverableEntryException, KeyStoreException, CertificateException {

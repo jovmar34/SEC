@@ -50,6 +50,9 @@
   	<xs:element name="writeBack" type="tns:writeBack" />
   	<xs:element name="writeBackResponse" type="tns:writeBackResponse" />
 
+	<xs:element name="echo" type="tns:echo" />
+  	<xs:element name="echoResponse" type="tns:echoResponse" />
+
 	<!-- Announcement for transport -->
 	<xs:complexType name="AnnouncementMessage">
 		<xs:sequence>
@@ -230,6 +233,16 @@
 	  	</xs:sequence>
   	</xs:complexType>
 
+	<!-- ECHO -->
+	<xs:complexType name="echo">
+	  	<xs:sequence>
+  			<xs:element minOccurs="1" maxOccurs="1" type="xs:base64Binary" name="request" />
+		</xs:sequence>
+  	</xs:complexType>
+  	<xs:complexType name="echoResponse">
+  		<xs:sequence />
+  	</xs:complexType>
+
 
 	<!-- EXCEPTIONS -->
 	<xs:complexType name="UserNotRegisteredFault">
@@ -325,6 +338,13 @@
   <message name="writeBackResponse">
   	<part element="tns:writeBackResponse" name="parameters" />
   </message>
+
+  <message name="echo">
+  	<part element="tns:echo" name="parameters" />
+  </message>
+  <message name="echoResponse">
+  	<part element="tns:echoResponse" name="parameters" />
+  </message>
   
   <message name="UserNotRegisteredFault">
   	<part element="tns:UserNotRegisteredFault" name="fault" />
@@ -406,6 +426,11 @@
   	<operation name="writeBack">
   		<input message="tns:writeBack" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/writeBack" />
   		<output message="tns:writeBackResponse" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/writeBackResponse" />
+  	</operation>
+
+	<operation name="echo">
+  		<input message="tns:echo" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/echo" />
+  		<output message="tns:echoResponse" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/echoResponse" />
   	</operation>
   	
   </portType>
@@ -516,6 +541,16 @@
   	</operation>
   	
   	<operation name="writeBack">
+  		<soap:operation soapAction="" />
+  		<input>
+  			<soap:body use="literal" />
+  		</input>
+  		<output>
+  			<soap:body use="literal" />
+  		</output>
+  	</operation>
+
+	<operation name="echo">
   		<soap:operation soapAction="" />
   		<input>
   			<soap:body use="literal" />
