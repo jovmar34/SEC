@@ -15,7 +15,7 @@ public class AnnouncementServer implements Serializable {
 	private static final long serialVersionUID = 8208757326477388685L;
 	private ArrayList<Announcement> generalBoard;
 	private HashMap<String, ArrayList<Announcement>> personalBoards;
-	private static AnnouncementServer instance = null; //Singleton, maybe unnecessary
+	private static AnnouncementServer instance = null; //Singleton
 	private List<String> clients;
 	private String id;
 	
@@ -92,12 +92,12 @@ public class AnnouncementServer implements Serializable {
 			}
 			
 			if (parts[0].equals("p")) {								
-				if (personalBoards.get(owner).size() < Integer.parseInt(parts[2])) { // FIXME size is not best comparison (wts instead?)
+				if (personalBoards.get(owner).size() < Integer.parseInt(parts[2])) {
 					throw new RuntimeException("The referred announcement doesn’t exist");
 				}
 				
 			} else if (parts[0].equals("g")) {
-				if (generalBoard.size() < Integer.parseInt(parts[2])) { // FIXME size is not best comparison (wts instead?)
+				if (generalBoard.size() < Integer.parseInt(parts[2])) {
 					throw new RuntimeException("The referred announcement doesn’t exist");
 				}
 			} else {
@@ -138,12 +138,12 @@ public class AnnouncementServer implements Serializable {
 			}
 			
 			if (parts[0].equals("p")) {								
-				if (personalBoards.get(owner).size() < Integer.parseInt(parts[2])) { // FIXME size is not best comparison (wts instead?)
+				if (personalBoards.get(owner).size() < Integer.parseInt(parts[2])) {
 					throw new RuntimeException("The referred announcement doesn’t exist");
 				}
 				
 			} else if (parts[0].equals("g")) {
-				if (generalBoard.size() < Integer.parseInt(parts[2])) { // FIXME size is not best comparison (wts instead?)
+				if (generalBoard.size() < Integer.parseInt(parts[2])) {
 					throw new RuntimeException("The referred announcement doesn’t exist");
 				}
 			} else {

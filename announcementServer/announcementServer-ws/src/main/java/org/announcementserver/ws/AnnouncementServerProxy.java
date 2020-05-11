@@ -48,7 +48,7 @@ public class AnnouncementServerProxy {
         outHash.add(response.getDestination());
         outHash.add(String.valueOf(response.getSeqNumber()));
         outHash.add(String.valueOf(response.getWts()));
-        outHash.add(String.valueOf(response.getRid())); //FIXME rid
+        outHash.add(String.valueOf(response.getRid()));
 
         response.setSignature(makeSignature(outHash.toArray(new String[0])));
 

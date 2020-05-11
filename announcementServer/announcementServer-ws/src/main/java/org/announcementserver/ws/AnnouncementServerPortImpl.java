@@ -1,10 +1,7 @@
 package org.announcementserver.ws;
 
-import java.util.concurrent.Future;
-
 import javax.annotation.Resource;
 import javax.jws.WebService;
-import javax.xml.ws.AsyncHandler;
 import javax.xml.ws.Response;
 import javax.xml.ws.WebServiceContext;
 
