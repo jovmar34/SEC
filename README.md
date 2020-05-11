@@ -39,8 +39,8 @@ Regarding the clients, execute:
 
 **Note2:** In -Dws.i=y, y is the serverId (e.g: 1, max:16)
 
-## Testing
-In order to test the dependability requirements, the process is:
+## Testing Bizantine Servers
+In order to test the dependability requirements for bizantine servers, the process is:
 
 1st step - start up 4 servers (use -Dws.i with range [1,4] and -Dws.f=1)
 
@@ -52,7 +52,12 @@ In order to test the dependability requirements, the process is:
 
 5th step - try to perform some operation while that server is down
 
-**Note:** This specific process allows for 1 byzantine fault
+## Testing Bizantine Client
+In order to test the dependability requirements for bizantine clients, the process is:
+
+
+
+**Note:** These specific tests allows for 1 byzantine fault
 
 ## Paswords
 
