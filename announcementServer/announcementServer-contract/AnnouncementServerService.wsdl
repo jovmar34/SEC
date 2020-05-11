@@ -52,6 +52,15 @@
 
 	<xs:element name="echo" type="tns:echo" />
   	<xs:element name="echoResponse" type="tns:echoResponse" />
+  	
+  	<xs:element name="echoRead" type="tns:echoRead" />
+  	<xs:element name="echoReadResponse" type="tns:echoReadResponse" />
+  	
+  	<xs:element name="ready" type="tns:ready" />
+  	<xs:element name="readyResponse" type="tns:readyResponse" />
+  	
+  	<xs:element name="readyRead" type="tns:readyRead" />
+  	<xs:element name="readyReadResponse" type="tns:readyReadResponse" />
 
 	<!-- Announcement for transport -->
 	<xs:complexType name="AnnouncementMessage">
@@ -242,7 +251,36 @@
   	<xs:complexType name="echoResponse">
   		<xs:sequence />
   	</xs:complexType>
-
+  	
+  	<!-- ECHO READ -->
+  	<xs:complexType name="echoRead">
+	  	<xs:sequence>
+  			<xs:element minOccurs="1" maxOccurs="1" type="xs:base64Binary" name="request" />
+		</xs:sequence>
+  	</xs:complexType>
+  	<xs:complexType name="echoReadResponse">
+  		<xs:sequence />
+  	</xs:complexType>
+  	
+  	<!-- READY -->
+  	<xs:complexType name="ready">
+  		<xs:sequence>
+  			<xs:element minOccurs="1" maxOccurs="1" type="xs:base64Binary" name="request" />
+  		</xs:sequence>
+  	</xs:complexType>
+  	<xs:complexType name="readyResponse">
+  		<xs:sequence />
+  	</xs:complexType>
+  	
+  	<!-- READY READ -->
+  	<xs:complexType name="readyRead">
+  		<xs:sequence>
+  			<xs:element minOccurs="1" maxOccurs="1" type="xs:base64Binary" name="request" />
+  		</xs:sequence>
+  	</xs:complexType>
+  	<xs:complexType name="readyReadResponse">
+  		<xs:sequence />
+  	</xs:complexType>
 
 	<!-- EXCEPTIONS -->
 	<xs:complexType name="UserNotRegisteredFault">
@@ -346,6 +384,27 @@
   	<part element="tns:echoResponse" name="parameters" />
   </message>
   
+  <message name="echoRead">
+  	<part element="tns:echoRead" name="parameters" />
+  </message>
+  <message name="echoReadResponse">
+  	<part element="tns:echoReadResponse" name="parameters" />
+  </message>
+  
+  <message name="ready">
+  	<part element="tns:ready" name="parameters" />
+  </message>
+  <message name="readyResponse">
+  	<part element="tns:readyResponse" name="parameters" />
+  </message>
+  
+  <message name="readyRead">
+  	<part element="tns:readyRead" name="parameters" />
+  </message>
+  <message name="readyReadResponse">
+  	<part element="tns:readyReadResponse" name="parameters" />
+  </message>
+
   <message name="UserNotRegisteredFault">
   	<part element="tns:UserNotRegisteredFault" name="fault" />
   </message>
@@ -431,6 +490,21 @@
 	<operation name="echo">
   		<input message="tns:echo" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/echo" />
   		<output message="tns:echoResponse" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/echoResponse" />
+  	</operation>
+  	
+  	<operation name="echoRead">
+  		<input message="tns:echoRead" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/echoRead" />
+  		<output message="tns:echoReadResponse" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/echoReadResponse" />
+  	</operation>
+  	
+  	<operation name="ready">
+  		<input message="tns:ready" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/ready" />
+  		<output message="tns:readyResponse" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/readyResponse" />
+  	</operation>
+  	
+  	<operation name="readyRead">
+  		<input message="tns:readyRead" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/readyRead" />
+  		<output message="tns:readyReadResponse" wsam:Action="http://ws.announcementserver.org/AnnouncementServerPortType/readyReadResponse" />
   	</operation>
   	
   </portType>
@@ -551,6 +625,36 @@
   	</operation>
 
 	<operation name="echo">
+  		<soap:operation soapAction="" />
+  		<input>
+  			<soap:body use="literal" />
+  		</input>
+  		<output>
+  			<soap:body use="literal" />
+  		</output>
+  	</operation>
+  	
+  	<operation name="echoRead">
+  		<soap:operation soapAction="" />
+  		<input>
+  			<soap:body use="literal" />
+  		</input>
+  		<output>
+  			<soap:body use="literal" />
+  		</output>
+  	</operation>
+  	
+  	<operation name="ready">
+  		<soap:operation soapAction="" />
+  		<input>
+  			<soap:body use="literal" />
+  		</input>
+  		<output>
+  			<soap:body use="literal" />
+  		</output>
+  	</operation>
+  	
+  	<operation name="readyRead">
   		<soap:operation soapAction="" />
   		<input>
   			<soap:body use="literal" />

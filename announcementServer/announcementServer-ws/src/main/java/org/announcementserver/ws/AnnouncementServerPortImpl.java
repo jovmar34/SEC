@@ -119,10 +119,38 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 
 		return res;
 	}
-
+	
+	/* Echo */
 	public void echo(byte[] request) {
 		WriteMessage mess = Messages.getWriteMessage(request);
 
 		System.out.println(mess.toString());
 	}
+	
+	/* Echo Read */
+	public void echoRead(byte[] request) {
+		// FIXME: This needs adaptation
+		WriteMessage mess = Messages.getWriteMessage(request);
+
+		System.out.println(mess.toString());
+	}
+	
+	/* Ready */
+	public void ready(byte[] request) {
+		// FIXME: This needs adaptation
+		WriteMessage mess = Messages.getWriteMessage(request);
+
+		System.out.println(mess.toString());
+	}
+	
+	/* Ready Read */
+	public void readyRead(byte[] request) {
+		// FIXME: This needs adaptation
+		WriteMessage mess = Messages.getWriteMessage(request);
+
+		System.out.println(mess.toString());
+	}
+	
+	
+	
 }
