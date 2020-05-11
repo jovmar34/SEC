@@ -42,11 +42,15 @@ Regarding the clients, execute:
 ## Testing
 In order to test the dependability requirements, the process is:
 
-1st - start up 4 servers (use -Dws.i with range [1,4] and -Dws.f=1)
-2st - start 1 client (-Dws.f=1)
-3rd - perform some operation to make sure the system is working
-3rd - make 1 of the servers crash silently by closing that server's window
-4rd - try to perform some operation while that server is down
+1st step - start up 4 servers (use -Dws.i with range [1,4] and -Dws.f=1)
+
+2nd step - start 1 client (-Dws.f=1)
+
+3rd step - perform some operation to make sure the system is working
+
+4th step - make 1 of the servers crash silently by closing that server's window
+
+5th step - try to perform some operation while that server is down
 
 **Note:** This specific process allows for 1 byzantine fault
 

@@ -314,7 +314,6 @@ public class Client extends Thread {
                 readReq.setSignature(signature);
                 
                 end = LocalDateTime.now().plusSeconds(40);
-                
 
                 while (LocalDateTime.now().isBefore(end)) {
                     try {
