@@ -103,7 +103,7 @@ public class Client extends Thread {
                         response = port.register(request);
                         break;
                     } catch (WebServiceException e) {
-                        System.out.println("Hey, dead");
+
                     }
                 }
 
@@ -132,6 +132,7 @@ public class Client extends Thread {
                 if (!checkHash(toHash.toArray(new String[0]))) return;
                 
                 synchronized(parent) {
+                    parent.seqNums.set(servId - 1, response.getSeqNumber());
                     regRets.add(response);
                     parent.notify();
                 }
@@ -167,25 +168,26 @@ public class Client extends Thread {
                 toHash.add(String.valueOf(seqNumber));
                 toHash.addAll(postToSign(post, true));
 
-                signature = makeSignature(toHash.toArray(new String[0]));
-                
-                if (signature == null) return;
-                
-                postReq.setSignature(signature);
-
                 end = LocalDateTime.now().plusSeconds(40);
 
                 while (LocalDateTime.now().isBefore(end)) {
+                    signature = makeSignature(toHash.toArray(new String[0]));
+                
+                    if (signature == null) return;
+                
+                    postReq.setSignature(signature);
+                    
                     try {
                         postRet = port.post(postReq);
                         break;
-                    } catch (MessageSizeFault_Exception | PostTypeFault_Exception | ReferredAnnouncementFault_Exception
-                            | ReferredUserFault_Exception | UserNotRegisteredFault_Exception e2) {
-                        e2.printStackTrace();
-                        return;
-                    } catch (WebServiceException e2) {
-                    	return;
-                    }
+                    } catch (Exception e2) {
+                        synchronized(parent) {
+                            seqNumber = parent.seqNums.get(servId - 1);
+                        }
+
+                        toHash.set(2, String.valueOf(seqNumber));
+                        postReq.setSeqNumber(seqNumber);
+                    } 
                 }
 
                 hash = decryptSignature(servName, postRet.getSignature());
@@ -212,6 +214,7 @@ public class Client extends Thread {
                 }
 
                 synchronized(parent) {
+                    parent.seqNums.set(servId - 1, seqNumber + 1);
                     writeRets.add(postRet);
                     parent.notify();
                 }
@@ -247,24 +250,26 @@ public class Client extends Thread {
                 toHash.add(String.valueOf(seqNumber));
                 toHash.addAll(postToSign(postGen, true));
                 
-                signature = makeSignature(toHash.toArray(new String[0]));
-
-                if (signature == null) return;
                 
-                postGenReq.setSignature(signature);
-
                 end = LocalDateTime.now().plusSeconds(40);
-
+                
                 while (LocalDateTime.now().isBefore(end)) {
+                    signature = makeSignature(toHash.toArray(new String[0]));
+    
+                    if (signature == null) return;
+                    
+                    postGenReq.setSignature(signature);
+
                     try {
                         postGenRet = port.postGeneral(postGenReq);
                         break;
-                    } catch (MessageSizeFault_Exception | PostTypeFault_Exception | ReferredAnnouncementFault_Exception
-                            | ReferredUserFault_Exception | UserNotRegisteredFault_Exception e2) {
-                        e2.printStackTrace();
-                        return;
-                    } catch (WebServiceException e2) {
-                    	return;
+                    } catch (Exception e2) {
+                        synchronized(parent) {
+                            seqNumber = parent.seqNums.get(servId - 1);
+                        }
+
+                        toHash.set(2, String.valueOf(seqNumber));
+                        postGenReq.setSeqNumber(seqNumber);
                     }
                 }
 
@@ -284,6 +289,7 @@ public class Client extends Thread {
                 }
 
                 synchronized(parent) {
+                    parent.seqNums.set(servId - 1, seqNumber + 1);
                     writeRets.add(postGenRet);
                     parent.notify();
                 }
@@ -306,23 +312,26 @@ public class Client extends Thread {
                 toHash.add(String.valueOf(clientID));
                 toHash.add(String.valueOf(rid));
                 toHash.add(String.valueOf(number));
-
-                signature = makeSignature(toHash.toArray(new String[0]));
-
-                if (signature == null) return;
-
-                readReq.setSignature(signature);
                 
                 end = LocalDateTime.now().plusSeconds(40);
 
                 while (LocalDateTime.now().isBefore(end)) {
+                    signature = makeSignature(toHash.toArray(new String[0]));
+
+                    if (signature == null) return;
+
+                    readReq.setSignature(signature);
+
                     try {
                         readRet = port.read(readReq);
                         break;
-                    } catch (EmptyBoardFault_Exception | InvalidNumberFault_Exception | NumberPostsFault_Exception | ReferredUserFault_Exception e2) {
-                    	System.out.println("timeout");
-                    } catch (WebServiceException e) {
-                    	return;
+                    } catch (Exception e2) {
+                        synchronized(parent) {
+                            seqNumber = parent.seqNums.get(servId - 1);
+                        }
+
+                        toHash.set(2, String.valueOf(seqNumber));
+                        readReq.setSeqNumber(seqNumber);
                     }
                 }
                 
@@ -361,6 +370,7 @@ public class Client extends Thread {
                 }
                 
                 synchronized (parent) {
+                    parent.seqNums.set(servId - 1, seqNumber + 1);
                 	readRets.add(readRet);
                 	parent.notify();
                 }
@@ -384,23 +394,27 @@ public class Client extends Thread {
                 toHash.add(String.valueOf(rid));
                 toHash.add(String.valueOf(number));
                 
-                signature = makeSignature(toHash.toArray(new String[0]));
                 
-                if (signature == null) return;
-                
-                readGenReq.setSignature(signature);
-              
                 end = LocalDateTime.now().plusSeconds(40);
-
+                
                 while (LocalDateTime.now().isBefore(end)) {
+                    signature = makeSignature(toHash.toArray(new String[0]));
+                    
+                    if (signature == null) return;
+                    
+                    readGenReq.setSignature(signature);
+                    
                     try {
                         readGenRet = port.readGeneral(readGenReq);
                         break;
-                    } catch (EmptyBoardFault_Exception | InvalidNumberFault_Exception | NumberPostsFault_Exception e2) {
-                        System.out.println("timeout");
-                    } catch (WebServiceException e) {
-                    	return ;
-                    }
+                    } catch (Exception e2) {
+                        synchronized(parent) {
+                            seqNumber = parent.seqNums.get(servId - 1);
+                        }
+
+                        toHash.set(2, String.valueOf(seqNumber));
+                        readGenReq.setSeqNumber(seqNumber);
+                    } 
                 }
 
                 if (readGenRet == null) return;
@@ -436,6 +450,7 @@ public class Client extends Thread {
                 }
                 
                 synchronized (parent) {
+                    parent.seqNums.set(servId - 1, seqNumber + 1);
                     readRets.add(readGenRet);
                     parent.notify();
                 }
@@ -456,23 +471,30 @@ public class Client extends Thread {
                 toHash.add(String.valueOf(writeBackReq.getSeqNumber()));
                 toHash.addAll(listToSign(writeBackReq.getAnnouncements()));
                 
-                signature = makeSignature(toHash.toArray(new String[0]));
-                
-                if (signature == null) return;
-                
-                writeBackReq.setSignature(signature);
-                
                 end = LocalDateTime.now().plusSeconds(40);
                 
                 while (LocalDateTime.now().isBefore(end)) {
+                    signature = makeSignature(toHash.toArray(new String[0]));
+                
+                    if (signature == null) return;
+                
+                    writeBackReq.setSignature(signature);
+
                     try {
                         writeBackRet = port.writeBack(writeBackReq);
                         break;
-                    } catch (WebServiceException e2) {
-                    	return ;
+                    } catch (Exception e2) {
+                        synchronized(parent) {
+                            seqNumber = parent.seqNums.get(servId - 1);
+                        }
+
+                        toHash.set(2, String.valueOf(seqNumber));
+                        writeBackReq.setSeqNumber(seqNumber);
                     }
                 }
-                
+
+                if (writeBackRet == null) return;
+
                 hash = decryptSignature(writeBackRet.getSender(), writeBackRet.getSignature());
                 
                 if (hash == null) {
@@ -492,6 +514,7 @@ public class Client extends Thread {
                 }
 
                 synchronized(parent) {
+                    parent.seqNums.set(servId - 1, seqNumber + 1);
                     writeBackRets.add(writeBackRet);
                     parent.notify();
                 }

@@ -1,6 +1,7 @@
 package org.announcementserver.ws.cli;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -38,6 +39,7 @@ import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
 
 public class FrontEnd {
     List<AnnouncementServerPortType> ports = null;
+    List<Integer> seqNums;
     List<String> wsUrls = null;
     AnnouncementServerPortType client = null;
     String username = null;
@@ -62,6 +64,7 @@ public class FrontEnd {
         f = Integer.valueOf(faults);
         nServ = 3 * f + 1;
         quorum = (nServ + f) / 2;
+        seqNums = Arrays.asList(new Integer[nServ]);
         System.out.println(String.format("NServ: %d", nServ));
 
         for (Integer i = 1; i <= nServ; i++) {
@@ -107,11 +110,7 @@ public class FrontEnd {
             }
         }
 
-        RegisterRet response = responses.get(0); //FIXME vulnerable to byzantine servers
-
-        sn = response.getSeqNumber();
-        wts = response.getWts();
-        rid = response.getRid();
+        wts = getWts(responses);
 
         return "Register successfull! Welcome user!";
     }
@@ -133,7 +132,7 @@ public class FrontEnd {
             cli = new Client(this, Operation.POST, i);
             cli.message = message;
             cli.references = announcementList;
-            cli.seqNumber = sn;
+            cli.seqNumber = seqNums.get(i-1);
             cli.wts = wts;
             cli.writeRets = ackList;
             cli.start();
@@ -147,8 +146,6 @@ public class FrontEnd {
             }
         }
         
-        sn++;
-
         return "Post was successfully posted to Personal Board!";
     }
 
@@ -171,7 +168,7 @@ public class FrontEnd {
             System.out.println(String.valueOf(i) + "th client");
             cli = new Client(this, Operation.READGENERAL, i);
             cli.number = 1;
-            cli.seqNumber = sn;
+            cli.seqNumber = seqNums.get(i-1);
             cli.rid = rid;
             cli.readRets = readList;
             cli.start();
@@ -187,8 +184,6 @@ public class FrontEnd {
 
         System.out.println("Read Done");
 
-        sn++;
-
         Integer nwts = highestWts(readList);
         System.out.println(String.format("Highest wts: %d", nwts));
 
@@ -201,7 +196,7 @@ public class FrontEnd {
             cli = new Client(this, Operation.POSTGENERAL, i);
             cli.message = message;
             cli.references = announcementList;
-            cli.seqNumber = sn;
+            cli.seqNumber = seqNums.get(i-1);
             cli.wts = nwts + 1;
             cli.writeRets = ackList;
             cli.start();
@@ -214,8 +209,6 @@ public class FrontEnd {
                 e.printStackTrace();
             }
         }
-
-        sn++;
 
         return "Post was successfully posted to General Board!";
     }
@@ -234,7 +227,7 @@ public class FrontEnd {
         this.response = null;
         for (int i = 1; i <= nServ; i++) {
             cli = new Client(this, Operation.READ, i);
-            cli.seqNumber = sn;
+            cli.seqNumber = seqNums.get(i-1);
             cli.number = number;
             cli.clientID = clientID;
             cli.rid = rid;
@@ -251,15 +244,13 @@ public class FrontEnd {
         }
         
         ReadRet ret = highestVal(readList);
-        
-        sn++;
-        
+                
         // Write Back Phase
         
         if(!ret.getAnnouncements().isEmpty()) { //not sure if that is enough (the intention is: ret has no posts, no need to do write back)
             for (int i = 1; i <= nServ; i++) {
             	cli = new Client(this, Operation.WRITEBACK, i);
-            	cli.seqNumber = sn;
+            	cli.seqNumber = seqNums.get(i-1);
             	cli.writeBack = ret;
             	cli.writeBackRets = ackList;
             	cli.start();
@@ -272,8 +263,6 @@ public class FrontEnd {
             		e.printStackTrace();
             	}
             }
-            
-            sn++;
         }
         
         return postsToString(ret);
@@ -292,7 +281,7 @@ public class FrontEnd {
         response = null;
         for (int i = 1; i <= nServ; i++) {
             cli = new Client(this, Operation.READGENERAL, i);
-            cli.seqNumber = sn;
+            cli.seqNumber = seqNums.get(i - 1);
             cli.number = number;
             cli.rid = rid;
             cli.readRets = readList;
@@ -309,8 +298,6 @@ public class FrontEnd {
 
         ReadRet ret = highestVal(readList);
         
-        sn++;
-
         return postsToString(ret);
     }
 
@@ -350,6 +337,17 @@ public class FrontEnd {
             System.out.println(postToString(ret.getAnnouncements().get(0)));
             if (ret.getAnnouncements().get(0).getWts() > res) 
                 res = ret.getAnnouncements().get(0).getWts(); // only one post
+        }
+
+        return res;
+    }
+
+    private Integer getWts(List<RegisterRet> regList) {
+        Integer res = 0;
+
+        for (RegisterRet ret: regList) {
+            if (ret.getWts() > res) 
+                res = ret.getWts();
         }
 
         return res;
