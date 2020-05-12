@@ -170,7 +170,7 @@ public class AnnouncementServer implements Serializable {
 	/* Read */
 	public synchronized List<Announcement> read(String reader, String owner, Integer number, Integer sn) {
 		if (!personalBoards.containsKey(owner))
-			throw new RuntimeException("Referred user doesn't exist");
+			return new ArrayList<>();
 
 		List<Announcement> board = personalBoards.get(owner);
 

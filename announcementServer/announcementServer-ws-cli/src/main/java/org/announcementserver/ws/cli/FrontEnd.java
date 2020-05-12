@@ -331,9 +331,10 @@ public class FrontEnd {
     private ReadRet highestVal(List<ReadRet> readList) {
         Integer highTs = 0;
         String highWriter = null;
-        ReadRet high = null;
+        ReadRet high = readList.get(0);
         List<AnnouncementMessage> list;
         AnnouncementMessage temp;
+
 
         for (ReadRet ret: readList) {
             list = ret.getAnnouncements();
@@ -369,7 +370,7 @@ public class FrontEnd {
     }
     
     private String postsToString(List<AnnouncementMessage> posts) {
-        String res = "";
+        String res = (posts.size() == 0) ? "No posts for that request" : "";
 
         for (AnnouncementMessage post: posts) {
             res += postToString(post);

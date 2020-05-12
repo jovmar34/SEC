@@ -220,6 +220,7 @@ public class AnnouncementServerClientApp {
 		try {
 			printSuccess(client.read(clientID, number));
 		} catch (Exception e) {
+			e.printStackTrace();
 			printError(e.getMessage());
 		}
     	
