@@ -110,7 +110,7 @@ public class CryptoTest {
 	public void testBadSequenceNumber() throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, UserNotRegisteredException, MessageSizeException, ReferredUserException, PostTypeException, ReferredAnnouncementException {
 		
 		exceptionRule.expect(RuntimeException.class);
-		exceptionRule.expectMessage("Error: Possible drop/replay detected");
+		exceptionRule.expectMessage("Sequence numbers don't match");
 		
 		instance.setId("server1");
 		List<String> toHash = new ArrayList<>();
@@ -138,7 +138,7 @@ public class CryptoTest {
 		post.setWriter("client1");
 		post.setMessage("test");
 		post.getAnnouncementList().addAll(announcementList);
-		post.setWts(0);
+		post.setWts(1);
 		post.setType("Personal");
 		
 		List<String> messHash = AnnouncementTools.postToSign(post, false);
