@@ -28,7 +28,7 @@ import java.security.InvalidKeyException;
 import java.security.cert.CertificateException;
 
 /*
-* Cryptographic tools
+* Cryptographic Tools
 */
 
 public class CryptoTools {

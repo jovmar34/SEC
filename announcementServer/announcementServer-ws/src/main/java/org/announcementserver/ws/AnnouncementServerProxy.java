@@ -2,7 +2,8 @@ package org.announcementserver.ws;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.announcementserver.common.CryptoTools;
+import org.announcementserver.common.*;
+import org.announcementserver.utils.AnnouncementTools;
 
 public class AnnouncementServerProxy {
     protected String myId;
@@ -58,7 +59,7 @@ public class AnnouncementServerProxy {
 		inHash.add(request.getSender());
         inHash.add(request.getDestination());
         inHash.add(String.valueOf(request.getSeqNumber()));
-        inHash.addAll(postToSign(request.getAnnouncement(), true));
+        inHash.addAll(AnnouncementTools.postToSign(request.getAnnouncement(), true));
         inHash.add(hash);
 
         if (!checkHash(inHash.toArray(new String[0]))) 
@@ -67,7 +68,7 @@ public class AnnouncementServerProxy {
         if (!request.getSender().equals(request.getAnnouncement().getWriter()))
             throw new RuntimeException("The poster is different than the writer");
 
-        Announcement new_post = transformAnnouncement(request.getAnnouncement());
+        Announcement new_post = AnnouncementTools.transformAnnouncement(request.getAnnouncement());
         List<Integer> numsPost = AnnouncementServer.getInstance().post(new_post, request.getSeqNumber());
 
         System.out.println(new_post);
@@ -100,13 +101,13 @@ public class AnnouncementServerProxy {
 		inHash.add(request.getSender());
         inHash.add(request.getDestination());
         inHash.add(String.valueOf(request.getSeqNumber()));
-        inHash.addAll(postToSign(request.getAnnouncement(), true));
+        inHash.addAll(AnnouncementTools.postToSign(request.getAnnouncement(), true));
         inHash.add(hash);
         
         if (!checkHash(inHash.toArray(new String[0]))) 
             throw new RuntimeException("Possible Tampering in transport of post message");
         
-        Announcement new_post = transformAnnouncement(request.getAnnouncement());
+        Announcement new_post = AnnouncementTools.transformAnnouncement(request.getAnnouncement());
         Integer sn = AnnouncementServer.getInstance().postGeneral(new_post, request.getSeqNumber());
 
         System.out.println(new_post);
@@ -161,7 +162,7 @@ public class AnnouncementServerProxy {
         outHash.add(response.getDestination());
         outHash.add(String.valueOf(response.getSeqNumber()));
         outHash.add(String.valueOf(response.getRid()));
-        outHash.addAll(listToSign(response.getAnnouncements()));
+        outHash.addAll(AnnouncementTools.listToSign(response.getAnnouncements()));
 
         response.setSignature(makeSignature(outHash.toArray(new String[0])));
 
@@ -201,7 +202,7 @@ public class AnnouncementServerProxy {
         outHash.add(response.getDestination());
         outHash.add(String.valueOf(response.getSeqNumber()));
         outHash.add(String.valueOf(response.getRid()));
-        outHash.addAll(listToSign(response.getAnnouncements()));
+        outHash.addAll(AnnouncementTools.listToSign(response.getAnnouncements()));
 
         response.setSignature(makeSignature(outHash.toArray(new String[0])));
     	
@@ -219,7 +220,7 @@ public class AnnouncementServerProxy {
     	inHash.add(request.getSender());
     	inHash.add(request.getDestination());
     	inHash.add(String.valueOf(request.getSeqNumber()));
-    	inHash.addAll(listToSign(request.getAnnouncements()));
+    	inHash.addAll(AnnouncementTools.listToSign(request.getAnnouncements()));
         inHash.add(hash);
         
         // verifySigs (make sure the messages are valid in the context of the system)
@@ -272,50 +273,7 @@ public class AnnouncementServerProxy {
             throw new RuntimeException(e.getMessage());
         }
     }
-
-    private Announcement transformAnnouncement(AnnouncementMessage announcement) {
-        Announcement res = new Announcement();
-        res.setAuthor(announcement.getWriter());
-        res.setContent(announcement.getMessage());
-        res.setReferences(announcement.getAnnouncementList());
-        res.setId(announcement.getWts());
-        res.setType(announcement.getType());
-        res.setSignature(announcement.getSignature());
-        return res;
-    }
-
-    private List<String> listToSign(List<AnnouncementMessage> posts) {
-        List<String> res = new ArrayList<>();
-
-        for (AnnouncementMessage post: posts) {
-            res.addAll(postToSign(post, true));
-        }
-
-        return res;
-    }
-
-    private List<String> postToSign(AnnouncementMessage post, boolean signature) {
-        List<String> res = new ArrayList<>();
-
-        res.add(post.getWriter());
-        res.add(post.getMessage());
-        res.add(post.getAnnouncementList().toString());
-        res.add(String.valueOf(post.getWts()));
-        res.add(post.getType());
-        if (signature) res.add(post.getSignature());
-
-        return res;
-    }
-
-    private String postToHash(AnnouncementMessage post, boolean signature) {
-        String res = String.format("%s,%s,%d,%s", post.getWriter(), post.getMessage(),
-            post.getWts(), post.getAnnouncementList().toString());
-        
-        if (signature) res += "," + post.getSignature();
-
-        return res + "\n";
-    }
-
+    
     private List<AnnouncementMessage> transformAnnouncementList(List<Announcement> posts) {
         List<AnnouncementMessage> res = new ArrayList<>();
         AnnouncementMessage mess;
@@ -333,14 +291,5 @@ public class AnnouncementServerProxy {
 
         return res;
     }
-
-    private String announcementListToString(List<AnnouncementMessage> posts) {
-        String res = "";
-
-        for (AnnouncementMessage post: posts) {
-            res += postToHash(post, true);
-        }
-
-        return res;
-    }
+    
 }

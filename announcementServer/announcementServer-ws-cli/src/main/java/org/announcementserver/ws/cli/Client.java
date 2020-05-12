@@ -2,10 +2,9 @@ package org.announcementserver.ws.cli;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.announcementserver.common.Constants;
-import org.announcementserver.common.CryptoTools;
+import org.announcementserver.common.*;
+import org.announcementserver.utils.AnnouncementTools;
 import org.announcementserver.ws.AnnouncementServerPortType;
-
 import org.announcementserver.ws.RegisterReq;
 import org.announcementserver.ws.RegisterRet;
 import org.announcementserver.ws.WriteReq;
@@ -15,6 +14,8 @@ import org.announcementserver.ws.ReadGeneralReq;
 import org.announcementserver.ws.ReadRet;
 import org.announcementserver.ws.WriteBackReq;
 import org.announcementserver.ws.WriteBackRet;
+import org.announcementserver.ws.AnnouncementMessage;
+import java.time.LocalDateTime;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -22,14 +23,11 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
-import java.time.LocalDateTime;
-
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.xml.ws.WebServiceException;
 
-import org.announcementserver.ws.AnnouncementMessage;
 import org.announcementserver.ws.EmptyBoardFault_Exception;
 import org.announcementserver.ws.InvalidNumberFault_Exception;
 import org.announcementserver.ws.MessageSizeFault_Exception;
@@ -152,7 +150,7 @@ public class Client extends Thread {
                 post.setWts(wts);
                 post.setType("Personal");
 
-                List<String> messHash = postToSign(post, false);
+                List<String> messHash = AnnouncementTools.postToSign(post, false);
 
                 String messSig = makeSignature(messHash.toArray(new String[0]));
 
@@ -166,7 +164,7 @@ public class Client extends Thread {
                 toHash.add(username);
                 toHash.add(servName);
                 toHash.add(String.valueOf(seqNumber));
-                toHash.addAll(postToSign(post, true));
+                toHash.addAll(AnnouncementTools.postToSign(post, true));
 
                 end = LocalDateTime.now().plusSeconds(40);
 
@@ -234,7 +232,7 @@ public class Client extends Thread {
                 postGen.setWts(wts);
                 postGen.setType("General");
             	
-                List<String> messHashG = postToSign(postGen, false);
+                List<String> messHashG = AnnouncementTools.postToSign(postGen, false);
                 
                 String messSigG = makeSignature(messHashG.toArray(new String[0]));
 
@@ -248,7 +246,7 @@ public class Client extends Thread {
                 toHash.add(username);
                 toHash.add(servName);
                 toHash.add(String.valueOf(seqNumber));
-                toHash.addAll(postToSign(postGen, true));
+                toHash.addAll(AnnouncementTools.postToSign(postGen, true));
                 
                 
                 end = LocalDateTime.now().plusSeconds(40);
@@ -356,7 +354,7 @@ public class Client extends Thread {
                 toHash.add(readRet.getDestination());
                 toHash.add(String.valueOf(readRet.getSeqNumber()));
                 toHash.add(String.valueOf(rid));
-                toHash.addAll(listToSign(readRet.getAnnouncements()));
+                toHash.addAll(AnnouncementTools.listToSign(readRet.getAnnouncements()));
                 toHash.add(hash);
 
                 if (!checkHash(toHash.toArray(new String[0]))) {
@@ -438,7 +436,7 @@ public class Client extends Thread {
                 toHash.add(readGenRet.getDestination());
                 toHash.add(String.valueOf(readGenRet.getSeqNumber()));
                 toHash.add(String.valueOf(rid));
-                toHash.addAll(listToSign(readGenRet.getAnnouncements()));
+                toHash.addAll(AnnouncementTools.listToSign(readGenRet.getAnnouncements()));
                 toHash.add(hash);
 
                 if (!checkHash(toHash.toArray(new String[0]))) {
@@ -469,7 +467,7 @@ public class Client extends Thread {
                 toHash.add(writeBackReq.getSender());
                 toHash.add(writeBackReq.getDestination());
                 toHash.add(String.valueOf(writeBackReq.getSeqNumber()));
-                toHash.addAll(listToSign(writeBackReq.getAnnouncements()));
+                toHash.addAll(AnnouncementTools.listToSign(writeBackReq.getAnnouncements()));
                 
                 end = LocalDateTime.now().plusSeconds(40);
                 
@@ -527,29 +525,6 @@ public class Client extends Thread {
     
     // --- Auxiliary ---------
 
-    private List<String> postToSign(AnnouncementMessage post, boolean signature) {
-        List<String> res = new ArrayList<>();
-
-        res.add(post.getWriter());
-        res.add(post.getMessage());
-        res.add(post.getAnnouncementList().toString());
-        res.add(String.valueOf(post.getWts()));
-        res.add(post.getType());
-        if (signature) res.add(post.getSignature());
-
-        return res;
-    }
-
-    private List<String> listToSign(List<AnnouncementMessage> posts) {
-        List<String> res = new ArrayList<>();
-
-        for (AnnouncementMessage post: posts) {
-            res.addAll(postToSign(post, true));
-        }
-
-        return res;
-    }
-
     private String makeSignature(String[] args) {
         String res = null;
         try {
@@ -596,7 +571,7 @@ public class Client extends Thread {
             }
 
             toHash = new ArrayList<>();
-            toHash.addAll(postToSign(post, false));
+            toHash.addAll(AnnouncementTools.postToSign(post, false));
             toHash.add(hash);
 
             if (!checkHash(toHash.toArray(new String[0]))) {

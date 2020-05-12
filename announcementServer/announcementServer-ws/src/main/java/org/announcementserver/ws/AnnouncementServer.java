@@ -1,5 +1,7 @@
 package org.announcementserver.ws;
 
+import org.announcementserver.utils.*;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -7,8 +9,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Scanner;
-
-import org.announcementserver.utils.*;
 
 public class AnnouncementServer implements Serializable {
 	
@@ -209,7 +209,7 @@ public class AnnouncementServer implements Serializable {
 				throw new RuntimeException("Writer in one of the writeback posts not okay");
 			if (wts < am.wts) {
 				wts++;
-				announcementsList.add(transformAnnouncement(am));
+				announcementsList.add(AnnouncementTools.transformAnnouncement(am));
 			}
 		}
 
@@ -236,14 +236,4 @@ public class AnnouncementServer implements Serializable {
 		sns.clear();
 	}
 	
-	private Announcement transformAnnouncement(AnnouncementMessage announcement) {
-		Announcement res = new Announcement();
-	    res.setAuthor(announcement.getWriter());
-	    res.setContent(announcement.getMessage());
-	    res.setReferences(announcement.getAnnouncementList());
-	    res.setId(announcement.getWts());
-	    res.setType(announcement.getType());
-	    res.setSignature(announcement.getSignature());
-	    return res;
-	}
 }

@@ -341,24 +341,7 @@ public class FrontEnd {
 
         return res;
     }
-
-    private Integer getWts(List<RegisterRet> regList) {
-        Integer res = 0;
-
-        for (RegisterRet ret: regList) {
-            if (ret.getWts() > res) 
-                res = ret.getWts();
-        }
-
-        return res;
-    }
-
-    private String postToString(AnnouncementMessage post) {
-        return String.format("Author: %s, Id: %d\n\"%s\"\nReferences: %s\n",
-            post.getWriter(), post.getWts(), post.getMessage(),
-            post.getAnnouncementList().toString());
-    }
-
+    
     private ReadRet highestVal(List<ReadRet> readList) {
         Integer highTs = 0;
         String highWriter = null;
@@ -383,6 +366,23 @@ public class FrontEnd {
         return high;
     }
 
+    private Integer getWts(List<RegisterRet> regList) {
+        Integer res = 0;
+
+        for (RegisterRet ret: regList) {
+            if (ret.getWts() > res) 
+                res = ret.getWts();
+        }
+
+        return res;
+    }
+
+    private String postToString(AnnouncementMessage post) {
+        return String.format("Author: %s, Id: %d\n\"%s\"\nReferences: %s\n",
+            post.getWriter(), post.getWts(), post.getMessage(),
+            post.getAnnouncementList().toString());
+    }
+    
     private String postsToString(ReadRet response) {
         String res = "";
 
@@ -392,4 +392,5 @@ public class FrontEnd {
 
         return res;
     }
+
 }
