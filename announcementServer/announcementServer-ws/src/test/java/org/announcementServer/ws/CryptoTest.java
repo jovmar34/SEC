@@ -23,10 +23,13 @@ import org.announcementserver.exceptions.PostTypeException;
 import org.announcementserver.exceptions.ReferredAnnouncementException;
 import org.announcementserver.exceptions.ReferredUserException;
 import org.announcementserver.exceptions.UserNotRegisteredException;
+import org.announcementserver.utils.AnnouncementTools;
 
 import javax.crypto.NoSuchPaddingException;
 
 import org.announcementserver.ws.RegisterReq;
+import org.announcementserver.ws.WriteReq;
+import org.announcementserver.ws.AnnouncementMessage;
 
 
 public class CryptoTest {
@@ -94,91 +97,6 @@ public class CryptoTest {
 		
 		instance.register(request);
 	}
-	
-
-	/**
-	 * -- Test3 Description -- 
-	 * This test aims to prove that our system is
-	 * working, hash and signature wise, when
-	 * we pass correct arguments.
-	 */
-
-	/*
-	@Test
-	public void testWithGoodHashGoodSignature() throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException {
-		
-		// Get publicKey of client1 from keystore
-		String publicKey = CryptoTools.publicKeyAsString(CryptoTools.getPublicKey("client1"));
-		
-		// Get a correct signature with a good hash
-		List<String> toHash1 = new ArrayList<>();
-		toHash1.add("client1");
-		toHash1.add("server");
-		toHash1.add(publicKey);
-		String signature = CryptoTools.makeSignature(toHash1.toArray(new String[0]));
-		
-		// Getting the response given in the correct case
-		List<String> toHash2 = new ArrayList<>();
-		toHash2.add("server");
-		toHash2.add("client1");
-		toHash2.add("Welcome new user!");
-
-		List<String> response = new ArrayList<>();
-		response.add("Welcome new user!");
-		response.add(CryptoTools.makeSignature(toHash2.toArray(new String[0])));
-		
-		Assert.assertEquals(response, instance.register(publicKey, signature));
-	}
-	*/
-
-	/**
-	 * -- Test Description -- 
-	 * This test aims to prove that our system is
-	 * working, sequence number wise, when
-	 * we pass correct arguments.
-	 */
-	
-	/*
-	@Test
-	public void testGoodSequenceNumber() 
-		throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, UserNotRegisteredException, MessageSizeException, ReferredUserException, PostTypeException, ReferredAnnouncementException {
-		
-		// Get publicKey of client1 from keystore
-		String publicKey = CryptoTools.publicKeyAsString(CryptoTools.getPublicKey("client1"));
-		
-		// Get a correct signature with a good hash
-		List<String> toHash1 = new ArrayList<>();
-		toHash1.add("client1");
-		toHash1.add("server");
-		toHash1.add(publicKey);
-		String signature = CryptoTools.makeSignature(toHash1.toArray(new String[0]));
-		
-		instance.register(publicKey, signature);
-		
-		// The hash for the post request
-		List<String> toHash3 = new ArrayList<>();
-		toHash3.add("client1");
-		toHash3.add("server");
-		toHash3.add(String.valueOf(0));
-		toHash3.add(publicKey);
-		toHash3.add("Hello World");
-		toHash3.addAll(new ArrayList<>());
-		signature = CryptoTools.makeSignature(toHash3.toArray(new String[0]));
-		
-		// The hash in the response		
-		List<String> toHash4 = new ArrayList<>();
-		toHash4.add("server");
-		toHash4.add("client1");
-		toHash4.add(String.valueOf(0));
-		toHash4.add("Success your post was posted!");
-		
-		List<String> response = new ArrayList<>();
-		response.add("Success your post was posted!");
-		response.add(CryptoTools.makeSignature(toHash4.toArray(new String[0])));
-		
-		Assert.assertEquals(response, instance.post(publicKey, "Hello World", new ArrayList<>(), signature));
-	}
-	*/
 
 	/**
 	 * -- Test Description -- 
@@ -188,40 +106,62 @@ public class CryptoTest {
 	 * and expects to get a RunTimeException
 	 */
 	
-	/*
 	@Test
 	public void testBadSequenceNumber() throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, UserNotRegisteredException, MessageSizeException, ReferredUserException, PostTypeException, ReferredAnnouncementException {
 		
 		exceptionRule.expect(RuntimeException.class);
 		exceptionRule.expectMessage("Error: Possible drop/replay detected");
 		
-		// Get publicKey of client1 from keystore
-		String publicKey = CryptoTools.publicKeyAsString(CryptoTools.getPublicKey("client1"));
+		instance.setId("server1");
+		List<String> toHash = new ArrayList<>();
 		
-		// Get a correct signature with a good hash
-		List<String> toHash1 = new ArrayList<>();
-		toHash1.add("client1");
-		toHash1.add("server");
-		toHash1.add(publicKey);
-		String signature = CryptoTools.makeSignature(toHash1.toArray(new String[0]));
+		RegisterReq request = new RegisterReq();
+		request.setSender("client1");
+		request.setDestination("server1");
 		
-		instance.register(publicKey, signature);
+		toHash.add(request.getSender());
+		toHash.add(request.getDestination());
 		
-		// The hash for the post request
-		List<String> toHash3 = new ArrayList<>();
-		toHash3.add("client1");
-		toHash3.add("server");
-		toHash3.add(String.valueOf(0));
-		toHash3.add(publicKey);
-		toHash3.add("Hello World");
-		toHash3.addAll(new ArrayList<>());
-		signature = CryptoTools.makeSignature(toHash3.toArray(new String[0]));
+		String signature = CryptoTools.makeSignature(toHash.toArray(new String[0])); 
+		request.setSignature(signature);
+		
+		instance.register(request);
+		
+		WriteReq writeRequest = new WriteReq();
+		writeRequest.setSender("client1");
+		writeRequest.setDestination("server1");
+		writeRequest.setSeqNumber(0);
+		
+		List<String> announcementList = new ArrayList<String>();
+		
+		AnnouncementMessage post = new AnnouncementMessage();
+		post.setWriter("client1");
+		post.setMessage("test");
+		post.getAnnouncementList().addAll(announcementList);
+		post.setWts(0);
+		post.setType("Personal");
+		
+		List<String> messHash = AnnouncementTools.postToSign(post, false);
+		
+		String messSig = CryptoTools.makeSignature(messHash.toArray(new String[0]));
+		
+		post.setSignature(messSig);
+		writeRequest.setAnnouncement(post);
+		
+		toHash = new ArrayList<>();
+		toHash.add("client1");
+		toHash.add("server1");
+		toHash.add(String.valueOf(0));
+		toHash.addAll(AnnouncementTools.postToSign(post, true));
+		
+		signature = CryptoTools.makeSignature(toHash.toArray(new String[0]));
+		
+		writeRequest.setSignature(signature);
 		
 		// Intentionally passing the same message
-		instance.post(publicKey, "Hello World", new ArrayList<>(), signature);
-		instance.post(publicKey, "Hello World", new ArrayList<>(), signature);
+		instance.post(writeRequest);
+		instance.post(writeRequest);
 	}
-	*/
 	
 	@After
 	public void cleanup() {
