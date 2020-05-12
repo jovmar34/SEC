@@ -83,8 +83,6 @@ public class AnnouncementServerProxy {
         Announcement new_post = AnnouncementTools.transformAnnouncement(request.getAnnouncement());
         List<Integer> numsPost = AnnouncementServer.getInstance().post(new_post, request.getSeqNumber());
 
-        System.out.println(new_post);
-
         WriteRet response = new WriteRet();
         response.setSender(request.getDestination());
         response.setDestination(request.getSender());
@@ -121,8 +119,6 @@ public class AnnouncementServerProxy {
         
         Announcement new_post = AnnouncementTools.transformAnnouncement(request.getAnnouncement());
         Integer sn = AnnouncementServer.getInstance().postGeneral(new_post, request.getSeqNumber());
-
-        System.out.println(new_post);
         
         WriteRet response = new WriteRet();
         response.setSender(request.getDestination());

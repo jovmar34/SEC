@@ -25,14 +25,6 @@ import java.security.cert.CertificateException;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import org.announcementserver.ws.EmptyBoardFault_Exception;
-import org.announcementserver.ws.InvalidNumberFault_Exception;
-import org.announcementserver.ws.MessageSizeFault_Exception;
-import org.announcementserver.ws.NumberPostsFault_Exception;
-import org.announcementserver.ws.PostTypeFault_Exception;
-import org.announcementserver.ws.ReferredAnnouncementFault_Exception;
-import org.announcementserver.ws.ReferredUserFault_Exception;
-import org.announcementserver.ws.UserNotRegisteredFault_Exception;
 
 import javax.xml.ws.BindingProvider;
 import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
@@ -65,7 +57,6 @@ public class FrontEnd {
         nServ = 3 * f + 1;
         quorum = (nServ + f) / 2;
         seqNums = Arrays.asList(new Integer[nServ]);
-        System.out.println(String.format("NServ: %d", nServ));
 
         for (Integer i = 1; i <= nServ; i++) {
             wsUrls.add(String.format(Constants.WS_NAME_FORMAT, host, Constants.PORT_START + i));
@@ -118,8 +109,7 @@ public class FrontEnd {
     public synchronized String post(String message, List<String> announcementList)
             throws InvalidKeyException, CertificateException, KeyStoreException, NoSuchAlgorithmException,
             NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, UnrecoverableEntryException,
-            IOException, MessageSizeFault_Exception, PostTypeFault_Exception, ReferredAnnouncementFault_Exception,
-            ReferredUserFault_Exception, UserNotRegisteredFault_Exception {
+            IOException {
 
         checkInit();
         Client cli;
@@ -151,9 +141,7 @@ public class FrontEnd {
 
     public synchronized String postGeneral(String message, List<String> announcementList)
             throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException,
-            IOException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException,
-            MessageSizeFault_Exception, PostTypeFault_Exception, ReferredAnnouncementFault_Exception,
-            ReferredUserFault_Exception, UserNotRegisteredFault_Exception {
+            IOException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
 
         checkInit();
         Client cli;
@@ -165,7 +153,6 @@ public class FrontEnd {
         rid++;
 
         for (int i = 1; i <= nServ; i++) {
-            System.out.println(String.valueOf(i) + "th client");
             cli = new Client(this, Operation.READGENERAL, i);
             cli.number = 1;
             cli.seqNumber = seqNums.get(i-1);
@@ -182,13 +169,9 @@ public class FrontEnd {
             }
         }
 
-        System.out.println("Read Done");
-
         Integer nwts = highestWts(readList);
-        System.out.println(String.format("Highest wts: %d", nwts));
 
         // WRITE PHASE: write the wts with highest wts + 1
-
         List<WriteRet> ackList = new ArrayList<>(nServ);
         
         response = null;
@@ -214,8 +197,7 @@ public class FrontEnd {
     }
 
     public synchronized String read(String clientID, Integer number) throws NoSuchAlgorithmException, UnrecoverableEntryException,
-            KeyStoreException, CertificateException, IOException, EmptyBoardFault_Exception,
-            InvalidNumberFault_Exception, NumberPostsFault_Exception, ReferredUserFault_Exception, InvalidKeyException,
+            KeyStoreException, CertificateException, IOException, InvalidKeyException,
             NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
 
         checkInit();
@@ -264,13 +246,18 @@ public class FrontEnd {
             	}
             }
         }
+
+        Integer end = ret.getAnnouncements().size();
+		Integer start = 
+            (number > end || number == 0) ? 0 : end - number;
+            
+        List<AnnouncementMessage> posts = ret.getAnnouncements().subList(start, end);
         
-        return postsToString(ret);
+        return postsToString(posts);
     }
 
     public synchronized String readGeneral(Integer number) throws NoSuchAlgorithmException, UnrecoverableEntryException,
-            KeyStoreException, CertificateException, IOException, EmptyBoardFault_Exception,
-            InvalidNumberFault_Exception, NumberPostsFault_Exception, InvalidKeyException, NoSuchPaddingException,
+            KeyStoreException, CertificateException, IOException, InvalidKeyException, NoSuchPaddingException,
             IllegalBlockSizeException, BadPaddingException {
 
         checkInit();
@@ -298,7 +285,7 @@ public class FrontEnd {
 
         ReadRet ret = highestVal(readList);
         
-        return postsToString(ret);
+        return postsToString(ret.getAnnouncements());
     }
 
     private void createStub() {
@@ -334,7 +321,6 @@ public class FrontEnd {
 
         for (ReadRet ret: readList) {
             if (ret.getAnnouncements().isEmpty()) continue;
-            System.out.println(postToString(ret.getAnnouncements().get(0)));
             if (ret.getAnnouncements().get(0).getWts() > res) 
                 res = ret.getAnnouncements().get(0).getWts(); // only one post
         }
@@ -352,7 +338,6 @@ public class FrontEnd {
         for (ReadRet ret: readList) {
             list = ret.getAnnouncements();
             if (list.isEmpty()) continue;
-            System.out.println(postToString(ret.getAnnouncements().get(0)));
             temp = list.get(list.size() - 1); // most recent post
 
             // higher if ts is bigger or, if they're same, lowest client id (decided by Java default String comparison)
@@ -378,15 +363,15 @@ public class FrontEnd {
     }
 
     private String postToString(AnnouncementMessage post) {
-        return String.format("Author: %s, Id: %d\n\"%s\"\nReferences: %s\n",
-            post.getWriter(), post.getWts(), post.getMessage(),
+        return String.format("Author: %s, Id: %d, Type: %s\n\"%s\"\nReferences: %s\n",
+            post.getWriter(), post.getWts(), post.getType(), post.getMessage(),
             post.getAnnouncementList().toString());
     }
     
-    private String postsToString(ReadRet response) {
+    private String postsToString(List<AnnouncementMessage> posts) {
         String res = "";
 
-        for (AnnouncementMessage post: response.getAnnouncements()) {
+        for (AnnouncementMessage post: posts) {
             res += postToString(post);
         }
 
