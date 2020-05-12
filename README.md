@@ -39,6 +39,10 @@ Regarding the clients, execute:
 
 **Note2:** In -Dws.i=y, y is the serverId (e.g: 1, max:16)
 
+## Testing Criptographic mechanisms
+In order to test criptographic mechanisms, we made some JUnit tests.
+Those tests can be found in folder test ...
+
 ## Testing Bizantine Servers
 In order to test the dependability requirements for bizantine servers, the process is:
 
@@ -52,12 +56,7 @@ In order to test the dependability requirements for bizantine servers, the proce
 
 5th step - try to perform some operation while that server is down
 
-## Testing Bizantine Client
-In order to test the dependability requirements for bizantine clients, the process is:
-
-
-
-**Note:** These specific tests allows for 1 byzantine fault
+**Note:** This specific tests allows for 1 byzantine fault
 
 ## Paswords
 
