@@ -80,6 +80,9 @@ public class AnnouncementServer implements Serializable {
 	
 	/* Post */
 	public synchronized List<Integer> post(Announcement announcement, Integer seqNumber) {
+		if (sns.get(announcement.author) != seqNumber) 
+			throw new RuntimeException("Sequence numbers don't match");
+
 		if (!personalBoards.containsKey(announcement.author)) 
 			throw new RuntimeException("The user who wants to post doesn't exist");
 			
@@ -108,8 +111,7 @@ public class AnnouncementServer implements Serializable {
 			}
 		}
 
-		if (sns.get(announcement.author) == seqNumber && 
-				wtss.get(announcement.author) < announcement.id) {
+		if (wtss.get(announcement.author) < announcement.id) {
 			putPersonal(announcement.author, announcement);
 			sns.put(announcement.author, seqNumber + 1);
 			wtss.put(announcement.author, announcement.id);
