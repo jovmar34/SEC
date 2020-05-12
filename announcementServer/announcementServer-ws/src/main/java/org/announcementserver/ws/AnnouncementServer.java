@@ -20,7 +20,8 @@ public class AnnouncementServer implements Serializable {
 	private String id;
 	
 	public HashMap<String, Integer> sns; // sequence numbers
-	public HashMap<String, Integer> wtss; // clients wts's
+	public HashMap<String, Integer> wtss; // clients wts's; personal boards
+	public HashMap<String, Integer> expectedWts; // (N,N) register, expected wts from a specific client
 	
 	public static AnnouncementServer getInstance() {
 		if (instance == null) {
@@ -43,6 +44,7 @@ public class AnnouncementServer implements Serializable {
 		this.sns = new HashMap<>();
 		this.wtss = new HashMap<>();
 		this.clients = new ArrayList<>();
+		this.expectedWts = new HashMap<>();
 		
 		try {
 			Scanner reader = new Scanner(new File("src/main/resources/clients.txt"));
@@ -65,6 +67,7 @@ public class AnnouncementServer implements Serializable {
 			personalBoards.put(client, new ArrayList<>());
 			sns.put(client, 0);
 			wtss.put(client,0);
+			expectedWts.put(client, 0);
 			PersistenceUtils.serialize(instance, id);
 		}
 
@@ -123,6 +126,9 @@ public class AnnouncementServer implements Serializable {
 	
 	/* Post General */
 	public synchronized Integer postGeneral(Announcement announcement, Integer seqNumber) {
+		if (sns.get(announcement.author) != seqNumber)
+			throw new RuntimeException("Non matching sequence numbers");
+
 		if (!personalBoards.containsKey(announcement.author)) 
 			throw new RuntimeException("The user who wants to post doesn't exist");
 		
@@ -151,7 +157,7 @@ public class AnnouncementServer implements Serializable {
 			}
 		}
 		
-		if (sns.get(announcement.author) == seqNumber) {
+		if (announcement.id >= expectedWts.get(announcement.author)) {
 			putGeneral(announcement);
 			sns.put(announcement.author, seqNumber + 1);
 			System.out.println("COMMIT");
@@ -186,7 +192,10 @@ public class AnnouncementServer implements Serializable {
 		Integer start = 
 			(number > generalBoard.size() || number == 0) ? 0 : end - number;
 
+		Integer wts = (end == 0) ? 1 : generalBoard.get(end - 1).id + 1;
+
 		sns.put(reader, sn + 1);
+		expectedWts.put(reader, wts);
 		PersistenceUtils.serialize(instance, id);
 		
 		return generalBoard.subList(start, end);
