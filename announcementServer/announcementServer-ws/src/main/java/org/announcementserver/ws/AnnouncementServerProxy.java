@@ -7,15 +7,27 @@ import org.announcementserver.utils.AnnouncementTools;
 
 public class AnnouncementServerProxy {
     protected String myId;
+    private static AnnouncementServerProxy instance = null; //Singleton
 
     public AnnouncementServerProxy() {
     	
     }
+    
+    public void setId (String id) {
+    	this.myId = id;
+    }
+    
+	public static AnnouncementServerProxy getInstance() {
+		if (instance == null) {
+			instance = new AnnouncementServerProxy();
+		}
+		return instance;
+	}
 
     // --- Register ---------
     public RegisterRet register(RegisterReq request) {
         String hash = null;
-        if (!request.getDestination().equals(myId)) throw new RuntimeException("Not me");
+        if (!request.getDestination().equals(myId)) throw new RuntimeException(myId);
 
         hash = decryptSignature(request.getSender(), request.getSignature());
 
@@ -25,7 +37,7 @@ public class AnnouncementServerProxy {
 		inHash.add(hash);
 		
         if (!checkHash(inHash.toArray(new String[0]))) 
-            throw new RuntimeException("Possible Tampering Detected");
+            throw new RuntimeException("Error: Possible tampering detected on Hash");
 
         List<Integer> nums = AnnouncementServer.getInstance().register(request.getSender());
 

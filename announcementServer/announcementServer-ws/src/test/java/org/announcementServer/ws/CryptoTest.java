@@ -1,6 +1,7 @@
 package org.announcementServer.ws;
 
 import org.announcementserver.ws.AnnouncementServer;
+import org.announcementserver.ws.AnnouncementServerProxy;
 import org.announcementserver.ws.Announcement;
 import org.announcementserver.common.*;
 import org.junit.*;
@@ -25,80 +26,82 @@ import org.announcementserver.exceptions.UserNotRegisteredException;
 
 import javax.crypto.NoSuchPaddingException;
 
+import org.announcementserver.ws.RegisterReq;
+
 
 public class CryptoTest {
-	AnnouncementServer instance;
+	AnnouncementServerProxy instance;
 	
 	@Before
 	public void start() {
-		instance = AnnouncementServer.getInstance();
+		instance = AnnouncementServerProxy.getInstance();
 	}
 	
 	@Rule
 	public ExpectedException exceptionRule = ExpectedException.none();
 	
 	/**
-	 * -- Test Description -- 
+	 * -- Test1 Description -- 
 	 * This test aims to prove that our system can
 	 * detect a tampered message. It works by intentionally
 	 * passing wrong arguments to hash (in order to break the hash)
 	 * and expects to get a RunTimeException
 	 */
 	
-	/*
 	@Test
 	public void testWithBadHashGoodSignature() throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException {
 		
 		exceptionRule.expect(RuntimeException.class);
 		exceptionRule.expectMessage("Error: Possible tampering detected on Hash");
 		
-		// Get publicKey of client1 from keystore
-		String publicKey = CryptoTools.publicKeyAsString(CryptoTools.getPublicKey("client1"));
-		
-		// Get a correct signature with a wrong hash
+		instance.setId("server1");
 		List<String> toHash = new ArrayList<>();
-		toHash.add("client1"); // Needed to allow retrieval of privateKey from keystore to sign
-		toHash.add("a wrong hash");
-		String signature = CryptoTools.makeSignature(toHash.toArray(new String[0]));
 		
-		instance.register(publicKey, signature);
+		RegisterReq request = new RegisterReq();
+		request.setSender("client1");
+		request.setDestination("server1");
+		
+		toHash.add(request.getSender());
+		toHash.add("this is a broken hash");
+		
+		String signature = CryptoTools.makeSignature(toHash.toArray(new String[0]));
+		request.setSignature(signature);
+		
+		instance.register(request);
 	}
 
-	*/
 	
 	/**
-	 * -- Test Description -- 
+	 * -- Test2 Description -- 
 	 * This test aims to prove that our system can
 	 * detect a tampered message. It works by intentionally
 	 * passing a message with a wrong signature (in order to break the signature)
 	 * and expects to get a RunTimeException
 	 */
 	
-	/*
 	@Test
 	public void testWithGoodHashBadSignature() throws NoSuchPaddingException, BadPaddingException, CertificateException, IllegalBlockSizeException, InvalidKeyException, IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException {
 		
 		exceptionRule.expect(RuntimeException.class);
 		exceptionRule.expectMessage("Error: Possible tampering detected on Signature");
 		
-		// Get publicKey of client1 from keystore
-		String publicKey = CryptoTools.publicKeyAsString(CryptoTools.getPublicKey("client1"));
+		instance.setId("server1");
 		
-		// Get a bad signature
-		String signature = "a bad bad signature";
+		RegisterReq request = new RegisterReq();
+		request.setSender("client1");
+		request.setDestination("server1");
+		request.setSignature("this is a broken signature");
 		
-		instance.register(publicKey, signature);
+		instance.register(request);
 	}
 	
-	*/
 
 	/**
-	 * -- Test Description -- 
+	 * -- Test3 Description -- 
 	 * This test aims to prove that our system is
 	 * working, hash and signature wise, when
 	 * we pass correct arguments.
 	 */
-	
 
 	/*
 	@Test
@@ -222,7 +225,7 @@ public class CryptoTest {
 	
 	@After
 	public void cleanup() {
-		instance.clean();
+		AnnouncementServer.getInstance().clean();
 	}
 	
 	
