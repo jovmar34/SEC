@@ -98,10 +98,6 @@ public class Client extends Thread {
 
                 if (response == null) return;
 
-                System.out.println(String.format("Response: %s, %s, %d, %d, %d, %s", 
-			        response.getSender(), response.getDestination(), response.getSeqNumber(), 
-			        response.getWts(), response.getRid(), response.getSignature()));
-
                 if (!response.getSender().equals(servName)) throw new RuntimeException("Received response that wasn't from right server");
                 if (!response.getDestination().equals(username)) throw new RuntimeException("Received response that wasn't for me");
 
@@ -373,9 +369,7 @@ public class Client extends Thread {
                 readGenReq.setSeqNumber(seqNumber);
                 readGenReq.setRid(rid);
                 readGenReq.setNumber(number);
-                
-                System.out.println("Sequence number: " + String.valueOf(seqNumber));
-            	
+                            	
             	toHash = new ArrayList<>();
                 toHash.add(username);
                 toHash.add(servName);
@@ -436,6 +430,7 @@ public class Client extends Thread {
                 
                 if (!verifySigns(readGenRet.getAnnouncements())) {
                     System.out.println("Posts are not valid");
+                    return;
                 }
                 
                 synchronized (parent) {

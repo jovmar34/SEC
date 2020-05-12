@@ -113,7 +113,6 @@ public class AnnouncementServer implements Serializable {
 			putPersonal(announcement.author, announcement);
 			sns.put(announcement.author, seqNumber + 1);
 			wtss.put(announcement.author, announcement.id);
-			System.out.println("COMMIT");
 			PersistenceUtils.serialize(instance, id);
 		}
 
@@ -160,7 +159,6 @@ public class AnnouncementServer implements Serializable {
 		if (announcement.id >= expectedWts.get(announcement.author)) {
 			putGeneral(announcement);
 			sns.put(announcement.author, seqNumber + 1);
-			System.out.println("COMMIT");
 			PersistenceUtils.serialize(instance, id);
 		}
 		
@@ -204,7 +202,6 @@ public class AnnouncementServer implements Serializable {
 	/* Write Back */
 	public synchronized Integer writeBack(String sender, List<AnnouncementMessage> announcements, Integer seqNumber) {
 		if (sns.get(sender) != seqNumber) {
-			System.out.println(String.format("Mine: %d, In: %d", sns.get(sender), seqNumber));
 			throw new RuntimeException("Wrong sequence number");
 		}
 

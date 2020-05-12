@@ -57,7 +57,6 @@ public class FrontEnd {
         nServ = 3 * f + 1;
         quorum = (nServ + f) / 2;
         seqNums = Arrays.asList(new Integer[nServ]);
-        System.out.println(String.format("NServ: %d", nServ));
 
         for (Integer i = 1; i <= nServ; i++) {
             wsUrls.add(String.format(Constants.WS_NAME_FORMAT, host, Constants.PORT_START + i));
@@ -154,7 +153,6 @@ public class FrontEnd {
         rid++;
 
         for (int i = 1; i <= nServ; i++) {
-            System.out.println(String.valueOf(i) + "th client");
             cli = new Client(this, Operation.READGENERAL, i);
             cli.number = 1;
             cli.seqNumber = seqNums.get(i-1);
@@ -171,13 +169,9 @@ public class FrontEnd {
             }
         }
 
-        System.out.println("Read Done");
-
         Integer nwts = highestWts(readList);
-        System.out.println(String.format("Highest wts: %d", nwts));
 
         // WRITE PHASE: write the wts with highest wts + 1
-
         List<WriteRet> ackList = new ArrayList<>(nServ);
         
         response = null;
@@ -327,7 +321,6 @@ public class FrontEnd {
 
         for (ReadRet ret: readList) {
             if (ret.getAnnouncements().isEmpty()) continue;
-            System.out.println(postToString(ret.getAnnouncements().get(0)));
             if (ret.getAnnouncements().get(0).getWts() > res) 
                 res = ret.getAnnouncements().get(0).getWts(); // only one post
         }
@@ -345,7 +338,6 @@ public class FrontEnd {
         for (ReadRet ret: readList) {
             list = ret.getAnnouncements();
             if (list.isEmpty()) continue;
-            System.out.println(postToString(ret.getAnnouncements().get(0)));
             temp = list.get(list.size() - 1); // most recent post
 
             // higher if ts is bigger or, if they're same, lowest client id (decided by Java default String comparison)
@@ -371,8 +363,8 @@ public class FrontEnd {
     }
 
     private String postToString(AnnouncementMessage post) {
-        return String.format("Author: %s, Id: %d\n\"%s\"\nReferences: %s\n",
-            post.getWriter(), post.getWts(), post.getMessage(),
+        return String.format("Author: %s, Id: %d, Type: %s\n\"%s\"\nReferences: %s\n",
+            post.getWriter(), post.getWts(), post.getType(), post.getMessage(),
             post.getAnnouncementList().toString());
     }
     
