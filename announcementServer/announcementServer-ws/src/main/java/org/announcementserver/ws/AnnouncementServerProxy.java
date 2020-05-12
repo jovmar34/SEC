@@ -2,21 +2,13 @@ package org.announcementserver.ws;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.announcementserver.common.CryptoTools;
 
 public class AnnouncementServerProxy {
     protected String myId;
-    protected ServerFrontEnd client;
-    public Integer f, nServ;
 
     public AnnouncementServerProxy() {
-        client = new ServerFrontEnd(this);
-    }
-
-    public void setF(String f) {
-        this.f = Integer.valueOf(f);
-        nServ = this.f * 3 + 1;
+    	
     }
 
     // --- Register ---------
