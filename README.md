@@ -40,8 +40,8 @@ Regarding the clients, execute:
 **Note2:** In -Dws.i=y, y is the serverId (e.g: 1, max:16)
 
 ## Testing Criptographic mechanisms
-In order to test criptographic mechanisms, we made some JUnit tests.
-Those tests can be found in folder test ...
+In order to test our criptographic mechanisms, we made some JUnit tests.
+Those tests are present in file **/CryptoTest/**, that can be found in folder **/test/** under the server module.
 
 ## Testing Bizantine Servers
 In order to test the dependability requirements for bizantine servers, the process is:
