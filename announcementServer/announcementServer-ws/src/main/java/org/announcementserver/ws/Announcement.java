@@ -4,7 +4,7 @@ import java.util.List;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Announcement implements Serializable {
+public class Announcement implements Serializable, Comparable {
 	private static final long serialVersionUID = -4546920147162956800L;
 	protected String author;
 	protected String content;
@@ -57,5 +57,16 @@ public class Announcement implements Serializable {
 		return String.format("auth: %s, id: %s, type: %s\n  text: \"%s\"\n  references: %s",
 		 this.author, this.id,  this.type, this.content,
 		 this.references);
+	}
+
+	@Override
+	public int compareTo(Object o) {
+		Announcement other = (Announcement) o;
+
+		if (this.id == other.id && this.author.equals(other.author)) return 0;
+
+		if (this.id > other.id) return 1;
+
+		return (this.author.compareTo(other.author) < 0) ? 1 : -1;
 	}
 }

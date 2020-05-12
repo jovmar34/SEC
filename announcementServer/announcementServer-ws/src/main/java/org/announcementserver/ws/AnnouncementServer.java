@@ -233,10 +233,12 @@ public class AnnouncementServer implements Serializable {
 	/* For testing purposes */
 	public void putGeneral(Announcement ann) {
 		generalBoard.add(ann);
+		generalBoard.sort(null);
 	}
 	
 	public void putPersonal(String author, Announcement ann) {
 		personalBoards.get(author).add(ann);
+		personalBoards.get(author).sort(null);
 	}
 	
 	public void clean() {

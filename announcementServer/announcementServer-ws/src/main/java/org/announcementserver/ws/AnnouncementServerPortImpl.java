@@ -43,8 +43,7 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 	}
 
 	/* Post */
-	public WriteRet post(WriteReq request) throws UserNotRegisteredFault_Exception, MessageSizeFault_Exception,
-			ReferredUserFault_Exception, PostTypeFault_Exception, ReferredAnnouncementFault_Exception {
+	public WriteRet post(WriteReq request) {
 		WriteRet res = null;
 
 		try {
@@ -58,8 +57,7 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 	}
 
 	/* Post General */
-	public WriteRet postGeneral(WriteReq request) throws UserNotRegisteredFault_Exception, MessageSizeFault_Exception,
-			ReferredUserFault_Exception, PostTypeFault_Exception, ReferredAnnouncementFault_Exception {
+	public WriteRet postGeneral(WriteReq request) {
 
 		WriteRet res = null;
 
@@ -74,8 +72,7 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 	}
 
 	/* Read */
-	public ReadRet read(ReadReq request) throws InvalidNumberFault_Exception, ReferredUserFault_Exception,
-			EmptyBoardFault_Exception, NumberPostsFault_Exception {
+	public ReadRet read(ReadReq request) {
 		ReadRet res = null;
 
 		try {
@@ -89,8 +86,7 @@ public class AnnouncementServerPortImpl implements AnnouncementServerPortType {
 	}
 
 	/* Read General */
-	public ReadRet readGeneral(ReadGeneralReq request)
-			throws InvalidNumberFault_Exception, EmptyBoardFault_Exception, NumberPostsFault_Exception {
+	public ReadRet readGeneral(ReadGeneralReq request){
 		ReadRet res = null;
 
 		try {

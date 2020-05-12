@@ -28,15 +28,6 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.xml.ws.WebServiceException;
 
-import org.announcementserver.ws.EmptyBoardFault_Exception;
-import org.announcementserver.ws.InvalidNumberFault_Exception;
-import org.announcementserver.ws.MessageSizeFault_Exception;
-import org.announcementserver.ws.NumberPostsFault_Exception;
-import org.announcementserver.ws.PostTypeFault_Exception;
-import org.announcementserver.ws.ReferredAnnouncementFault_Exception;
-import org.announcementserver.ws.ReferredUserFault_Exception;
-import org.announcementserver.ws.UserNotRegisteredFault_Exception;
-
 enum Operation {
     REGISTER, POST, POSTGENERAL, READ, READGENERAL, WRITEBACK
 };

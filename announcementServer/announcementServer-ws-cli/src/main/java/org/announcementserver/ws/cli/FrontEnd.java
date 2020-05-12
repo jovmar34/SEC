@@ -25,14 +25,6 @@ import java.security.cert.CertificateException;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import org.announcementserver.ws.EmptyBoardFault_Exception;
-import org.announcementserver.ws.InvalidNumberFault_Exception;
-import org.announcementserver.ws.MessageSizeFault_Exception;
-import org.announcementserver.ws.NumberPostsFault_Exception;
-import org.announcementserver.ws.PostTypeFault_Exception;
-import org.announcementserver.ws.ReferredAnnouncementFault_Exception;
-import org.announcementserver.ws.ReferredUserFault_Exception;
-import org.announcementserver.ws.UserNotRegisteredFault_Exception;
 
 import javax.xml.ws.BindingProvider;
 import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
@@ -118,8 +110,7 @@ public class FrontEnd {
     public synchronized String post(String message, List<String> announcementList)
             throws InvalidKeyException, CertificateException, KeyStoreException, NoSuchAlgorithmException,
             NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, UnrecoverableEntryException,
-            IOException, MessageSizeFault_Exception, PostTypeFault_Exception, ReferredAnnouncementFault_Exception,
-            ReferredUserFault_Exception, UserNotRegisteredFault_Exception {
+            IOException {
 
         checkInit();
         Client cli;
@@ -151,9 +142,7 @@ public class FrontEnd {
 
     public synchronized String postGeneral(String message, List<String> announcementList)
             throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException, CertificateException,
-            IOException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException,
-            MessageSizeFault_Exception, PostTypeFault_Exception, ReferredAnnouncementFault_Exception,
-            ReferredUserFault_Exception, UserNotRegisteredFault_Exception {
+            IOException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
 
         checkInit();
         Client cli;
@@ -214,8 +203,7 @@ public class FrontEnd {
     }
 
     public synchronized String read(String clientID, Integer number) throws NoSuchAlgorithmException, UnrecoverableEntryException,
-            KeyStoreException, CertificateException, IOException, EmptyBoardFault_Exception,
-            InvalidNumberFault_Exception, NumberPostsFault_Exception, ReferredUserFault_Exception, InvalidKeyException,
+            KeyStoreException, CertificateException, IOException, InvalidKeyException,
             NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
 
         checkInit();
@@ -264,13 +252,18 @@ public class FrontEnd {
             	}
             }
         }
+
+        Integer end = ret.getAnnouncements().size();
+		Integer start = 
+            (number > end || number == 0) ? 0 : end - number;
+            
+        List<AnnouncementMessage> posts = ret.getAnnouncements().subList(start, end);
         
-        return postsToString(ret);
+        return postsToString(posts);
     }
 
     public synchronized String readGeneral(Integer number) throws NoSuchAlgorithmException, UnrecoverableEntryException,
-            KeyStoreException, CertificateException, IOException, EmptyBoardFault_Exception,
-            InvalidNumberFault_Exception, NumberPostsFault_Exception, InvalidKeyException, NoSuchPaddingException,
+            KeyStoreException, CertificateException, IOException, InvalidKeyException, NoSuchPaddingException,
             IllegalBlockSizeException, BadPaddingException {
 
         checkInit();
@@ -298,7 +291,7 @@ public class FrontEnd {
 
         ReadRet ret = highestVal(readList);
         
-        return postsToString(ret);
+        return postsToString(ret.getAnnouncements());
     }
 
     private void createStub() {
@@ -383,10 +376,10 @@ public class FrontEnd {
             post.getAnnouncementList().toString());
     }
     
-    private String postsToString(ReadRet response) {
+    private String postsToString(List<AnnouncementMessage> posts) {
         String res = "";
 
-        for (AnnouncementMessage post: response.getAnnouncements()) {
+        for (AnnouncementMessage post: posts) {
             res += postToString(post);
         }
 
