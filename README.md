@@ -16,11 +16,11 @@ In order to build and run this project you will need:
 * Java Development Kit 8
 
 ## Compiling
-In order to compile the whole project execute the following command on **/announcementServer/** to install all dependencies:
+In order to compile the whole project execute the following command on **/announcementServer**:
 
     mvn clean install
     
-**Note:** append -DskipTests to the above command in order to skip all tests 
+**Note:** append -DskipTests to the above command to skip all tests 
 
 ## Running
 In order to run the system..
@@ -83,4 +83,4 @@ server14 | qX7HfjR9WdL6
 server15 | v7URF2eBW8Cc
 server16 | nLkceMWjuf3M
 
-**Note:** Each keystore uses the password of the party that is related to the keys kept
+**Note:** Each keystore uses the password of the partie that is related to the keys kept
