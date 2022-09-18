@@ -8,9 +8,6 @@ public class AnnouncementServerEndpointManager {
 	
 	/* Variables */
 	
-	/** UDDI Naming Server Location */
-	private String uddiURL = null;
-	
 	/** Web Service Name */
 	private String wsName = null;
 	
@@ -22,9 +19,6 @@ public class AnnouncementServerEndpointManager {
 	
 	/** Web Service Endpoint */
 	private Endpoint endpoint = null;
-	
-	/** UDDI Naming instance for containing UDDI server */
-	//private UDDINaming uddiNaming = null;
 	
 	/** Verbose output? */
 	private boolean verbose = true;
@@ -51,14 +45,7 @@ public class AnnouncementServerEndpointManager {
 		return portImpl;
 	}
 	
-	/** Constructor 1 */
-	public AnnouncementServerEndpointManager(String uddiURL, String wsName, String wsURL) {
-		this.uddiURL = uddiURL;
-		this.wsName = wsName;
-		this.wsURL = wsURL;
-	}
-	
-	/** Constructor 2 */
+	/** Constructor  */
 	public AnnouncementServerEndpointManager(String wsURL) {
 		if (wsURL == null) {
 			throw new NullPointerException("Null pointer exception: URL cannot be null!");
@@ -82,7 +69,6 @@ public class AnnouncementServerEndpointManager {
 			}
 			throw e;
 		}
-		//publishToUDDI();
 	}
 	
 	/** Await for connections */
@@ -115,42 +101,5 @@ public class AnnouncementServerEndpointManager {
 			}
 		}
 		this.portImpl = null;
-		//unpublishFromUDDI();
 	}
-	
-//	/** Publish to UDDI */
-//	void publishToUDDI() throws Exception {
-//		try {
-//			if(uddiURL != null) {
-//				if (verbose) {
-//					System.out.printf("Publishing '%s' to UDDI at %s%n", wsName, uddiURL);
-//				}
-//			}
-//			uddiNaming = new UDDINaming(uddiURL);
-//			uddiNaming.rebind(wsName, wsURL);
-//		} catch (Exception e) {
-//			uddiNaming = null;
-//			if (verbose) {
-//				System.out.printf("Exception caught when binding to UDDI: %s%n", e);
-//			}
-//			throw e;
-//		}
-//	}
-//	
-//	/** Unpublish from UDDI */
-//	void unpublishFromUDDI() {
-//		try {
-//			if (uddiNaming != null) {
-//				uddiNaming.unbind(wsName);
-//				if (verbose) {
-//					System.out.printf("Unpublished '%s' from UDDI", wsName);
-//				}
-//				uddiNaming = null;
-//			}
-//		} catch (Exception e){
-//			if (verbose) {
-//				System.out.printf("Exception caught when unbinding: %s%n", e);
-//			}
-//		}
-//	}
 }

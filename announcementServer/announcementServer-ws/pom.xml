@@ -21,7 +21,7 @@
     <ws.name>announcementserver-ws</ws.name>
 	<ws.host>localhost</ws.host>
 	<ws.i>1</ws.i>
-	<ws.f>0</ws.f>
+	<ws.f>1</ws.f>
     <!--
 		<ws.url>http://localhost:8091/${ws.name}/endpoint/</ws.url>
 	-->

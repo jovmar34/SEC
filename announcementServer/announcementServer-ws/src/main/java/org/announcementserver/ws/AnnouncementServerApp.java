@@ -27,12 +27,14 @@ public class AnnouncementServerApp {
 		id = args[1];
 		endpoint = new AnnouncementServerEndpointManager(String.format(Constants.WS_NAME_FORMAT, host, Constants.PORT_START + Integer.valueOf(id)));
 		
-		AnnouncementServer.getInstance().myId = Constants.SERVER_NAME + id;
+		endpoint.portImpl.proxy.myId = Constants.SERVER_NAME + id;
+		AnnouncementServer.getInstance().setId(Constants.SERVER_NAME + id);
 		
     	String answer = "";
 
     	try {
-    		endpoint.start();
+			endpoint.start();
+
     		// Verifies if needed to recover announcement server state
     		boolean incorrectAnswer = true;
     		while (incorrectAnswer) {
@@ -46,8 +48,8 @@ public class AnnouncementServerApp {
     		}
 
     		if (answer.equals("y")) {
-    			PersistenceUtils.recover();
-    		}
+    			PersistenceUtils.recover(Constants.SERVER_NAME + id);
+			}
     		
     		endpoint.awaitConnections();
     	} finally {

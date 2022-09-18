@@ -1,0 +1,27 @@
+Servidor:
+    pedido() { 
+        Init (sentEcho, sentReady, delivered, echos, readys)
+        
+        Echo:
+            for (servidores) {
+                criar cliente, do echo
+            }
+
+            esperar por:
+            (echos = {m (String): [request (...Req)]} )
+                - mensagem m com > (n + f) / 2 echos
+                - mensagem m com > f readys
+
+        Ready:
+            for (servidores) {
+                criar cliente, do ready, m
+            }
+
+            esperar por:
+            (readys = {m (String): [request (...Req)]} )
+                - mensagem m com > 2f readys
+
+        deliver m; (getInstance.pedido(m))
+
+        criar resposta, devolver resposta;
+    }

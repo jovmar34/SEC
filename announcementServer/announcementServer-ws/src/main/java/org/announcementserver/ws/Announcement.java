@@ -4,18 +4,20 @@ import java.util.List;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Announcement implements Serializable {
-	private String author;
-	private String content;
-	private String id;
-	private ArrayList<String> references; 
-	
+public class Announcement implements Serializable, Comparable {
+	private static final long serialVersionUID = -4546920147162956800L;
+	protected String author;
+	protected String content;
+	protected Integer id;
+	protected ArrayList<String> references;
+	protected String signature;
+	protected String type;
 	
 	public Announcement() {
 		this.references = new ArrayList<>();
 	}
 	
-	public Announcement(String auth, String cont, String id) {
+	public Announcement(String auth, String cont, Integer id) {
 		this.author = auth;
 		this.content = cont;
 		this.id = id;
@@ -23,7 +25,7 @@ public class Announcement implements Serializable {
 	}
 	
 	public void setContent(String cont) {
-		this.content=cont;
+		this.content = cont;
 	}
 	
 	public void addReference(String ref) {
@@ -34,16 +36,37 @@ public class Announcement implements Serializable {
 		this.references = new ArrayList<String>(refs);
 	}
 	
-	public void setId(String id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 	
 	public void setAuthor(String authid) {
 		this.author = authid;
 	}
+
+	public void setSignature(String signature) {
+		this.signature = signature;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
 	
 	@Override
 	public String toString() {
-		return String.format("auth: %s, id: %s\n  text: \"%s\"\n  references: %s\n", this.author, this.id, this.content, this.references);
+		return String.format("auth: %s, id: %s, type: %s\n  text: \"%s\"\n  references: %s",
+		 this.author, this.id,  this.type, this.content,
+		 this.references);
+	}
+
+	@Override
+	public int compareTo(Object o) {
+		Announcement other = (Announcement) o;
+
+		if (this.id == other.id && this.author.equals(other.author)) return 0;
+
+		if (this.id > other.id) return 1;
+
+		return (this.author.compareTo(other.author) < 0) ? 1 : -1;
 	}
 }
